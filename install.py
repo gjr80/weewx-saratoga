@@ -1,4 +1,8 @@
 """
+install.py
+
+An installer for the WeeWX-Saratoga extension
+
 This program is free software; you can redistribute it and/or modify it under
 the terms of the GNU General Public License as published by the Free Software
 Foundation; either version 2 of the License, or (at your option) any later
@@ -8,8 +12,6 @@ This program is distributed in the hope that it will be useful, but WITHOUT
 ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
 FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
 details.
-
-                         Installer for WeeWX-Saratoga
 
 Version: 0.1.0                                          Date: xx xxxxx 2021
 
@@ -37,13 +39,13 @@ def loader():
 class WSInstaller(ExtensionInstaller):
     def __init__(self):
         if StrictVersion(weewx.__version__) < StrictVersion(REQUIRED_VERSION):
-            msg = "%s requires WeeWX %s or greater, found %s" % ('WeeWX-WD ' + WS_VERSION,
+            msg = "%s requires WeeWX %s or greater, found %s" % ('WeeWX-Saratoga' + WS_VERSION,
                                                                  REQUIRED_VERSION,
                                                                  weewx.__version__)
             raise weewx.UnsupportedFeature(msg)
         super(WSInstaller, self).__init__(
             version=WS_VERSION,
-            name='WeeWX-WD',
+            name='WeeWX-Saratoga',
             description='WeeWX support for the Saratoga Weather Website templates.',
             author="Gary Roderick",
             author_email="gjroderick<@>gmail.com",
@@ -52,7 +54,7 @@ class WSInstaller(ExtensionInstaller):
                               'user.wd.WdSuppArchive'],
             config={
                 'StdReport': {
-                    'WS_WEEWXtags': {
+                    'WEEWXtagsReport': {
                         'skin': 'WEEWXtags',
                         'enable': 'True',
                         'Units': {
@@ -72,10 +74,9 @@ class WSInstaller(ExtensionInstaller):
                             },
                         },
                     },
-                    'WS_Clientraw': {
+                    'ClientrawReport': {
                         'skin': 'Clientraw',
                         'enable': 'True',
-                        'HTML_ROOT': 'WD',
                         'Units': {
                             'StringFormats': {
                                 'degree_C': '%.1f',
