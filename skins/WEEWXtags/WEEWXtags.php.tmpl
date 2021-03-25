@@ -479,23 +479,8 @@ if ( isset($_REQUEST['sce']) && strtolower($_REQUEST['sce']) == 'view' ) {
 #raw $fullmoondate = #end raw '$time.strftime($recordFormat, $nextFullMoon)';// Date of the next/last full moon (date only)
 #else
 #raw $sunset = #end raw '$almanac.sunset.format($timeFormat)';// sunset time
-#raw $moonrisedate = #end raw '$naString';// moon rise date
-#raw $moonrise = #end raw '$naString';// moon rise time
-#raw $moonsetdate = #end raw '$naString';// moon set date
-#raw $moonset = #end raw '$naString';// moon set time
-#raw $moonage = #end raw '$naString';// current age of the moon (days since new moon)
 #raw $moonphase = #end raw '$almanac.moon_fullness%';// Moon phase %
 #raw $moonphasename = #end raw '$almanac.moon_phase'; // 10.36z addition
-#raw $marchequinox = #end raw '$naString';// March equinox date
-#raw $junesolstice = #end raw '$naString';// June solstice date
-#raw $sepequinox = #end raw '$naString';// September equinox date
-#raw $decsolstice = #end raw '$naString';// December solstice date
-#raw $newmoon = #end raw '$naString';// Date/time of the previous new moon
-#raw $nextnewmoon = #end raw '$naString';// Date/time of the next new moon for next month
-#raw $firstquarter = #end raw '$naString';// Date/time of the next/last first quarter moon
-#raw $lastquarter = #end raw '$naString';// Date/time of the next/last last quarter moon
-#raw $fullmoon = #end raw '$naString';// Date/time of the next/last full moon
-#raw $fullmoondate = #end raw '$naString';// Date of the next/last full moon (date only)
 #end if
 #raw $moonperihel = #end raw '$nextPerihelion';// Next Moon perihel date
 #raw $moonaphel = #end raw '$nextAphelion';// Next moon perihel date
@@ -506,23 +491,14 @@ if ( isset($_REQUEST['sce']) && strtolower($_REQUEST['sce']) == 'view' ) {
 #raw $easterdate = #end raw '$Easter.format($recordFormat)';// Next Easter date
 #raw $chinesenewyear = #end raw '$next_cny_date';// Chinese new year
 #raw $hoursofpossibledaylight = #end raw '$time.strftime($timeLongFormat, $dayLength)';// Total hours/minutes of possible daylight for today
-### FIXME
-#raw $weatherreport = #end raw '$naString';     //current weather conditions from selected METAR
 #raw $stationaltitude = #end raw '$station.altitude.foot.formatted';   // Station altitude, feet, as set in the units setup
 #raw $stationlatitude = #end raw '$lat_dms'; // Latitude (from the sun moon rise/set setup)
 #raw $stationlongitude = #end raw '$long_dms';   // Longitude (from the sun moon rise/set setup)
 #raw $windowsuptime = #end raw '$station.os_uptime'; // uptime for OS on system
 #raw $freememory = #end raw '$freeMemory'; // amount of free memory on the pc
 #raw $Startimedate = #end raw '$launchtime.format($dateTimeFormat)'; // Time/date WD was started
-### FIXME
-#raw $NOAAEvent = #end raw '$naString'; // NOAA Watch/Warning/Advisory
-### FIXME
-#raw $noaawarningraw = #end raw '$naString'; // NOAA RAW watch/warning/advisory
-
 #raw $swversion = #end raw '$station.version';  // Weather Display version number you are running
 #raw $swversiononly = #end raw '$station.version';
-### FIXME
-#raw $noaacityname = #end raw '$naString';  // City name,from the noaa setup (in the av/ext setup)
 #raw $timeofnextupdate = #end raw '$next_update.format($timeFormat)';    // Time of next Update/Upload of the weather data to your web page
 #raw $heatcolourword = #end raw '$heatColorWord';   // How hot/cold it feels at the moment, based on the humidex, used with the conditionscolour.jpg
 //
