@@ -1,5 +1,5 @@
 """
-ws.py
+wd.py
 
 Service classes used by WeeWX-WD
 
@@ -491,9 +491,9 @@ class WdArchive(weewx.engine.StdService):
 
         # Extract our binding from the WeeWX-WD section of the config file. If
         # it's missing, fill with a default.
-        if 'WeewxWD' in config_dict:
-            self.data_binding = config_dict['WeewxWD'].get('data_binding',
-                                                           'wd_binding')
+        if 'WeewxSaratoga' in config_dict:
+            self.data_binding = config_dict['WeewxSaratoga'].get('data_binding',
+                                                                 'wd_binding')
         else:
             self.data_binding = 'wd_binding'
         loginf("WdArchive will use data binding %s" % self.data_binding)
@@ -585,12 +585,12 @@ class WdSuppArchive(weewx.engine.StdService):
         # any essential config data is missing/not set then give a short log
         # message and defer.
 
-        if 'Weewx-WD' in config_dict:
-            # we have a [Weewx-WD] stanza
-            if 'Supplementary' in config_dict['Weewx-WD']:
+        if 'WeewxSaratoga' in config_dict:
+            # we have a [WeewxSaratoga] stanza
+            if 'Supplementary' in config_dict['WeewxSaratoga']:
                 # we have a [[Supplementary]] stanza so we can initialise
                 # wdsupp db
-                _supp_dict = config_dict['Weewx-WD']['Supplementary']
+                _supp_dict = config_dict['WeewxSaratoga']['Supplementary']
                 
                 # setup for archiving of supp data
                 # first, get our binding, if it's missing use a default
