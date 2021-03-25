@@ -1,0 +1,151 @@
+##errorCatcher Echo
+#*
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+###############################################################################
+#                                                                             #
+#                          clientrawhour.txt Template                         #
+#                                                                             #
+# Version: 0.1.0                                         Date: xx xxxxx 2021  #
+#                                                                             #
+###############################################################################
+*#
+##
+#import time
+##
+##Cache tagged stats required in clientraw
+##
+#set $windSpeedMinuteArray = $minute.windSpeed.avgQuery
+#set $windGustMinuteArray = $minute.windGust.maxQuery
+#set $windDirMinuteArray = $minute.windDir.avgQuery
+#set $outTempMinuteArray = $minute.outTemp.avgQuery
+#set $outHumidityMinuteArray = $minute.outHumidity.avgQuery
+#set $barometerMinuteArray = $minute.barometer.avgQuery
+#set $rainMinuteArray = $minute.rain.sumQuery
+#set $datetimeMinuteArray = $minute.rain.datetimeQuery
+#set $radiationMinuteArray = $minute.radiation.avgQuery
+#set $radiationFifteenminuteArray = $fifteenminute.radiation.avgQuery
+#set $UVFifteenminuteArray = $fifteenminute.UV.avgQuery
+##
+##End Cache tagged stats required in clientraw
+##
+#*WD|000*#12345 #slurp
+#*WD|001*##*Last 60 Minutes Wind Speed. Min 01=60 min ago, Min 60=now*##slurp
+#for $i in range (60):
+#try
+$windSpeedMinuteArray[$i].knot.toString($addLabel=False, $localize=False) #slurp
+#except TypeError
+0 #slurp
+#except IndexError
+0 #slurp
+#end try
+#end for
+#*WD|061*##*Last 60 Minutes Wind Gust. Min 01=60 min ago, Min 60=now*##slurp
+#for $i in range (60):
+#try
+$windGustMinuteArray[$i].knot.toString($addLabel=False, $localize=False) #slurp
+#except TypeError
+0 #slurp
+#except IndexError
+0 #slurp
+#end try
+#end for
+#*WD|121*##*Last 60 Minutes Wind Direction. Min 01=60 min ago, Min 60=now*##slurp
+#for $i in range (60):
+#try
+$windDirMinuteArray[$i].toString($addLabel=False, $localize=False) #slurp
+#except TypeError
+0 #slurp
+#except IndexError
+0 #slurp
+#end try
+#end for
+#*WD|181*##*Last 60 Minutes Outside Temp. Min 01=60 min ago, Min 60=now*##slurp
+#for $i in range (60):
+#try
+$outTempMinuteArray[$i].degree_C.toString($addLabel=False, $localize=False) #slurp
+#except TypeError
+0 #slurp
+#except IndexError
+0 #slurp
+#end try
+#end for
+#*WD|241*##*Last 60 Minutes Outside Humidity. Min 01=60 min ago, Min 60=now*##slurp
+#for $i in range (60):
+#try
+$outHumidityMinuteArray[$i].toString($addLabel=False, $localize=False) #slurp
+#except TypeError
+0 #slurp
+#except IndexError
+0 #slurp
+#end try
+#end for
+#*WD|301*##*Last 60 Minutes Barometer. Min 01=60 min ago, Min 60=now*##slurp
+#for $i in range (60):
+#try
+$barometerMinuteArray[$i].toString($addLabel=False, $localize=False) #slurp
+#except TypeError
+0 #slurp
+#except IndexError
+0 #slurp
+#end try
+#end for
+#*WD|361*##*Last 60 Minutes Rain. Min 00=60 min ago, Min 59=now*##slurp
+#set $tt=time.localtime($current.dateTime.raw)
+#set $midnight_ts=time.mktime(($tt.tm_year, $tt.tm_mon, $tt.tm_mday, 0, 0, 0, 0, 0, -1))
+#try
+    #set $rain_accum = $ago60rain.mm.raw
+#except
+    #set $rain_accum = 0.0
+#end try
+#for $i in range (60):
+#try
+#set $rain_accum += $rainMinuteArray[$i].mm.raw
+#set $rain_accum_str = $skin_dict.Units.StringFormats.mm % $rain_accum
+$rain_accum_str #slurp
+#if $datetimeMinuteArray[$i].raw == $midnight_ts
+    #set $rain_accum = 0.0
+#end if
+#except (TypeError, IndexError)
+0.0 #slurp
+#end try
+#end for
+#*WD|421*##*Last 60 Minutes Solar. Min 01=60 min ago, Min 60=now*##slurp
+#for $i in range (60):
+#try
+$radiationMinuteArray[$i].toString($addLabel=False, $localize=False) #slurp
+#except TypeError
+0 #slurp
+#except IndexError
+0 #slurp
+#end try
+#end for
+#*WD|481*##*Last 24 Hours of 15 minute Solar Readings. Hr 01, Min 00=24 hr ago, Hr 24, Min 45=now*##slurp
+#for $i in range (96):
+#try
+$radiationFifteenminuteArray[$i].toString($addLabel=False, $localize=False) #slurp
+#except TypeError
+0 #slurp
+#except IndexError
+0 #slurp
+#end try
+#end for
+#*WD|577*##*Last 24 Hours of 15 minute UV Readings. Hr 01, Min 00=24 hr ago, Hr 24, Min 45=now*##slurp
+#for $i in range (96):
+#try
+$UVFifteenminuteArray[$i].toString($localize=False) #slurp
+#except TypeError
+0 #slurp
+#except IndexError
+0 #slurp
+#end try
+#end for
+#*WD|673*#!!EOR!! #slurp
