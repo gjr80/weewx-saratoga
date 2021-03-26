@@ -49,9 +49,9 @@ class WSInstaller(ExtensionInstaller):
             description='WeeWX support for the Saratoga Weather Website templates.',
             author="Gary Roderick",
             author_email="gjroderick<@>gmail.com",
-            process_services=['user.wd.WdWXCalculate'],
-            archive_services=['user.wd.WdArchive',
-                              'user.wd.WdSuppArchive'],
+            process_services=['user.ws.WsWXCalculate'],
+            archive_services=['user.ws.WsArchive',
+                              'user.ws.WsSuppArchive'],
             config={
                 'StdReport': {
                     'WEEWXtagsReport': {
@@ -95,42 +95,42 @@ class WSInstaller(ExtensionInstaller):
                     }
                 },
                 'DataBindings': {
-                    'wd_binding': {
+                    'ws_binding': {
                         'database': 'weewxwd_sqlite',
                         'table_name': 'archive',
                         'manager': 'weewx.manager.DaySummaryManager',
-                        'schema': 'user.wdschema.weewxwd_schema'
+                        'schema': 'user.wdschema.ws_schema'
                     },
-                    'wdsupp_binding': {
+                    'ws_supp_binding': {
                         'database': 'wd_supp_sqlite',
                         'table_name': 'supp',
                         'manager': 'weewx.manager.Manager',
-                        'schema': 'user.wdschema.wdsupp_schema'
+                        'schema': 'user.wdschema.ws_supp_schema'
                     }
                 },
                 'Databases': {
-                    'weewxwd_sqlite': {
+                    'ws_sqlite': {
                         'database_type': 'SQLite',
                         'database_name': 'weewxwd.sdb'
                     },
-                    'wd_supp_sqlite': {
+                    'ws_supp_sqlite': {
                         'database_type': 'SQLite',
                         'database_name': 'wdsupp.sdb'
                     },
-                    'weewxwd_mysql': {
+                    'ws_mysql': {
                         'database_type': 'MySQL',
                         'database_name': 'weewxwd'
                     },
-                    'wd_supp_mysql': {
+                    'ws_supp_mysql': {
                         'database_type': 'MySQL',
                         'database_name': 'wdsupp'
                     }
                 },
                 'Weewx-Saratoga': {
-                    'data_binding': 'wd_binding',
+                    'data_binding': 'ws_binding',
                     'sunshine_threshold': '120',
                     'Supplementary': {
-                        'data_binding': 'wdsupp_binding',
+                        'data_binding': 'ws_supp_binding',
                         'WU': {
                             'api_key': 'replace_me',
                             'enable': 'False'
@@ -148,10 +148,10 @@ class WSInstaller(ExtensionInstaller):
             },
             files=[('bin/user', ['bin/user/stackedwindrose.py',
                                  'bin/user/wdastro.py',
-                                 'bin/user/wdschema.py',
+                                 'bin/user/wsschema.py',
                                  'bin/user/wdsearchlist.py',
                                  'bin/user/wdtaggedstats.py',
-                                 'bin/user/wd.py']),
+                                 'bin/user/ws.py']),
                    ('skins/Clientraw', ['skins/Clientraw/clientraw.txt.tmpl',
                                         'skins/Clientraw/clientrawdaily.txt.tmpl',
                                         'skins/Clientraw/clientrawextra.txt.tmpl',
