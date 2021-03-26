@@ -1,7 +1,7 @@
 """
-wd.py
+ws.py
 
-Service classes used by WeeWX-WD
+Service classes used by WeeWX-Saratoga
 
 This program is free software; you can redistribute it and/or modify it under
 the terms of the GNU General Public License as published by the Free Software
@@ -13,90 +13,12 @@ ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
 FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
 details.
 
-Version: 2.1.3                                          Date: 15 February 2021
+Version: 0.1.0                                          Date: xx xxxxx 2021
 
 Revision History
-    15 February 2021    v2.1.3
-        - no change, version number change only
-    17 November 2020    v2.1.2
-        - no change, version number change only
-    11 November 2020    v2.1.1
-        - no change, version number change only
-    1 November 2020     v2.1.0
-        - service WdWXCalculate now adds derived field sunshine to archive
-          records, this allows calculation of various 'sunshine hours'
-          aggregates
-        - added field sunshine to the weewxwd schema
-        - fields outTempDay and outTempNight are only added to loop packets and
-          archive records if pre-requisite field outTemp exists in the same
-          loop packet/archive record
-        - removed unused class wdGenerateDerived() from wd.py
-        - logging is now WeeWX 3 and 4 compatible
-    30 August 2020      v2.0.1
-        - no change, version number change only
-    20 August 2020      v2.0.0
-        - WeeWX 3.2+/4.x python2/3 compatible
-        - moved __main__ code to weewxwd_config utility
-        - now uses appTemp and humidex as provided by StdWXCalculate
-        - simplified WdWXCalculate.new_loop_packet,
-          WdWXCalculate.new_archive_record and WdArchive.new_archive_record
-          methods
-        - simplified outTempDay and outTempNight calculations
-        - simplified function toint()
-        - added support for a WeeWX-WD supplementary database for recording
-          short term information such as theoretical solar max, WU current
-          conditions, WU forecast and WU almanac data
-        - added WU API language support
-        - added ability to exercise WU aspects of wd.py without the
-          overheads of running a WeeWX instance
-        - added current_label config option to allow a user defined label to be
-          prepended to the current conditions text
-        - fixed bug that occurred on partial packet stations that occasionally
-          omit outTemp from packets/records
-        - changed behaviour for calculating derived obs. If any one of the
-          pre-requisite obs are missing then the derived obs is not calculated
-          and not added to the packet/record. If all of the pre-requisite obs
-          exist but one or more is None then the derived obs is set to None. If
-          all pre-requisite obs exist and are non-None then the derived obs is
-          calculated and added to the packet/record as normal.
-        - simplified WdArchive new_archive_record() method
-        - renamed from weewxwd3.py to wd.py in line with simplified file naming
-          of WeeWX-WD files
-Previous Bitbucket revision history
-    31 March 2017       v1.0.3
-        - no change, version number change only
-    14 December 2016    v1.0.2
-        - no change, version number change only
-    30 November 2016    v1.0.1
-        - now uses humidex and appTemp formulae from weewx.wxformulas
-        - WeeWX-WD db management functions moved to wd_database utility
-        - implemented syslog wrapper functions
-        - minor reformatting
-        - replaced calls to superseded DBBinder.get_database method with
-          DBBinder.get_manager method
-        - removed database management utility functions and placed in new
-          wd_database utility
-    10 January 2015     v1.0.0
-        - rewritten for WeeWX v3.0
-        - uses separate database for WeeWX-WD specific data, no longer
-          recycles existing WeeWX database fields
-        - added __main__ to allow command line execution of a number of db
-          management actions
-        - removed --debug option from main()
-        - added --create_archive option to main() to create the weewxwd
-          database
-        - split --backfill_daily into separate --drop_daily and
-          --backfill_daily options
-        - added 'user.' to all WeeWX-WD imports
-    18 September 2014   v0.9.4 (never released)
-        - added GNU license text
-    18 May 2014         v0.9.2
-        - removed code that set windDir/windGustDir to 0 if windDir/windGustDir
-          were None respectively
-    30 July 2013        v0.9.1
-        - revised version number to align with WeeWX-WD version numbering
-    20 July 2013        v0.1
-        - initial implementation
+
+    xx xxxxx 2021       v0.1.0
+        - initial release
 """
 
 # python imports
@@ -162,7 +84,7 @@ except ImportError:
     from weeutil.weeutil import log_traceback
 
     def logmsg(level, msg):
-        syslog.syslog(level, 'wd: %s' % msg)
+        syslog.syslog(level, 'ws: %s' % msg)
 
     def logdbg(msg):
         logmsg(syslog.LOG_DEBUG, msg)
@@ -186,7 +108,7 @@ except ImportError:
     def log_traceback_info(prefix=''):
         log_traceback(prefix=prefix, loglevel=syslog.LOG_INFO)
 
-WEEWXWD_VERSION = '2.1.3'
+WS_VERSION = '0.1.0'
 
 # Default radiation threshold value used for calculating sunshine
 DEFAULT_SUNSHINE_THRESHOLD = 120
@@ -432,25 +354,25 @@ class MissingFile(IOError):
 
 
 # ==============================================================================
-#                              Class WdWXCalculate
+#                              Class WsWXCalculate
 # ==============================================================================
 
 
-class WdWXCalculate(weewx.engine.StdService):
-    """Service to calculate WeeWX-WD specific observations."""
+class WsWXCalculate(weewx.engine.StdService):
+    """Service to calculate WeeWX-Saratoga specific observations."""
 
     def __init__(self, engine, config_dict):
         # initialise our superclass
-        super(WdWXCalculate, self).__init__(engine, config_dict)
+        super(WsWXCalculate, self).__init__(engine, config_dict)
 
         # determine the radiation threshold value for calculating sunshine, if
         # it is missing use a suitable default
-        if 'WeewxWD' in config_dict:
-            self.sunshine_threshold = config_dict['WeewxWD'].get('sunshine_threshold',
-                                                                 DEFAULT_SUNSHINE_THRESHOLD)
+        if 'WeewxSaratoga' in config_dict:
+            self.sunshine_threshold = config_dict['WeewxSaratoga'].get('sunshine_threshold',
+                                                                       DEFAULT_SUNSHINE_THRESHOLD)
         else:
             self.sunshine_threshold  = DEFAULT_SUNSHINE_THRESHOLD
-        loginf("WdWXCalculate sunshine threshold: %s" % self.sunshine_threshold)
+        loginf("WsWXCalculate sunshine threshold: %s" % self.sunshine_threshold)
 
         # bind our self to new loop packet and new archive record events
         self.bind(weewx.NEW_LOOP_PACKET, self.new_loop_packet)
@@ -467,7 +389,7 @@ class WdWXCalculate(weewx.engine.StdService):
 
     @staticmethod
     def new_archive_record(event):
-        """Add any WeeWX-WD derived fields to the archive record."""
+        """Add any WeeWX-Saratoga derived fields to the archive record."""
 
         _x = dict()
         if 'outTemp' in event.record:
@@ -478,25 +400,25 @@ class WdWXCalculate(weewx.engine.StdService):
 
 
 # ==============================================================================
-#                                Class WdArchive
+#                                Class WsArchive
 # ==============================================================================
 
 
-class WdArchive(weewx.engine.StdService):
-    """Service to store Weewx-WD specific archive data."""
+class WsArchive(weewx.engine.StdService):
+    """Service to store Weewx-Saratoga specific archive data."""
 
     def __init__(self, engine, config_dict):
         # initialise our superclass
-        super(WdArchive, self).__init__(engine, config_dict)
+        super(WsArchive, self).__init__(engine, config_dict)
 
-        # Extract our binding from the WeeWX-WD section of the config file. If
+        # Extract our binding from the WeeWX-Saratoga section of the config file. If
         # it's missing, fill with a default.
         if 'WeewxSaratoga' in config_dict:
             self.data_binding = config_dict['WeewxSaratoga'].get('data_binding',
-                                                                 'wd_binding')
+                                                                 'ws_binding')
         else:
-            self.data_binding = 'wd_binding'
-        loginf("WdArchive will use data binding %s" % self.data_binding)
+            self.data_binding = 'ws_binding'
+        loginf("WsArchive will use data binding %s" % self.data_binding)
 
         # extract the WeeWX binding for use when we check the need for backfill
         # from the WeeWX archive
@@ -510,8 +432,6 @@ class WdArchive(weewx.engine.StdService):
         self.setup_database()
 
         # set the unit groups for our obs
-        obs_group_dict["humidex"] = "group_temperature"
-        obs_group_dict["appTemp"] = "group_temperature"
         obs_group_dict["outTempDay"] = "group_temperature"
         obs_group_dict["outTempNight"] = "group_temperature"
         obs_group_dict["sunshine"] = "group_elapsed"
@@ -520,10 +440,10 @@ class WdArchive(weewx.engine.StdService):
         self.bind(weewx.NEW_ARCHIVE_RECORD, self.new_archive_record)
 
     def new_archive_record(self, event):
-        """Save the WeeWX-WD archive record.
+        """Save the WeeWX-Saratoga archive record.
 
-           Use our db manager's addRecord method to save the relevant WeeWX-WD
-           fields to the WeeWX-WD archive.
+           Use our db manager's addRecord method to save the relevant
+           WeeWX-Saratoga fields to the WeeWX-Saratoga archive.
         """
 
         # get our db manager
@@ -532,7 +452,7 @@ class WdArchive(weewx.engine.StdService):
         dbmanager.addRecord(event.record)
 
     def setup_database(self):
-        """Setup the WeeWX-WD database"""
+        """Setup the WeeWX-Saratoga database"""
 
         # create the database if it doesn't exist and a db manager for the
         # opened database
@@ -548,7 +468,7 @@ class WdArchive(weewx.engine.StdService):
         dbmanager_wx = self.engine.db_binder.get_manager(self.data_binding_wx,
                                                          initialize=False)
 
-        # then backfill the WeeWX-WD daily summaries
+        # then backfill the WeeWX-Saratoga daily summaries
         loginf("Starting backfill of daily summaries")
         t1 = time.time()
         nrecs, ndays = dbmanager_wx.backfill_day_summary()
@@ -562,41 +482,41 @@ class WdArchive(weewx.engine.StdService):
 
 
 # ==============================================================================
-#                              Class WdSuppArchive
+#                              Class WsSuppArchive
 # ==============================================================================
 
 
-class WdSuppArchive(weewx.engine.StdService):
-    """Service to archive WeeWX-WD supplementary data.
+class WsSuppArchive(weewx.engine.StdService):
+    """Service to archive WeeWX-Saratoga supplementary data.
 
 
         Collects and archives WU API sourced data, Davis console forecast/storm 
-        data and theoretical max solar radiation data in the WeeWX-WD supp
+        data and theoretical max solar radiation data in the WeeWX-Saratoga supp
         database. Data is only kept for a limited time before being dropped.
     """
 
     def __init__(self, engine, config_dict):
         # initialise our superclass
-        super(WdSuppArchive, self).__init__(engine, config_dict)
+        super(WsSuppArchive, self).__init__(engine, config_dict)
 
-        # Initialisation is 2 part; 1 part for wdsupp db/loop data, 2nd part for
-        # WU API calls. We are only going to invoke our self if we have the
-        # necessary config data available in weewx.conf for 1 or both parts. If
-        # any essential config data is missing/not set then give a short log
-        # message and defer.
+        # Initialisation is two part; one part for wssupp db/loop data, 2nd
+        # part for WU API calls. We are only going to invoke our self if we
+        # have the necessary config data available in weewx.conf for one or
+        # both parts. If any essential config data is missing/not set then make
+        # a short log entry and defer.
 
         if 'WeewxSaratoga' in config_dict:
             # we have a [WeewxSaratoga] stanza
             if 'Supplementary' in config_dict['WeewxSaratoga']:
                 # we have a [[Supplementary]] stanza so we can initialise
-                # wdsupp db
+                # wssupp db
                 _supp_dict = config_dict['WeewxSaratoga']['Supplementary']
                 
                 # setup for archiving of supp data
                 # first, get our binding, if it's missing use a default
                 self.binding = _supp_dict.get('data_binding',
-                                              'wdsupp_binding')
-                loginf("WdSuppArchive will use data binding '%s'" % self.binding)
+                                              'ws_supp_binding')
+                loginf("WsSuppArchive will use data binding '%s'" % self.binding)
                 # how long to keep records in our db (default 8 days)
                 self.max_age = _supp_dict.get('max_age', 691200)
                 self.max_age = toint(self.max_age, 691200)
@@ -925,7 +845,7 @@ class ThreadedSource(threading.Thread):
 
         run.            Thread entry point, controls data fetching, parsing and
                         dispatch. Monitors the control queue.
-        get_raw_data.       Obtain the raw data. This method must be written for
+        get_raw_data.   Obtain the raw data. This method must be written for
                         each child class.
         parse_data.     Parse the raw data and return the final  format data.
                         This method must be written for each child class.
@@ -939,7 +859,7 @@ class ThreadedSource(threading.Thread):
         # setup a some thread things
         self.setDaemon(True)
         # thread name needs to be set in the child class __init__() eg:
-        #   self.setName('WdWuThread')
+        #   self.setName('WsWuThread')
 
         # save the queues we will use
         self.control_queue = control_queue
@@ -993,7 +913,7 @@ class ThreadedSource(threading.Thread):
             # Some unknown exception occurred. This is probably a serious
             # problem. Exit with some notification.
             logcri("Unexpected exception of type %s" % (type(e),))
-            log_traceback_critical(prefix='wdthreadedsource: **** ')
+            log_traceback_critical(prefix='wsthreadedsource: **** ')
             logcri("Thread exiting. Reason: %s" % (e,))
 
     def setup(self):
@@ -1204,7 +1124,7 @@ class WuSource(ThreadedSource):
                                        engine, source_config_dict)
 
         # set thread name
-        self.setName('WdWuThread')
+        self.setName('WsWuThread')
 
         # WuSource debug level
         self.debug = to_int(source_config_dict.get('debug', 0))
@@ -1712,7 +1632,7 @@ class DarkSkySource(ThreadedSource):
                                             engine, source_config_dict)
 
         # set thread name
-        self.setName('WdDarkSkyThread')
+        self.setName('WsDarkSkyThread')
 
         # DarkSkySource debug level
         self.debug = to_int(source_config_dict.get('debug', 0))
@@ -1826,7 +1746,7 @@ class DarkSkySource(ThreadedSource):
                     # log it and continue.
                     _response = None
                     loginf("Unexpected exception of type %s" % (type(e),))
-                    log_traceback_info(prefix='wddarkskysource: **** ')
+                    log_traceback_info(prefix='wsdarkskysource: **** ')
                     loginf("Unexpected exception of type %s" % (type(e),))
                     loginf("Dark Sky API call failed")
                 # if we got something back then reset our last call timestamp
@@ -2150,7 +2070,7 @@ class FileSource(ThreadedSource):
                                          source_config_dict)
 
         # set thread name
-        self.setName('WdFileThread')
+        self.setName('WsFileThread')
 
         # FileSource debug level
         self.debug = to_int(source_config_dict.get('debug', 0))
@@ -2222,7 +2142,7 @@ class FileSource(ThreadedSource):
                 # None, log it and continue.
                 _data = None
                 loginf("Unexpected exception of type %s" % (type(e),))
-                log_traceback_info(prefix='wdfilesource: **** ')
+                log_traceback_info(prefix='wsfilesource: **** ')
                 loginf("Unexpected exception of type %s" % (type(e),))
                 loginf("Read of file '%s' failed" % self.file)
             # we got something so reset our last read timestamp
@@ -2285,7 +2205,7 @@ class FileSource(ThreadedSource):
 # ==============================================================================
 
 
-def toint(string, default):
+def toint(string, default=None):
     """Convert a string to an integer whilst handling None and a default.
 
         If string cannot be converted to an integer default is returned.
@@ -2372,7 +2292,7 @@ def calc_sunshine(data_dict, threshold=120):
 def check_enable(cfg_dict, service, *args):
 
     try:
-        wdsupp_dict = accumulateLeaves(cfg_dict[service], max_level=1)
+        wssupp_dict = accumulateLeaves(cfg_dict[service], max_level=1)
     except KeyError:
         if weewx.debug >= 2:
             logdbg("%s: No config info. Skipped." % service)
@@ -2382,14 +2302,14 @@ def check_enable(cfg_dict, service, *args):
     # been set to 'replace_me'
     try:
         for option in args:
-            if wdsupp_dict[option] == 'replace_me':
+            if wssupp_dict[option] == 'replace_me':
                 raise KeyError(option)
     except KeyError as e:
         if weewx.debug >= 2:
             logdbg("%s: Missing option %s" % (service, e))
         return None
 
-    return wdsupp_dict
+    return wssupp_dict
 
 # ============================================================================
 #                            class SimpleWuSource
@@ -2543,17 +2463,17 @@ class SimpleEngine(object):
 Define a main entry point for basic testing without the WeeWX engine and 
 services overhead. To invoke this module without WeeWX:
 
-    $ PYTHONPATH=/home/weewx/bin python /home/weewx/bin/user/wd.py --option
+    $ PYTHONPATH=/home/weewx/bin python /home/weewx/bin/user/ws.py --option
 
     where option is one of the following options:
         --help            - display command line help
         --version         - display version
         --get-wu-data     - display WU API data
-        --get-wu-config   - display WU API config parameters to be used 
+        --get-wu-config   - display WU API config parameters
         --get-ds-data     - display Dark Sky API data
-        --get-ds-config   - display Dark Sky API config parameters to be used 
-        --get-file-data   - display Dark Sky API data
-        --get-file-config - display Dark Sky API config parameters to be used 
+        --get-ds-config   - display Dark Sky API config parameters 
+        --get-file-data   - display data from a file source
+        --get-file-config - display file source config parameters 
 """
 
 if __name__ == '__main__':
@@ -2568,7 +2488,7 @@ if __name__ == '__main__':
 
     usage = """PYTHONPATH=/home/weewx/bin python /home/weewx/bin/user/%prog [--option]"""
 
-    syslog.openlog('weewxwd', syslog.LOG_PID | syslog.LOG_CONS)
+    syslog.openlog('weewxsaratoga', syslog.LOG_PID | syslog.LOG_CONS)
     syslog.setlogmask(syslog.LOG_UPTO(syslog.LOG_DEBUG))
     parser = optparse.OptionParser(usage=usage)
     parser.add_option('--config', dest='config_path', type=str,
@@ -2597,18 +2517,18 @@ if __name__ == '__main__':
     (options, args) = parser.parse_args()
 
     if options.version:
-        print("weewxwd version %s" % WEEWXWD_VERSION)
+        print("weewxsaratoga version %s" % WS_VERSION)
         exit(0)
 
     # get config_dict to use
     config_path, config_dict = weecfg.read_config(options.config_path, args)
     print("Using configuration file %s" % config_path)
 
-    # get a WeeWX-WD config dict
-    weewxwd_dict = config_dict.get('Weewx-WD', None)
+    # get a WeeWX-Saratoga config dict
+    ws_dict = config_dict.get('WeewxSaratoga')
     
     # get a WuData object
-    if weewxwd_dict is not None:
+    if ws_dict is not None:
         # get result and control queues for our source
         result_queue = queue.Queue()
         control_queue = queue.Queue()
@@ -2616,7 +2536,7 @@ if __name__ == '__main__':
             # get a simplified engine to feed to our source object
             _engine = SimpleEngine(config_dict)
             # get the WU source config dict
-            source_config_dict = weewxwd_dict['Supplementary'].get('WU')
+            source_config_dict = ws_dict['Supplementary'].get('WU')
             # now get a modified WU source object
             source = SimpleWuSource(control_queue,
                                     result_queue,
@@ -2626,7 +2546,7 @@ if __name__ == '__main__':
             # get a simplified engine to feed to our source object
             _engine = SimpleEngine(config_dict)
             # get the WU source config dict
-            source_config_dict = weewxwd_dict['Supplementary'].get('DS')
+            source_config_dict = ws_dict['Supplementary'].get('DS')
             # now get a modified WU source object
             source = SimpleDarkSkySource(control_queue,
                                          result_queue,
@@ -2636,7 +2556,7 @@ if __name__ == '__main__':
             # get a simplified engine to feed to our source object
             _engine = SimpleEngine(config_dict)
             # get the WU source config dict
-            source_config_dict = weewxwd_dict['Supplementary'].get('File')
+            source_config_dict = ws_dict['Supplementary'].get('File')
             # now get a modified WU source object
             source = SimpleFileSource(control_queue,
                                       result_queue,
@@ -2645,7 +2565,7 @@ if __name__ == '__main__':
         # finally start the simplified source object
         source.start()
     else:
-        exit_str = "'Weewx-WD' stanza not found in config file '%s'. Exiting." % config_path
+        exit_str = "'WeewxSaratoga' stanza not found in config file '%s'. Exiting." % config_path
         sys.exit(exit_str)
     
     if options.wu_data:
