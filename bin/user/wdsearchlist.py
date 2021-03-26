@@ -1510,7 +1510,7 @@ class WdTaggedStats(weewx.cheetahgenerator.SearchList):
 
         # Get a WDTaggedStats structure. This allows constructs such as
         # WDstats.monthdaily.outTemp.max
-        _stats = user.wdtaggedstats.WdTimeBinder(db_lookup,
+        _stats = user.wdtaggedstats.WsTimeBinder(db_lookup,
                                                  timespan.stop,
                                                  formatter=self.generator.formatter,
                                                  converter=self.generator.converter)
@@ -1596,7 +1596,7 @@ class WdTaggedArchiveStats(weewx.cheetahgenerator.SearchList):
 
         # Get a WDTaggedStats structure. This allows constructs such as
         # WDstats.minute.outTemp.max
-        _stats = user.wdtaggedstats.WdArchiveTimeBinder(db_lookup,
+        _stats = user.wdtaggedstats.WsArchiveTimeBinder(db_lookup,
                                                         timespan.stop,
                                                         formatter=self.generator.formatter,
                                                         converter=self.generator.converter)

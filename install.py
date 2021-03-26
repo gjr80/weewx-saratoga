@@ -150,7 +150,7 @@ class WSInstaller(ExtensionInstaller):
                                  'bin/user/wsastro.py',
                                  'bin/user/wsschema.py',
                                  'bin/user/wdsearchlist.py',
-                                 'bin/user/wdtaggedstats.py',
+                                 'bin/user/wstaggedstats.py',
                                  'bin/user/ws.py']),
                    ('skins/Clientraw', ['skins/Clientraw/clientraw.txt.tmpl',
                                         'skins/Clientraw/clientrawdaily.txt.tmpl',

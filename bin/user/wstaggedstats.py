@@ -1,7 +1,7 @@
 """
-wdtaggedstats.py
+wstaggedstats.py
 
-Specialised timespan stats for WeeWX-WD
+Specialised timespan stats for WeeWX-Saratoga
 
 This program is free software; you can redistribute it and/or modify it under
 the terms of the GNU General Public License as published by the Free Software
@@ -12,44 +12,11 @@ This program is distributed in the hope that it will be useful, but WITHOUT ANY
 WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
 PARTICULAR PURPOSE.  See the GNU General Public License for more details.
 
-Version: 2.1.3                                          Date: 15 February 2021
+Version: 0.1.0                                          Date: xx xxxxx 2021
 
 Revision History
-    15 February 2021    v2.1.3
-        - no change, version number change only
-    17 November 2020    v2.1.2
-        - no change, version number change only
-    11 November 2020    v2.1.1
-        - no change, version number change only
-    1 November 2020     v2.1.0
-        - no change, version number change only
-    30 August 2020      v2.0.1
-        - no change, version number change only
-    20 August 2020      v2.0.0
-      - minor formatting/comment changes
-      - WeeWX4.0 python 2/3 compatible
-
-Previous bitbucket revision history
-    31 March 2017       v1.0.3
-        - no change, version number change only
-    14 December 2016    v1.0.2
-        - no change, version number change only
-    30 November 2016    v1.0.1
-        - removed unused imports
-    10 January 2015     v1.0.0
-        - rewritten for Weewx v3.0.0
-    xx September 2014   v0.9.4 (never released)
-        - fixed error in timespan length for weekdaily property in class
-          WDTaggedStats
-        - reworked sumQuery def in WDAStatsTypeHelper to fix algorithmic error
-          in how 'minute' results are calculated
-    7 November 2013     v0.9
-        - revised version number to align with WeeWX-WD version numbering
-        - corrected minor logic errors
-        - strengthened code with try..except statements to handle missing
-          historical data
-    20 July 2013        v0.1
-        - initial implementation
+    xx xxxxx 2021       v0.1.0
+        -   initial release
 # TODO. Change any intervals in seconds of multiples of 1 day to a timedelta
 """
 
@@ -62,19 +29,18 @@ import weewx
 import weewx.units
 import weeutil.weeutil
 
-WEEWXWD_TAGGED_STATS_VERSION = '2.1.3'
+WS_TAGGED_STATS_VERSION = '0.1.0'
 
 
 # ==============================================================================
-#                              Class WdTimeBinder
+#                              Class WsTimeBinder
 # ==============================================================================
 
-
-class WdTimeBinder(object):
+class WsTimeBinder(object):
     """Title?
 
         This class allows custom tagged stats drawn from the archive database
-        in support of the Weewx-WD templates. This class along with the
+        in support of the WeeWX-Saratoga templates. This class along with the
         associated WDTimeSpanStats and WDStatsTypeHelper classes support the
         following custom tagged stats:
 
@@ -82,7 +48,7 @@ class WdTimeBinder(object):
         -   $monthdaily.xxxxxx.zzzzzz - month of stats aggregated by day
         -   $yearmonthy.xxxxxx.zzzzzz - year of stats aggregated by month
 
-        where xxxxxx is a Weewx observation eg outTemp, wind (stats database),
+        where xxxxxx is a WeeWX observation eg outTemp, wind (stats database),
         windSpeed (archive database) etc recorded in the relevant database.
         Note that WDATaggedStats uses the archive database and WDTaggedStats
         uses the stats database.
@@ -94,7 +60,7 @@ class WdTimeBinder(object):
         -   sumQuery - returns sum over the aggregate period
         -   vecdirQuery - returns vector direction over the aggregate period
 
-        In the Weewx-WD templates these tagged stats
+        In the WeeWX-Saratoga templates these tagged stats
         (eg $hour.outTemp.maxQuery) result in a list which is assigned to a
         variable and then each item in the list is reference using its
         index eg variable_name[0]
@@ -111,7 +77,7 @@ class WdTimeBinder(object):
                  formatter=weewx.units.Formatter(),
                  converter=weewx.units.Converter(),
                  **option_dict):
-        """Initialize an instance of WdDatabaseBinder.
+        """Initialize an instance of WsTimeBinder.
 
         db_lookup: A function with call signature db_lookup(data_binding),
                    which returns a database manager and where data_binding is
@@ -140,14 +106,14 @@ class WdTimeBinder(object):
     # what follows is the list of time period attributes
     @property
     def weekdaily(self, data_binding=None):
-        return WdTimespanBinder((self.report_time - 518400, self.report_time),
+        return WsTimespanBinder((self.report_time - 518400, self.report_time),
                                 weeutil.weeutil.genDaySpans, self.db_lookup,
                                 data_binding, 'weekdaily',
                                 self.formatter, self.converter, **self.option_dict)
 
     @property
     def monthdaily(self, data_binding=None):
-        return WdTimespanBinder((self.report_time - 2678400, self.report_time),
+        return WsTimespanBinder((self.report_time - 2678400, self.report_time),
                                 weeutil.weeutil.genDaySpans, self.db_lookup,
                                 data_binding, 'monthdaily',
                                 self.formatter, self.converter, **self.option_dict)
@@ -157,17 +123,16 @@ class WdTimeBinder(object):
         _now_dt = datetime.datetime.fromtimestamp(self.report_time)
         _start_dt = datetime.date(day=1, month=_now_dt.month, year=_now_dt.year-1)
         _start_ts = time.mktime(_start_dt.timetuple())
-        return WdTimespanBinder((_start_ts, self.report_time), weeutil.weeutil.genMonthSpans,
+        return WsTimespanBinder((_start_ts, self.report_time), weeutil.weeutil.genMonthSpans,
                                 self.db_lookup, data_binding, 'yearmonthly',
                                 self.formatter, self.converter, **self.option_dict)
 
 
 # ==============================================================================
-#                            Class WdTimespanBinder
+#                            Class WsTimespanBinder
 # ==============================================================================
 
-
-class WdTimespanBinder(object):
+class WsTimespanBinder(object):
     """Nearly stateless class that holds a binding to a stats database and a timespan.
 
     This class is the next class in the chain of helper classes.
@@ -181,7 +146,7 @@ class WdTimespanBinder(object):
     def __init__(self, timespan, genspans, db_lookup, data_binding=None,
                  context='current', formatter=weewx.units.Formatter(),
                  converter=weewx.units.Converter(), **option_dict):
-        """Initialize an instance of WDTimeSpanStats.
+        """Initialize an instance of WsTimespanBinder.
 
         timespan: An instance of weeutil.Timespan with the time span
         over which the statistics are to be calculated.
@@ -219,7 +184,8 @@ class WdTimespanBinder(object):
 
         obs_type: An observation type, such as 'outTemp', or 'outHumidity'
 
-        returns: An instance of class WdObservationBinder."""
+        returns: An instance of class WsObservationBinder.
+        """
 
         # The following is so the Python version of Cheetah's NameMapper doesn't think
         # I'm a dictionary:
@@ -227,17 +193,17 @@ class WdTimespanBinder(object):
             raise AttributeError
 
         # Return the helper class, bound to the type:
-        return WdObservationBinder(obs_type, self.timespan, self.db_lookup,
+        return WsObservationBinder(obs_type, self.timespan, self.db_lookup,
                                    self.data_binding, self.context,
                                    self.genspans, self.formatter,
                                    self.converter, **self.option_dict)
 
+
 # ==============================================================================
-#                           Class WdObservationBinder
+#                           Class WsObservationBinder
 # ==============================================================================
 
-
-class WdObservationBinder(object):
+class WsObservationBinder(object):
     """This is the final class in the chain of helper classes. It binds the
     statistical database, a time period, and a statistical type all together.
 
@@ -256,7 +222,7 @@ class WdObservationBinder(object):
     def __init__(self, obs_type, timespan, db_lookup, data_binding, context,
                  genspans, formatter=weewx.units.Formatter(),
                  converter=weewx.units.Converter(), **option_dict):
-        """ Initialize an instance of WdObservationBinder
+        """ Initialize an instance of WsObservationBinder
 
         obs_type: A string with the stats type (e.g., 'outTemp') for which the
         query is to be done.
@@ -365,16 +331,15 @@ class WdObservationBinder(object):
 
 
 # ==============================================================================
-#                           Class WdArchiveTimeBinder
+#                           Class WsArchiveTimeBinder
 # ==============================================================================
 
-
-class WdArchiveTimeBinder(object):
+class WsArchiveTimeBinder(object):
     """Title?
 
         This class allows custom tagged stats drawn from the archive database
-        in support of the Weewx-WD templates. This class along with the
-        associated WdArchiveTimespanBinder and WdArchiveObservationBinder
+        in support of the WeeWX-Saratoga templates. This class along with the
+        associated WsArchiveTimespanBinder and WsArchiveObservationBinder
         classes support the following custom tagged stats:
 
         -   $minute.xxxxxx.zzzzzz - hour of stats aggregated by minute
@@ -382,7 +347,7 @@ class WdArchiveTimeBinder(object):
         -   $hour.xxxxxx.zzzzzz - day of stats aggregated by hour
         -   $sixhour.xxxxxx.zzzzzz - week of stats aggegated by 6 hours
 
-        where xxxxxx is a Weewx observation eg outTemp, wind (stats database),
+        where xxxxxx is a WeeWX observation eg outTemp, wind (stats database),
         windSpeed (archive database) etc recorded in the relevant database.
         Note that WDATaggedStats uses the archive database and WDTaggedStats
         uses the stats database.
@@ -394,7 +359,7 @@ class WdArchiveTimeBinder(object):
         -   sumQuery - returns sum over the aggregate period
         -   datetimeQuery - returns datetime over the aggregate period
 
-        In the Weewx-WD templates these tagged stats
+        In the WeeWX-Saratoga templates these tagged stats
         (eg $hour.outTemp.maxQuery) result in a list which is assigned to a
         variable and then each item in the list is reference using its index
         eg variable_name[0]
@@ -404,7 +369,7 @@ class WdArchiveTimeBinder(object):
 
         When a time period is given as an attribute to it, such as obj.hour,
         the next item in the chain is returned, in this case an instance of
-        WdArchiveTimespanBinder, which binds the database with the time period.
+        WsArchiveTimespanBinder, which binds the database with the time period.
     """
 
     def __init__(self, db_lookup, report_time,
@@ -438,39 +403,38 @@ class WdArchiveTimeBinder(object):
     # what follows is the list of time period attributes
     @property
     def minute(self, data_binding=None):
-        return WdArchiveTimespanBinder((self.report_time - 3600, self.report_time),
+        return WsArchiveTimespanBinder((self.report_time - 3600, self.report_time),
                                        60, self.db_lookup, data_binding,
                                        'minute', self.formatter, self.converter,
                                        **self.option_dict)
 
     @property
     def fifteenminute(self, data_binding=None):
-        return WdArchiveTimespanBinder((self.report_time - 86400, self.report_time),
+        return WsArchiveTimespanBinder((self.report_time - 86400, self.report_time),
                                        900, self.db_lookup, data_binding,
                                        'fifteenminute', self.formatter,
                                        self.converter, **self.option_dict)
 
     @property
     def onehour(self, data_binding=None):
-        return WdArchiveTimespanBinder((self.report_time - 86400, self.report_time),
+        return WsArchiveTimespanBinder((self.report_time - 86400, self.report_time),
                                        3600, self.db_lookup, data_binding,
                                        'hour', self.formatter, self.converter,
                                        **self.option_dict)
 
     @property
     def sixhour(self, data_binding=None):
-        return WdArchiveTimespanBinder((self.report_time - 604800, self.report_time),
+        return WsArchiveTimespanBinder((self.report_time - 604800, self.report_time),
                                        21600, self.db_lookup, data_binding,
                                        'sixhour', self.formatter,
                                        self.converter, **self.option_dict)
 
 
 # ==============================================================================
-#                         Class WdArchiveTimespanBinder
+#                         Class WsArchiveTimespanBinder
 # ==============================================================================
 
-
-class WdArchiveTimespanBinder(object):
+class WsArchiveTimespanBinder(object):
     """Title?
 
         Nearly stateless class that holds a binding to a stats database and a
@@ -494,7 +458,7 @@ class WdArchiveTimespanBinder(object):
     def __init__(self, timespan, agg_intvl, db_lookup, data_binding=None,
                  context='hour', formatter=weewx.units.Formatter(),
                  converter=weewx.units.Converter(), **option_dict):
-        """Initialize an instance of WdArchiveTimespanBinder.
+        """Initialize an instance of WsArchiveTimespanBinder.
 
             timespan: An instance of weeutil.Timespan with the time span
                       over which the statistics are to be calculated.
@@ -532,7 +496,7 @@ class WdArchiveTimespanBinder(object):
 
         obs_type: A observation type, such as 'outTemp', or 'outHumidity'
 
-        returns: An instance of class WdArchiveObservationBinder."""
+        returns: An instance of class WsArchiveObservationBinder."""
 
         # the following is so the Python version of Cheetah's NameMapper
         # doesn't think I'm a dictionary
@@ -540,7 +504,7 @@ class WdArchiveTimespanBinder(object):
             raise AttributeError
 
         # return the helper class, bound to the type
-        return WdArchiveObservationBinder(obs_type, self.timespan,
+        return WsArchiveObservationBinder(obs_type, self.timespan,
                                           self.agg_intvl, self.db_lookup,
                                           self.data_binding, self.context,
                                           self.formatter, self.converter,
@@ -548,11 +512,10 @@ class WdArchiveTimespanBinder(object):
 
 
 # ==============================================================================
-#                        Class WdArchiveObservationBinder
+#                        Class WsArchiveObservationBinder
 # ==============================================================================
 
-
-class WdArchiveObservationBinder(object):
+class WsArchiveObservationBinder(object):
     """Title?
 
         This is the final class in the chain of helper classes. It binds the
@@ -566,7 +529,7 @@ class WdArchiveObservationBinder(object):
         observation over the aggregation period.
 
         Whilst the aggregation types are similar to those in the
-        WdArchiveObservationBinder class since we are seeking a list of
+        WsArchiveObservationBinder class since we are seeking a list of
         aggregates over a number of periods the aggregate types are 'maxQuery',
         'minQuery' etc to distinguish them from the standard 'max, 'min' etc
         aggregates.
@@ -575,7 +538,7 @@ class WdArchiveObservationBinder(object):
     def __init__(self, obs_type, timespan, agg_intvl, db_lookup, data_binding,
                  context, formatter=weewx.units.Formatter(),
                  converter=weewx.units.Converter(), **option_dict):
-        """ Initialize an instance of WdArchiveObservationBinder.
+        """ Initialize an instance of WsArchiveObservationBinder.
 
             In cases where the aggregate interval is greater than the archive
             interval it is not possible to calculate accurate stats over the
@@ -617,8 +580,8 @@ class WdArchiveObservationBinder(object):
         self.converter = converter       # our converter
         self.option_dict = option_dict   # not used?
         db_manager = self.db_lookup()
-        _current_rec = db_manager.getRecord(timespan[1]) # our current record
-        self.interval = _current_rec['interval']*60 # our record interval in seconds
+        _current_rec = db_manager.getRecord(timespan[1])  # our current record
+        self.interval = _current_rec['interval']*60       # our record interval in seconds
 
     def maxQuery(self):
         final = []
