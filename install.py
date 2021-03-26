@@ -96,16 +96,16 @@ class WSInstaller(ExtensionInstaller):
                 },
                 'DataBindings': {
                     'ws_binding': {
-                        'database': 'weewxwd_sqlite',
+                        'database': 'ws_sqlite',
                         'table_name': 'archive',
                         'manager': 'weewx.manager.DaySummaryManager',
-                        'schema': 'user.wdschema.ws_schema'
+                        'schema': 'user.wsschema.ws_schema'
                     },
                     'ws_supp_binding': {
-                        'database': 'wd_supp_sqlite',
+                        'database': 'ws_supp_sqlite',
                         'table_name': 'supp',
                         'manager': 'weewx.manager.Manager',
-                        'schema': 'user.wdschema.ws_supp_schema'
+                        'schema': 'user.wsschema.ws_supp_schema'
                     }
                 },
                 'Databases': {
@@ -149,7 +149,7 @@ class WSInstaller(ExtensionInstaller):
             files=[('bin/user', ['bin/user/stackedwindrose.py',
                                  'bin/user/wsastro.py',
                                  'bin/user/wsschema.py',
-                                 'bin/user/wdsearchlist.py',
+                                 'bin/user/wssearchlist.py',
                                  'bin/user/wstaggedstats.py',
                                  'bin/user/ws.py']),
                    ('skins/Clientraw', ['skins/Clientraw/clientraw.txt.tmpl',

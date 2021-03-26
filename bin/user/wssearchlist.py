@@ -1,7 +1,7 @@
 """
-wdsearchlist.py
+wssearchlist.py
 
-Search List Extensions support for WeeWX-WD.
+Search List Extension support for WeeWX-Saratoga.
 
 This program is free software; you can redistribute it and/or modify it under
 the terms of the GNU General Public License as published by the Free Software
@@ -12,67 +12,11 @@ This program is distributed in the hope that it will be useful, but WITHOUT ANY
 WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
 PARTICULAR PURPOSE.  See the GNU General Public License for more details.
 
-Version: 2.1.3                                          Date: 15 February 2021
+Version: 0.1.0                                          Date: xx xxxxx 2021
 
 Revision History
-    15 February 2021    v2.1.3
-        - no change, version number change only
-    17 November 2020    v2.1.2
-        - no change, version number change only
-    11 November 2020    v2.1.1
-        - no change, version number change only
-    1 November 2020     v2.1.0
-        - logging is now WeeWX 3 and 4 compatible
-    30 August 2020      v2.0.1
-        - no change, version number change only
-    20 August 2020      v2.0.0
-        - WeeWX 3.2+/4.x python2/3 compatible
-        - simplified logic used in WdHourRainTags calculation
-        - simplified logic used in WdGdDays calculations
-        - fixed typo where wet bulb was returned as feels_like temperature
-        - Easter is now calculated on report time not system time
-
-Previous Bitbucket revision history
-    31 March 2017       v1.0.3
-        - fix bug in WdMonthStats SLE that caused problems with monthRainMax_vh
-          for archives with small amounts (partial months) of data
-        - removed two lines of old commented out code from WdMonthStats SLE
-    14 December 2016    v1.0.2
-        - no change, version number change only
-    30 November 2016    v1.0.1
-        - revised for WeeWX v3.4.0
-        - implemented a second debug level (ie debug = 2)
-        - minor reformatting
-        - added heatColorWord, feelsLike and density tags to WdSundryTags SLE
-        - added day_windrun, yest_windrun, week_windrun, seven_day_windrun,
-          month_windrun, year_windrun tags and alltime_windrun tags to
-          WdWindRunTags SLE
-    10 January 2015     v1.0.0
-        - rewritten for WeeWX v3.0.0
-        - added WdManualAverages SLE
-        - fixed issues with WdRainThisDay SLE affecting databases with limited
-          historical data
-        - fixed bug in WdTimeSpanTags that was causing unit issues with
-          $alltime tags
-        - removed use of total_seconds() attribute in WdRainThisDay
-        - fixed error in WdHourRainTags
-        - removed redundant code in WdHourRainTags
-        - fixed errors in wdTesttagsRainAgo
-        - removed redundant wdClientrawRainAgo SLE
-    dd September 2014   v0.9.4 (never released)
-        - added execution time debug messages for all SLEs
-        - added additional tags to WdMonthStats SLE
-        - wdClientrawAgotags and wdTesttagsAgotags SLEs now use max_delta on
-          archive queries
-        - added additional tags to WdAvgWindTags SLE
-        - WdSundryTags SLE now provides current_text and current_icon from
-          current conditions text file if it exists
-        - added additional tags to WdWindRunTags SLE
-        - new SLEs WdGdDays, WdForToday, WdRainThisDay and WdRainDays
-        - added helper functions get_first_day and doygen
-        - added GNU license text
-    August 2013         v0.1
-        - initial implementation
+    xx xxxxx 2021       v0.1.0
+        -   initial release
 
 # TODO. Growing degree days, use .convert to do conversions
 # TODO. Growing degree days, can you have negative results
@@ -91,7 +35,7 @@ import time
 from datetime import date
 
 # WeeWX imports
-import user.wdtaggedstats
+import user.wstaggedstats
 import weewx
 import weewx.almanac
 import weewx.cheetahgenerator
@@ -124,7 +68,7 @@ except ImportError:
     import syslog
 
     def logmsg(level, msg):
-        syslog.syslog(level, 'wdsearchlist: %s' % msg)
+        syslog.syslog(level, 'wssearchlist: %s' % msg)
 
     def loginf(msg):
         logmsg(syslog.LOG_INFO, msg)
@@ -132,7 +76,7 @@ except ImportError:
     def logdbg(msg):
         logmsg(syslog.LOG_DEBUG, msg)
 
-WEEWXWD_SLE_VERSION = '2.1.3'
+WS_SLE_VERSION = '0.1.0'
 
 
 def get_first_day(dt, d_years=0, d_months=0):
@@ -231,33 +175,31 @@ def get_date_ago(dt, d_months=1):
 
 
 # ==============================================================================
-#                              Class WdMonthStats
+#                              Class MonthStats
 # ==============================================================================
 
-
-class WdMonthStats(weewx.cheetahgenerator.SearchList):
+class MonthStats(weewx.cheetahgenerator.SearchList):
 
     def __init__(self, generator):
         # initialise my superclass
-        super(WdMonthStats, self).__init__(generator)
+        super(MonthStats, self).__init__(generator)
 
     def get_month_avg_highs(self, timespan, db_lookup):
-        """Function to calculate alltime monthly:
-           - average rainfall
-           - record high temp
-           - record low temp
-           - average temp
+        """Function to calculate alltime monthly averages and records.
 
-           Results are calculated using daily data from stats database. Average
-           rainfall is calculated by summing rainfall over each Jan, Feb...Dec
-           then averaging these totals over the number of Jans, Febs... Decs
-           in our data. Average temp
-           Record high and low temps are max and min over all of each month.
-           Partial months at start and end of our data are ignored. Assumes
-           rest of our data is contiguous.
+        Calculates alltime monthly average rainfall, record high temp, record
+        low temp and average temp.
 
-           Returned values are lists of ValueHelpers representing results for
-           Jan, Feb thru Dec. Months that have no data are returned as None.
+        Results are calculated using daily data from the daily summary tables.
+        Average rainfall is calculated by summing rainfall over each Jan,
+        Feb...Dec then averaging these totals over the number of Jans,
+        Febs... Decs in our data. Average temp, record high and record low
+        temps are averages, max and min over all of each month. Partial months
+        at start and end of our data are ignored. Assumes the rest of the data
+        is contiguous.
+
+        Returned values are lists of ValueHelpers representing results for
+        Jan, Feb thru Dec. Months that have no data are returned as None.
         """
 
         #
@@ -731,22 +673,21 @@ class WdMonthStats(weewx.cheetahgenerator.SearchList):
 
         t2 = time.time()
         if weewx.debug >= 2:
-            logdbg("WdMonthStats SLE executed in %0.3f seconds" % (t2-t1))
+            logdbg("MonthStats SLE executed in %0.3f seconds" % (t2-t1))
 
         return [search_list]
 
 
 # ==============================================================================
-#                             class WdLastRainTags
+#                             class LastRainTags
 # ==============================================================================
 
-
-class WdLastRainTags(weewx.cheetahgenerator.SearchList):
+class LastRainTags(weewx.cheetahgenerator.SearchList):
     """SLE that returns the date and time of last rain."""
 
     def __init__(self, generator):
         # initialise our superclass
-        super(WdLastRainTags, self).__init__(generator)
+        super(LastRainTags, self).__init__(generator)
 
     def get_extension_list(self, timespan, db_lookup):
         """Returns a search list with the date and time of last rain.
@@ -798,22 +739,21 @@ class WdLastRainTags(weewx.cheetahgenerator.SearchList):
 
         t2 = time.time()
         if weewx.debug >= 2:
-            logdbg("WdLastRainTags SLE executed in %0.3f seconds" % (t2-t1))
+            logdbg("LastRainTags SLE executed in %0.3f seconds" % (t2-t1))
 
         return [search_list]
 
 
 # ==============================================================================
-#                              class WdTimeSpanTags
+#                              class TimeSpanTags
 # ==============================================================================
 
-
-class WdTimeSpanTags(weewx.cheetahgenerator.SearchList):
+class TimeSpanTags(weewx.cheetahgenerator.SearchList):
     """SLE to return various custom TimeSpanBinder based tags."""
 
     def __init__(self, generator):
         # initialise my superclass
-        super(WdTimeSpanTags, self).__init__(generator)
+        super(TimeSpanTags, self).__init__(generator)
 
     def get_extension_list(self, timespan, db_lookup):
         """Returns a search list with various custom TimespanBinder tags.
@@ -830,9 +770,9 @@ class WdTimeSpanTags(weewx.cheetahgenerator.SearchList):
                           be specified (default to None) when calling $alltime
                           eg $alltime.outTemp.max for the all time high outside
                           temp.
-                          $alltime($data_binding='wd_binding').humidex.max
+                          $alltime($data_binding='ws_binding').humidex.max
                           for the all time high humidex where humidex
-                          resides in the 'wd_binding' database.
+                          resides in the 'ws_binding' database.
 
                           Standard WeeWX unit conversion and formatting options
                           are available.
@@ -840,14 +780,14 @@ class WdTimeSpanTags(weewx.cheetahgenerator.SearchList):
 
         t1 = time.time()
 
-        class WdBinder(weewx.tags.TimeBinder):
+        class WsBinder(weewx.tags.TimeBinder):
             """Class supporting additional TimeSpan based aggregate tags."""
 
             def __init__(self, db_lookup, report_time,
                          formatter=weewx.units.Formatter(),
                          converter=weewx.units.Converter(), **option_dict):
                 # initialise my superclass
-                super(WdBinder, self).__init__(db_lookup, report_time,
+                super(WsBinder, self).__init__(db_lookup, report_time,
                                                formatter=formatter,
                                                converter=converter,
                                                **option_dict)
@@ -939,29 +879,28 @@ class WdTimeSpanTags(weewx.cheetahgenerator.SearchList):
                                       formatter=self.formatter,
                                       converter=self.converter)
 
-        time_binder = WdBinder(db_lookup,
+        time_binder = WsBinder(db_lookup,
                                timespan.stop,
                                self.generator.formatter,
                                self.generator.converter)
 
         t2 = time.time()
         if weewx.debug >= 2:
-            logdbg("WdTimeSpanTags SLE executed in %0.3f seconds" % (t2-t1))
+            logdbg("TimeSpanTags SLE executed in %0.3f seconds" % (t2-t1))
 
         return [time_binder]
 
 
 # ==============================================================================
-#                              class WdAvgWindTags
+#                              class AvgWindTags
 # ==============================================================================
 
-
-class WdAvgWindTags(weewx.cheetahgenerator.SearchList):
+class AvgWindTags(weewx.cheetahgenerator.SearchList):
     """SLE to return various average wind speed stats."""
 
     def __init__(self, generator):
         # call our parent's initialisation
-        super(WdAvgWindTags, self).__init__(generator)
+        super(AvgWindTags, self).__init__(generator)
 
     def get_extension_list(self, timespan, db_lookup):
         """Returns a search list with various average wind speed stats.
@@ -1015,22 +954,21 @@ class WdAvgWindTags(weewx.cheetahgenerator.SearchList):
 
         t2 = time.time()
         if weewx.debug >= 2:
-            logdbg("WdAvgWindTags SLE executed in %0.3f seconds" % (t2-t1))
+            logdbg("AvgWindTags SLE executed in %0.3f seconds" % (t2-t1))
 
         return [search_list]
 
 
 # ==============================================================================
-#                              class WdSundryTags
+#                              class SundryTags
 # ==============================================================================
 
-
-class WdSundryTags(weewx.cheetahgenerator.SearchList):
+class SundryTags(weewx.cheetahgenerator.SearchList):
     """SLE to return various sundry tags."""
 
     def __init__(self, generator):
         # initialise our superclass
-        super(WdSundryTags, self).__init__(generator)
+        super(SundryTags, self).__init__(generator)
 
     def get_extension_list(self, timespan, db_lookup):
         """Returns various tags.
@@ -1043,7 +981,7 @@ class WdSundryTags(weewx.cheetahgenerator.SearchList):
                        only parameter, will return a database manager object.
 
         Returns:
-            launchtime: A ValueHelper containing the epoch time that weewx was
+            launchtime: A ValueHelper containing the epoch time that WeeWX was
                         started.
             heatColorWord: A string describing the current temperature
                            conditions. Based on outTemp, outHumidity and
@@ -1073,9 +1011,9 @@ class WdSundryTags(weewx.cheetahgenerator.SearchList):
         # first, get current record from the archive
         if not self.generator.gen_ts:
             self.generator.gen_ts = db_lookup().lastGoodStamp()
-        self.generator.gen_wd_ts = db_lookup('wd_binding').lastGoodStamp()
+        self.generator.gen_ws_ts = db_lookup('ws_binding').lastGoodStamp()
         curr_rec = db_lookup().getRecord(self.generator.gen_ts)
-        curr_wd_rec = db_lookup().getRecord(self.generator.gen_wd_ts)
+        curr_ws_rec = db_lookup().getRecord(self.generator.gen_ws_ts)
         # get the unit in use for each group
         (t_type, t_group) = getStandardUnitType(curr_rec['usUnits'],
                                                 'dateTime')
@@ -1098,10 +1036,10 @@ class WdSundryTags(weewx.cheetahgenerator.SearchList):
                             'Cool', 'Cold', 'Uncomfortably Cold', 'Very Cold',
                             'Extreme Cold']
         curr_rec_metric = weewx.units.to_METRIC(curr_rec)
-        curr_wd_rec_metric = weewx.units.to_METRIC(curr_wd_rec)
+        curr_ws_rec_metric = weewx.units.to_METRIC(curr_ws_rec)
         temperature = curr_rec_metric.get('outTemp')
         windchill = curr_rec_metric.get('windchill')
-        humidex = curr_wd_rec_metric.get('humidex')
+        humidex = curr_rec_metric.get('humidex')
         heat_color_word = heat_color_words[0]
         if temperature is not None:
             if temperature > 32:
@@ -1437,22 +1375,21 @@ class WdSundryTags(weewx.cheetahgenerator.SearchList):
 
         t2 = time.time()
         if weewx.debug >= 2:
-            logdbg("WdSundryTags SLE executed in %0.3f seconds" % (t2-t1))
+            logdbg("SundryTags SLE executed in %0.3f seconds" % (t2-t1))
 
         return [search_list]
 
 
 # ==============================================================================
-#                              class WdTaggedStats
+#                              class TaggedStats
 # ==============================================================================
 
-
-class WdTaggedStats(weewx.cheetahgenerator.SearchList):
+class TaggedStats(weewx.cheetahgenerator.SearchList):
     """SLE to return custom tagged stats drawn from the daily summaries."""
 
     def __init__(self, generator):
         # call our parent's initialisation
-        super(WdTaggedStats, self).__init__(generator)
+        super(TaggedStats, self).__init__(generator)
 
     def get_extension_list(self, timespan, db_lookup):
         """Returns a search list with custom tagged stats drawn from the daily
@@ -1508,31 +1445,31 @@ class WdTaggedStats(weewx.cheetahgenerator.SearchList):
 
         t1 = time.time()
 
-        # Get a WDTaggedStats structure. This allows constructs such as
+        # TODO. Ths comment does not make sense
+        # Get a TaggedStats structure. This allows constructs such as
         # WDstats.monthdaily.outTemp.max
-        _stats = user.wdtaggedstats.WsTimeBinder(db_lookup,
+        _stats = user.wstaggedstats.WsTimeBinder(db_lookup,
                                                  timespan.stop,
                                                  formatter=self.generator.formatter,
                                                  converter=self.generator.converter)
 
         t2 = time.time()
         if weewx.debug >= 2:
-            logdbg("WdTaggedStats SLE executed in %0.3f seconds" % (t2-t1))
+            logdbg("TaggedStats SLE executed in %0.3f seconds" % (t2-t1))
 
         return [_stats]
 
 
 # ==============================================================================
-#                           class WdTaggedArchiveStats
+#                           class TaggedArchiveStats
 # ==============================================================================
 
-
-class WdTaggedArchiveStats(weewx.cheetahgenerator.SearchList):
+class TaggedArchiveStats(weewx.cheetahgenerator.SearchList):
     """SLE to return custom tagged stats drawn from the archive."""
 
     def __init__(self, generator):
         # call our parent's initialisation
-        super(WdTaggedArchiveStats, self).__init__(generator)
+        super(TaggedArchiveStats, self).__init__(generator)
 
     def get_extension_list(self, timespan, db_lookup):
         """Returns a search list with custom tagged stats drawn from archive.
@@ -1594,31 +1531,31 @@ class WdTaggedArchiveStats(weewx.cheetahgenerator.SearchList):
 
         t1 = time.time()
 
+        # TODO. This comment does not make sense
         # Get a WDTaggedStats structure. This allows constructs such as
         # WDstats.minute.outTemp.max
-        _stats = user.wdtaggedstats.WsArchiveTimeBinder(db_lookup,
+        _stats = user.wstaggedstats.WsArchiveTimeBinder(db_lookup,
                                                         timespan.stop,
                                                         formatter=self.generator.formatter,
                                                         converter=self.generator.converter)
 
         t2 = time.time()
         if weewx.debug >= 2:
-            logdbg("WdTaggedArchiveStats SLE executed in %0.3f seconds" % (t2-t1))
+            logdbg("TaggedArchiveStats SLE executed in %0.3f seconds" % (t2-t1))
 
         return [_stats]
 
 
 # ==============================================================================
-#                              class WdYestAlmanac
+#                              class YestAlmanac
 # ==============================================================================
 
-
-class WdYestAlmanac(weewx.cheetahgenerator.SearchList):
+class YestAlmanac(weewx.cheetahgenerator.SearchList):
     """SLE to return an Almanac object for yesterday."""
 
     def __init__(self, generator):
         # call our parent's initialisation
-        super(WdYestAlmanac, self).__init__(generator)
+        super(YestAlmanac, self).__init__(generator)
 
         t1 = time.time()
 
@@ -1666,20 +1603,19 @@ class WdYestAlmanac(weewx.cheetahgenerator.SearchList):
 
         t2 = time.time()
         if weewx.debug >= 2:
-            logdbg("WdYestAlmanac SLE executed in %0.3f seconds" % (t2-t1))
+            logdbg("YestAlmanac SLE executed in %0.3f seconds" % (t2-t1))
 
 
 # ================================================================================
-#                                 class WdSkinDict
+#                                 class SkinDict
 # ================================================================================
 
-
-class WdSkinDict(weewx.cheetahgenerator.SearchList):
+class SkinDict(weewx.cheetahgenerator.SearchList):
     """SLE to return skin settings."""
 
     def __init__(self, generator):
         # call our parent's initialisation
-        super(WdSkinDict, self).__init__(generator)
+        super(SkinDict, self).__init__(generator)
 
         t1 = time.time()
 
@@ -1687,20 +1623,20 @@ class WdSkinDict(weewx.cheetahgenerator.SearchList):
 
         t2 = time.time()
         if weewx.debug >= 2:
-            logdbg("WdSkinDict SLE executed in %0.3f seconds" % (t2-t1))
+            logdbg("SkinDict SLE executed in %0.3f seconds" % (t2-t1))
 
 
 # ================================================================================
-#                            class WdMonthlyReportStats
+#                            class MonthlyReportStats
 # ================================================================================
 
-
-class WdMonthlyReportStats(weewx.cheetahgenerator.SearchList):
-    """SLE to return various date/time tags used in WD monthly report."""
+# TODO. Is this SLE required?
+class MonthlyReportStats(weewx.cheetahgenerator.SearchList):
+    """SLE to return various date/time tags used in monthly report."""
 
     def __init__(self, generator):
         # call our parent's initialisation
-        super(WdMonthlyReportStats, self).__init__(generator)
+        super(MonthlyReportStats, self).__init__(generator)
 
     def get_extension_list(self, timespan, db_lookup):
         """Returns a search list extension with various date/time tags
@@ -1747,22 +1683,21 @@ class WdMonthlyReportStats(weewx.cheetahgenerator.SearchList):
 
         t2 = time.time()
         if weewx.debug >= 2:
-            logdbg("WdMonthlyReportStats SLE executed in %0.3f seconds" % (t2-t1))
+            logdbg("MonthlyReportStats SLE executed in %0.3f seconds" % (t2-t1))
 
         return [search_list]
 
 
 # ==============================================================================
-#                              class WdWindRunTags
+#                              class WindRunTags
 # ==============================================================================
 
-
-class WdWindRunTags(weewx.cheetahgenerator.SearchList):
-    """ Search list extension to return windrun over variou speriods. Also
+class WindRunTags(weewx.cheetahgenerator.SearchList):
+    """ Search list extension to return windrun over various periods. Also
         returns max day windrun and the date on which this occurred.
 
-        Whilst weewx supports windrun through inclusion of distance units and
-        groups weewx only provides as cumulative daily windrun in each
+        Whilst WeeWX supports windrun through inclusion of distance units and
+        groups WeeWX only provides as cumulative daily windrun in each
         loop/archive record. This cumulative value is reset at midnight each
         day. Consequently, a SLE is required to provide windrun
         statistics/aggregates over various standard timespans.
@@ -1781,7 +1716,7 @@ class WdWindRunTags(weewx.cheetahgenerator.SearchList):
 
     def __init__(self, generator):
         # call our parent's initialisation
-        super(WdWindRunTags, self).__init__(generator)
+        super(WindRunTags, self).__init__(generator)
 
     def get_extension_list(self, timespan, db_lookup):
         """ Parameters:
@@ -2399,22 +2334,21 @@ class WdWindRunTags(weewx.cheetahgenerator.SearchList):
 
         t2 = time.time()
         if weewx.debug >= 2:
-            logdbg("WdWindRunTags SLE executed in %0.3f seconds" % (t2-t1))
+            logdbg("WindRunTags SLE executed in %0.3f seconds" % (t2-t1))
 
         return [search_list]
 
 
 # ==============================================================================
-#                              class WdHourRainTags
+#                              class HourRainTags
 # ==============================================================================
 
-
-class WdHourRainTags(weewx.cheetahgenerator.SearchList):
+class HourRainTags(weewx.cheetahgenerator.SearchList):
     """SLE to return maximum 1 hour rainfall during the current day."""
 
     def __init__(self, generator):
         # call our parent's initialisation
-        super(WdHourRainTags, self).__init__(generator)
+        super(HourRainTags, self).__init__(generator)
 
     def get_extension_list(self, timespan, db_lookup):
         """Returns a search list with the maximum 1 hour rainfall and the time
@@ -2472,7 +2406,7 @@ class WdHourRainTags(weewx.cheetahgenerator.SearchList):
             (_start_vt, _stop_vt, _rain_vt) = db_lookup().getSqlVectors(tspan,
                                                                         'rain')
         except:
-            loginf("WdHourRainTags: getSqlVectors exception")
+            loginf("HourRainTags: getSqlVectors exception")
         # set a few variables beforehand
         hour_start_ts = None
         hour_rain = []
@@ -2513,22 +2447,21 @@ class WdHourRainTags(weewx.cheetahgenerator.SearchList):
 
         t2 = time.time()
         if weewx.debug >= 2:
-            logdbg("WdHourRainTags SLE executed in %0.3f seconds" % (t2-t1))
+            logdbg("HourRainTags SLE executed in %0.3f seconds" % (t2-t1))
 
         return [search_list]
 
 
 # ==============================================================================
-#                                 class WdGdDays
+#                                 class GdDays
 # ==============================================================================
 
-
-class WdGdDays(weewx.cheetahgenerator.SearchList):
+class GdDays(weewx.cheetahgenerator.SearchList):
     """SLE to return Growing Degree Days tags."""
 
     def __init__(self, generator):
         # call our parent's initialisation
-        super(WdGdDays, self).__init__(generator)
+        super(GdDays, self).__init__(generator)
 
         # Get temperature group, this determines whether we return GDD in F or
         # C, enclose in try..except just in case. Default to degree_C if any
@@ -2685,22 +2618,21 @@ class WdGdDays(weewx.cheetahgenerator.SearchList):
 
         t2 = time.time()
         if weewx.debug >= 2:
-            logdbg("WdGdDays SLE executed in %0.3f seconds" % (t2-t1))
+            logdbg("GdDays SLE executed in %0.3f seconds" % (t2-t1))
 
         return [search_list]
 
 
 # ==============================================================================
-#                                class WdForToday
+#                                class ForToday
 # ==============================================================================
 
-
-class WdForToday(weewx.cheetahgenerator.SearchList):
+class ForToday(weewx.cheetahgenerator.SearchList):
     """SLE to return max and min temperature for this day."""
 
     def __init__(self, generator):
         # initialise our superclass
-        super(WdForToday, self).__init__(generator)
+        super(ForToday, self).__init__(generator)
 
     def get_extension_list(self, timespan, db_lookup):
         """Returns max and min temp for this day as well as the year each
@@ -2829,29 +2761,28 @@ class WdForToday(weewx.cheetahgenerator.SearchList):
 
         t2 = time.time()
         if weewx.debug >= 2:
-            logdbg("WdForToday SLE executed in %0.3f seconds" % (t2-t1))
+            logdbg("ForToday SLE executed in %0.3f seconds" % (t2-t1))
 
         return [search_list]
 
 
 # ==============================================================================
-#                              class WdRainThisDay
+#                              class RainThisDay
 # ==============================================================================
 
-
-class WdRainThisDay(weewx.cheetahgenerator.SearchList):
+class RainThisDay(weewx.cheetahgenerator.SearchList):
     """SLE to return rain this time last month/year."""
 
     def __init__(self, generator):
         # initialise our superclass
-        super(WdRainThisDay, self).__init__(generator)
+        super(RainThisDay, self).__init__(generator)
 
     def get_extension_list(self, timespan, db_lookup):
         """Returns rain to date for this time last month and this time
            last year.
 
            Defining 'this time last month/year' presents some challenges when
-           the previous month has a different nubmer of days to the present
+           the previous month has a different number of days to the present
            month. In this SLE the following algorithm is used to come up with
            'this time last month/year':
 
@@ -3071,22 +3002,21 @@ class WdRainThisDay(weewx.cheetahgenerator.SearchList):
 
         t2 = time.time()
         if weewx.debug >= 2:
-            logdbg("WdRainThisDay SLE executed in %0.3f seconds" % (t2-t1))
+            logdbg("RainThisDay SLE executed in %0.3f seconds" % (t2-t1))
 
         return [search_list]
 
 
 # ==============================================================================
-#                                class WdRainDays
+#                                class RainDays
 # ==============================================================================
 
-
-class WdRainDays(weewx.cheetahgenerator.SearchList):
+class RainDays(weewx.cheetahgenerator.SearchList):
     """SLE to return various longest rainy/dry period tags."""
 
     def __init__(self, generator):
         # initialise our superclass
-        super(WdRainDays, self).__init__(generator)
+        super(RainDays, self).__init__(generator)
 
     def get_extension_list(self, timespan, db_lookup):
         """Returns various tags related to longest periods of rainy/dry days.
@@ -3409,22 +3339,21 @@ class WdRainDays(weewx.cheetahgenerator.SearchList):
                        'month_rainy_days': _month_rainy_days}
         t2 = time.time()
         if weewx.debug >= 2:
-            logdbg("WdRainDays SLE executed in %0.3f seconds" % (t2-t1))
+            logdbg("RainDays SLE executed in %0.3f seconds" % (t2-t1))
 
         return [search_list]
 
 
 # ==============================================================================
-#                            class WdManualAverages
+#                            class ManualAverages
 # ==============================================================================
 
-
-class WdManualAverages(weewx.cheetahgenerator.SearchList):
-    """SLE for manually set month averages defined in weewx.conf [Weewx-WD]."""
+class ManualAverages(weewx.cheetahgenerator.SearchList):
+    """SLE for manually set month averages defined in weewx.conf [WeewxSaratoga]."""
 
     def __init__(self, generator):
         # initialise our superclass
-        super(WdManualAverages, self).__init__(generator)
+        super(ManualAverages, self).__init__(generator)
 
         # dict to convert [[[Xxxxx]]] to WeeWX observation groups, if you add
         # more [[[Xxxxx]]] under [[Averages]] you must add additional entries in
@@ -3493,7 +3422,7 @@ class WdManualAverages(weewx.cheetahgenerator.SearchList):
     def get_extension_list(self, timespan, db_lookup):
         """Create a search list with manually set month averages.
 
-        Looks for a [Weewx-WD][[Averages]] section in weewx.conf. If found
+        Looks for a [WeewxSaratoga][[Averages]] section in weewx.conf. If found
         looks for user settable month averages under [[[Xxxxx]]]
         eg [[[Rainfall]]] or [[[Temperature]]]. Under each [[[Xxxxx]]] there
         must be 12 settings (Jan =, Feb = ... Dec =). Each setting consists of
@@ -3529,12 +3458,12 @@ class WdManualAverages(weewx.cheetahgenerator.SearchList):
 
         # clear our search list
         search_list = {}
-        # get Weewx-WD config dict
-        weewxwd_config = self.generator.config_dict.get('Weewx-WD', {})
+        # get WeewxSaratoga config dict
+        ws_config = self.generator.config_dict.get('WeewxSaratoga', {})
         # do we have any manual month averages?
-        if 'Averages' in weewxwd_config:
+        if 'Averages' in ws_config:
             # yes, get our dict
-            man_avg_dict = weewxwd_config.get('Averages', {})
+            man_avg_dict = ws_config.get('Averages', {})
             # step through each of the average groups we might encounter
             for average_group in self.average_groups:
                 # if we find an average group
@@ -3578,6 +3507,6 @@ class WdManualAverages(weewx.cheetahgenerator.SearchList):
 
         t2 = time.time()
         if weewx.debug >= 2:
-            logdbg("WdManualAverages SLE executed in %0.3f seconds" % (t2-t1))
+            logdbg("ManualAverages SLE executed in %0.3f seconds" % (t2-t1))
 
         return [search_list]
