@@ -1,25 +1,45 @@
+##errorCatcher Echo
 #*
-This program is free software; you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation; either version 2 of the License, or
-(at your option) any later version.
+A template to generate clientrawextra.txt for the Saratoga Weather Website templates.
 
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
+Copyright (C) 2021 Gary Roderick                    gjroderick<at>gmail.com
 
-###############################################################################
-#                                                                             #
-#                          clientrawextra.txt Template                        #
-#                                                                             #
-# Version: 0.1.0                                         Date: xx xxxxx 2021  #
-#                                                                             #
-###############################################################################
+This program is free software: you can redistribute it and/or modify it under
+the terms of the GNU General Public License as published by the Free Software
+Foundation, either version 3 of the License, or (at your option) any later
+version.
+
+This program is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
+PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License along with
+this program.  If not, see http://www.gnu.org/licenses/.
+
+
+Description
+
+This template is part of the WeeWX-Saratoga extension and produces 
+clientrawextra.txt containing data for use with Saratoga Weather Website 
+templates.
+
+Pre-Requisites
+
+- WeeWX-Saratoga WeeWX extension
+- PyEphem for inclusion of ephemeris and insolation data
+
+Version: 0.1.0                                      Date: xx xxxxx 2021
+
 *#
+#*
+Inline python code to setup/initialise a number of variable for use in the
+template
+*#
+#from datetime import date
+#import datetime
+#import time
 ##
-##Setup format strings
-##
+## setup format strings
 #set $timeFormat = "%H:%M"
 #set $timeFormatLong = "%H:%M:%S"
 #set $hourFormat = "%H"
@@ -29,11 +49,7 @@ GNU General Public License for more details.
 #set $yearFormat = "%Y"
 #set $rainFormat = $skin_dict.Units.StringFormats.mm
 ##
-##End Setup format strings
-##
-##
-##Cache tagged stats required in clientrawextra
-##
+## cache tagged stats required in clientrawextra
 #set $windSpeedHourArray = $onehour.windSpeed.avgQuery
 #set $outTempHourArray = $onehour.outTemp.avgQuery
 #set $rainHourArray = $onehour.rain.sumQuery
@@ -46,18 +62,11 @@ GNU General Public License for more details.
 #set $rainWeekdailyArray = $weekdaily.rain.sumQuery
 #set $dateTimeHourArray = $onehour.dateTime.datetimeQuery
 ##
-##End Cache tagged stats required in clientrawextra
-##
-## Set forecast text
-##
-#set $f_text = $current($data_binding='wdsupp_binding', $max_delta=1800).forecastText.raw
+## set forecast text
+#set $f_text = $current($data_binding='wssupp_binding', $max_delta=1800).forecastText.raw
 #set $forecast_underscore_text = $f_text.replace(' ', '_') if $f_text is not None else '--'
 ##
-##End set forecast text
-##
-#from datetime import date
-#import datetime
-#import time
+## set day/night flag
 #set $timereport = $current.dateTime.raw
 #if $almanac.hasExtras
     #set $dayLength = $time.gmtime($almanac.sun.set.raw - $almanac.sun.rise.raw)
@@ -75,57 +84,61 @@ GNU General Public License for more details.
         #set $dayornight = "N"
     #end if
 #end if
+##
+## set day of week rain values
 #set $doW = int($current.dateTime.format("%w"))
 #try
-#set $rainMon = int(rainWeekdailyArray[(0-$doW)%7].mm.raw*10)
+    #set $rainMon = int(rainWeekdailyArray[(0-$doW)%7].mm.raw*10)
 #except
-#set $rainMon = 0
+    #set $rainMon = 0
 #end try
 #try
-#set $rainTue = int(rainWeekdailyArray[(1-$doW)%7].mm.raw*10)
+    #set $rainTue = int(rainWeekdailyArray[(1-$doW)%7].mm.raw*10)
 #except
-#set $rainTue = 0
+    #set $rainTue = 0
 #end try
 #try
-#set $rainWed = int(rainWeekdailyArray[(2-$doW)%7].mm.raw*10)
+    #set $rainWed = int(rainWeekdailyArray[(2-$doW)%7].mm.raw*10)
 #except
-#set $rainWed = 0
+    #set $rainWed = 0
 #end try
 #try
-#set $rainThu = int(rainWeekdailyArray[(3-$doW)%7].mm.raw*10)
+    #set $rainThu = int(rainWeekdailyArray[(3-$doW)%7].mm.raw*10)
 #except
-#set $rainThu = 0
+    #set $rainThu = 0
 #end try
 #try
-#set $rainFri = int(rainWeekdailyArray[(4-$doW)%7].mm.raw*10)
+    #set $rainFri = int(rainWeekdailyArray[(4-$doW)%7].mm.raw*10)
 #except
-#set $rainFri = 0
+    #set $rainFri = 0
 #end try
 #try
-#set $rainSat = int(rainWeekdailyArray[(5-$doW)%7].mm.raw*10)
+    #set $rainSat = int(rainWeekdailyArray[(5-$doW)%7].mm.raw*10)
 #except
-#set $rainSat = 0
+    #set $rainSat = 0
 #end try
 #try
-#set $rainSun = int(rainWeekdailyArray[(6-$doW)%7].mm.raw*10)
+    #set $rainSun = int(rainWeekdailyArray[(6-$doW)%7].mm.raw*10)
 #except
-#set $rainSun = 0
+    #set $rainSun = 0
 #end try
 ##
-#set $running_total_rain = 0
-##
-##sunshine hours calculation
-##
+## sunshine hours calculation
 #try
-    #set $today_sunshine_hours = '%0.1f' % $day($data_binding='wd_binding').sunshine.sum.hour.raw
+    #set $today_sunshine_hours = '%0.1f' % $day($data_binding='ws_binding').sunshine.sum.hour.raw
 #except (TypeError, NotFound)
     #set $today_sunshine_hours = 'x.0'
 #end try
 ##
-##end sunshine hours calculation
-##
-#*WD|000*#12345 #slurp
-#*WD|001*##*Windspeed Hour 01 to 20. Hour 01=24 hours ago*##slurp
+#*
+   main template code
+   A few simple conventions:
+    - one field per line
+    - field numbers are commented at the start of each line
+    - each field ands with a space except for the EOR
+*#
+#*000*#12345 #slurp
+#*001*##*WindSpeed Hour 01 to 20. Hour 01=24 hours ago*##slurp
 #for $i in range (20):
 #try
 $windSpeedHourArray[$i].knot.toString($localize=False) #slurp
@@ -133,7 +146,7 @@ $windSpeedHourArray[$i].knot.toString($localize=False) #slurp
 0 #slurp
 #end try
 #end for
-#*WD|021*##*outTemp Hour 01 to 20. Hour 01=24 hours ago*##slurp
+#*021*##*outTemp Hour 01 to 20. Hour 01=24 hours ago*##slurp
 #for $i in range (20):
 #try
 $outTempHourArray[$i].degree_C.toString($localize=False) #slurp
@@ -141,7 +154,7 @@ $outTempHourArray[$i].degree_C.toString($localize=False) #slurp
 0 #slurp
 #end try
 #end for
-#*WD|041*##*rain Hour 01 to 20. Hour 01=24 hours ago*##slurp
+#*041*##*rain Hour 01 to 20. Hour 01=24 hours ago*##slurp
 #set $rain_accum = 0
 #for $i in range (20):
 #try
@@ -152,511 +165,511 @@ $rain_accum_formatted #slurp
 0 #slurp
 #end try
 #end for
-#*WD|061*#$month.outTemp.max.degree_C.toString($addLabel=False, $localize=False) #slurp
-#*WD|062*#$month.outTemp.maxtime.format($hourFormat) #slurp
-#*WD|063*#$month.outTemp.maxtime.format($minuteFormat) #slurp
-#*WD|064*#$month.outTemp.maxtime.format($dayFormat) #slurp
-#*WD|065*#$month.outTemp.maxtime.format($monthFormat) #slurp
-#*WD|066*#$month.outTemp.maxtime.format($yearFormat) #slurp
-#*WD|067*#$month.outTemp.min.degree_C.toString($addLabel=False, $localize=False) #slurp
-#*WD|068*#$month.outTemp.mintime.format($hourFormat) #slurp
-#*WD|069*#$month.outTemp.mintime.format($minuteFormat) #slurp
-#*WD|070*#$month.outTemp.mintime.format($dayFormat) #slurp
-#*WD|071*#$month.outTemp.mintime.format($monthFormat) #slurp
-#*WD|072*#$month.outTemp.mintime.format($yearFormat) #slurp
-#*WD|073*#$month.wind.max.knot.toString($addLabel=False, $localize=False) #slurp
-#*WD|074*#$month.wind.maxtime.format($hourFormat) #slurp
-#*WD|075*#$month.wind.maxtime.format($minuteFormat) #slurp
-#*WD|076*#$month.wind.maxtime.format($dayFormat) #slurp
-#*WD|077*#$month.wind.maxtime.format($monthFormat) #slurp
-#*WD|078*#$month.wind.maxtime.format($yearFormat) #slurp
-#*WD|079*#$month.rainRate.max.mm_per_hour.toString($addLabel=False, $localize=False) #slurp
-#*WD|080*#$month.rainRate.maxtime.format($hourFormat) #slurp
-#*WD|081*#$month.rainRate.maxtime.format($minuteFormat) #slurp
-#*WD|082*#$month.rainRate.maxtime.format($dayFormat) #slurp
-#*WD|083*#$month.rainRate.maxtime.format($monthFormat) #slurp
-#*WD|084*#$month.rainRate.maxtime.format($yearFormat) #slurp
-#*WD|085*#$month.barometer.min.hPa.toString($addLabel=False, $localize=False) #slurp
-#*WD|086*#$month.barometer.mintime.format($hourFormat) #slurp
-#*WD|087*#$month.barometer.mintime.format($minuteFormat) #slurp
-#*WD|088*#$month.barometer.mintime.format($dayFormat) #slurp
-#*WD|089*#$month.barometer.mintime.format($monthFormat) #slurp
-#*WD|090*#$month.barometer.mintime.format($yearFormat) #slurp
-#*WD|091*#$month.barometer.max.hPa.toString($addLabel=False, $localize=False) #slurp
-#*WD|092*#$month.barometer.maxtime.format($hourFormat) #slurp
-#*WD|093*#$month.barometer.maxtime.format($minuteFormat) #slurp
-#*WD|094*#$month.barometer.maxtime.format($dayFormat) #slurp
-#*WD|095*#$month.barometer.maxtime.format($monthFormat) #slurp
-#*WD|096*#$month.barometer.maxtime.format($yearFormat) #slurp
-#*WD|097*#$month.rain.sum.mm.toString($addLabel=False, $localize=False) #slurp
-#*WD|098*#$month.rain.maxtime.format($hourFormat) #slurp
-#*WD|099*#$month.rain.maxtime.format($minuteFormat) #slurp
-#*WD|100*#$month.rain.maxtime.format($dayFormat) #slurp
-#*WD|101*#$month.rain.maxtime.format($monthFormat) #slurp
-#*WD|102*#$month.rain.maxtime.format($yearFormat) #slurp
-#*WD|103*#0 #slurp
-#*WD|104*#00 #slurp
-#*WD|105*#00 #slurp
-#*WD|106*#00 #slurp
-#*WD|107*#00 #slurp
-#*WD|108*#00 #slurp
-#*WD|109*#$month.windSpeed.max.knot.toString($addLabel=False, $localize=False) #slurp
-#*WD|110*#$month.windSpeed.maxtime.format($hourFormat) #slurp
-#*WD|111*#$month.windSpeed.maxtime.format($minuteFormat) #slurp
-#*WD|112*#$month.windSpeed.maxtime.format($dayFormat) #slurp
-#*WD|113*#$month.windSpeed.maxtime.format($monthFormat) #slurp
-#*WD|114*#$month.windSpeed.maxtime.format($yearFormat) #slurp
-#*WD|115*#0 #slurp
-#*WD|116*#00 #slurp
-#*WD|117*#00 #slurp
-#*WD|118*#00 #slurp
-#*WD|119*#00 #slurp
-#*WD|120*#00 #slurp
-#*WD|121*#0 #slurp
-#*WD|122*#00 #slurp
-#*WD|123*#00 #slurp
-#*WD|124*#00 #slurp
-#*WD|125*#00 #slurp
-#*WD|126*#00 #slurp
-#*WD|127*#0 #slurp
-#*WD|128*#00 #slurp
-#*WD|129*#00 #slurp
-#*WD|130*#00 #slurp
-#*WD|131*#00 #slurp
-#*WD|132*#00 #slurp
-#*WD|133*#$month.windchill.min.degree_C.toString($addLabel=False, $localize=False) #slurp
-#*WD|134*#$month.windchill.mintime.format($hourFormat) #slurp
-#*WD|135*#$month.windchill.mintime.format($minuteFormat) #slurp
-#*WD|136*#$month.windchill.mintime.format($dayFormat) #slurp
-#*WD|137*#$month.windchill.mintime.format($monthFormat) #slurp
-#*WD|138*#$month.windchill.mintime.format($yearFormat) #slurp
-#*WD|139*#$month.wind.gustdir.toString($addLabel=False, $localize=False) #slurp
-#*WD|140*#$month.wind.maxtime.format($hourFormat) #slurp
-#*WD|141*#$month.wind.maxtime.format($minuteFormat) #slurp
-#*WD|142*#$month.wind.maxtime.format($dayFormat) #slurp
-#*WD|143*#$month.wind.maxtime.format($monthFormat) #slurp
-#*WD|144*#$month.wind.maxtime.format($yearFormat) #slurp
+#*061*#$month.outTemp.max.degree_C.toString($addLabel=False, $localize=False) #slurp
+#*062*#$month.outTemp.maxtime.format($hourFormat) #slurp
+#*063*#$month.outTemp.maxtime.format($minuteFormat) #slurp
+#*064*#$month.outTemp.maxtime.format($dayFormat) #slurp
+#*065*#$month.outTemp.maxtime.format($monthFormat) #slurp
+#*066*#$month.outTemp.maxtime.format($yearFormat) #slurp
+#*067*#$month.outTemp.min.degree_C.toString($addLabel=False, $localize=False) #slurp
+#*068*#$month.outTemp.mintime.format($hourFormat) #slurp
+#*069*#$month.outTemp.mintime.format($minuteFormat) #slurp
+#*070*#$month.outTemp.mintime.format($dayFormat) #slurp
+#*071*#$month.outTemp.mintime.format($monthFormat) #slurp
+#*072*#$month.outTemp.mintime.format($yearFormat) #slurp
+#*073*#$month.wind.max.knot.toString($addLabel=False, $localize=False) #slurp
+#*074*#$month.wind.maxtime.format($hourFormat) #slurp
+#*075*#$month.wind.maxtime.format($minuteFormat) #slurp
+#*076*#$month.wind.maxtime.format($dayFormat) #slurp
+#*077*#$month.wind.maxtime.format($monthFormat) #slurp
+#*078*#$month.wind.maxtime.format($yearFormat) #slurp
+#*079*#$month.rainRate.max.mm_per_hour.toString($addLabel=False, $localize=False) #slurp
+#*080*#$month.rainRate.maxtime.format($hourFormat) #slurp
+#*081*#$month.rainRate.maxtime.format($minuteFormat) #slurp
+#*082*#$month.rainRate.maxtime.format($dayFormat) #slurp
+#*083*#$month.rainRate.maxtime.format($monthFormat) #slurp
+#*084*#$month.rainRate.maxtime.format($yearFormat) #slurp
+#*085*#$month.barometer.min.hPa.toString($addLabel=False, $localize=False) #slurp
+#*086*#$month.barometer.mintime.format($hourFormat) #slurp
+#*087*#$month.barometer.mintime.format($minuteFormat) #slurp
+#*088*#$month.barometer.mintime.format($dayFormat) #slurp
+#*089*#$month.barometer.mintime.format($monthFormat) #slurp
+#*090*#$month.barometer.mintime.format($yearFormat) #slurp
+#*091*#$month.barometer.max.hPa.toString($addLabel=False, $localize=False) #slurp
+#*092*#$month.barometer.maxtime.format($hourFormat) #slurp
+#*093*#$month.barometer.maxtime.format($minuteFormat) #slurp
+#*094*#$month.barometer.maxtime.format($dayFormat) #slurp
+#*095*#$month.barometer.maxtime.format($monthFormat) #slurp
+#*096*#$month.barometer.maxtime.format($yearFormat) #slurp
+#*097*#$month.rain.sum.mm.toString($addLabel=False, $localize=False) #slurp
+#*098*#$month.rain.maxtime.format($hourFormat) #slurp
+#*099*#$month.rain.maxtime.format($minuteFormat) #slurp
+#*100*#$month.rain.maxtime.format($dayFormat) #slurp
+#*101*#$month.rain.maxtime.format($monthFormat) #slurp
+#*102*#$month.rain.maxtime.format($yearFormat) #slurp
+#*103*#0 #slurp
+#*104*#00 #slurp
+#*105*#00 #slurp
+#*106*#00 #slurp
+#*107*#00 #slurp
+#*108*#00 #slurp
+#*109*#$month.windSpeed.max.knot.toString($addLabel=False, $localize=False) #slurp
+#*110*#$month.windSpeed.maxtime.format($hourFormat) #slurp
+#*111*#$month.windSpeed.maxtime.format($minuteFormat) #slurp
+#*112*#$month.windSpeed.maxtime.format($dayFormat) #slurp
+#*113*#$month.windSpeed.maxtime.format($monthFormat) #slurp
+#*114*#$month.windSpeed.maxtime.format($yearFormat) #slurp
+#*115*#0 #slurp
+#*116*#00 #slurp
+#*117*#00 #slurp
+#*118*#00 #slurp
+#*119*#00 #slurp
+#*120*#00 #slurp
+#*121*#0 #slurp
+#*122*#00 #slurp
+#*123*#00 #slurp
+#*124*#00 #slurp
+#*125*#00 #slurp
+#*126*#00 #slurp
+#*127*#0 #slurp
+#*128*#00 #slurp
+#*129*#00 #slurp
+#*130*#00 #slurp
+#*131*#00 #slurp
+#*132*#00 #slurp
+#*133*#$month.windchill.min.degree_C.toString($addLabel=False, $localize=False) #slurp
+#*134*#$month.windchill.mintime.format($hourFormat) #slurp
+#*135*#$month.windchill.mintime.format($minuteFormat) #slurp
+#*136*#$month.windchill.mintime.format($dayFormat) #slurp
+#*137*#$month.windchill.mintime.format($monthFormat) #slurp
+#*138*#$month.windchill.mintime.format($yearFormat) #slurp
+#*139*#$month.wind.gustdir.toString($addLabel=False, $localize=False) #slurp
+#*140*#$month.wind.maxtime.format($hourFormat) #slurp
+#*141*#$month.wind.maxtime.format($minuteFormat) #slurp
+#*142*#$month.wind.maxtime.format($dayFormat) #slurp
+#*143*#$month.wind.maxtime.format($monthFormat) #slurp
+#*144*#$month.wind.maxtime.format($yearFormat) #slurp
 #if $month.windAv.has_data
-#*WD|145*#$month.windAv.gustdir.toString($addLabel=False, $localize=False) #slurp
-#*WD|146*#$month.windAv.maxtime.format($hourFormat) #slurp
-#*WD|147*#$month.windAv.maxtime.format($minuteFormat) #slurp
-#*WD|148*#$month.windAv.maxtime.format($dayFormat) #slurp
-#*WD|149*#$month.windAv.maxtime.format($monthFormat) #slurp
-#*WD|150*#$month.windAv.maxtime.format($yearFormat) #slurp
+#*145*#$month.windAv.gustdir.toString($addLabel=False, $localize=False) #slurp
+#*146*#$month.windAv.maxtime.format($hourFormat) #slurp
+#*147*#$month.windAv.maxtime.format($minuteFormat) #slurp
+#*148*#$month.windAv.maxtime.format($dayFormat) #slurp
+#*149*#$month.windAv.maxtime.format($monthFormat) #slurp
+#*150*#$month.windAv.maxtime.format($yearFormat) #slurp
 #else
-#*WD|145*#0 #slurp
-#*WD|146*#00 #slurp
-#*WD|147*#00 #slurp
-#*WD|148*#00 #slurp
-#*WD|149*#00 #slurp
-#*WD|150*#00 #slurp
+#*145*#0 #slurp
+#*146*#00 #slurp
+#*147*#00 #slurp
+#*148*#00 #slurp
+#*149*#00 #slurp
+#*150*#00 #slurp
 #end if
-#if $month($data_binding='wd_binding').outTempDay.has_data
-#*WD|151*#$month($data_binding='wd_binding').outTempDay.max.degree_C.toString($addLabel=False, $localize=False) #slurp
-#*WD|152*#$month($data_binding='wd_binding').outTempDay.maxtime.format($hourFormat) #slurp
-#*WD|153*#$month($data_binding='wd_binding').outTempDay.maxtime.format($minuteFormat) #slurp
-#*WD|154*#$month($data_binding='wd_binding').outTempDay.maxtime.format($dayFormat) #slurp
-#*WD|155*#$month($data_binding='wd_binding').outTempDay.maxtime.format($monthFormat) #slurp
-#*WD|156*#$month($data_binding='wd_binding').outTempDay.maxtime.format($yearFormat) #slurp
+#if $month($data_binding='ws_binding').outTempDay.has_data
+#*151*#$month($data_binding='ws_binding').outTempDay.max.degree_C.toString($addLabel=False, $localize=False) #slurp
+#*152*#$month($data_binding='ws_binding').outTempDay.maxtime.format($hourFormat) #slurp
+#*153*#$month($data_binding='ws_binding').outTempDay.maxtime.format($minuteFormat) #slurp
+#*154*#$month($data_binding='ws_binding').outTempDay.maxtime.format($dayFormat) #slurp
+#*155*#$month($data_binding='ws_binding').outTempDay.maxtime.format($monthFormat) #slurp
+#*156*#$month($data_binding='ws_binding').outTempDay.maxtime.format($yearFormat) #slurp
 #else
-#*WD|151*#0 #slurp
-#*WD|152*#00 #slurp
-#*WD|153*#00 #slurp
-#*WD|154*#00 #slurp
-#*WD|155*#00 #slurp
-#*WD|156*#00 #slurp
+#*151*#0 #slurp
+#*152*#00 #slurp
+#*153*#00 #slurp
+#*154*#00 #slurp
+#*155*#00 #slurp
+#*156*#00 #slurp
 #end if
-#if $month($data_binding='wd_binding').outTempNight.has_data
-#*WD|157*#$month($data_binding='wd_binding').outTempNight.min.degree_C.toString($addLabel=False, $localize=False) #slurp
-#*WD|158*#$month($data_binding='wd_binding').outTempNight.mintime.format($hourFormat) #slurp
-#*WD|159*#$month($data_binding='wd_binding').outTempNight.mintime.format($minuteFormat) #slurp
-#*WD|160*#$month($data_binding='wd_binding').outTempNight.mintime.format($dayFormat) #slurp
-#*WD|161*#$month($data_binding='wd_binding').outTempNight.mintime.format($monthFormat) #slurp
-#*WD|162*#$month($data_binding='wd_binding').outTempNight.mintime.format($yearFormat) #slurp
+#if $month($data_binding='ws_binding').outTempNight.has_data
+#*157*#$month($data_binding='ws_binding').outTempNight.min.degree_C.toString($addLabel=False, $localize=False) #slurp
+#*158*#$month($data_binding='ws_binding').outTempNight.mintime.format($hourFormat) #slurp
+#*159*#$month($data_binding='ws_binding').outTempNight.mintime.format($minuteFormat) #slurp
+#*160*#$month($data_binding='ws_binding').outTempNight.mintime.format($dayFormat) #slurp
+#*161*#$month($data_binding='ws_binding').outTempNight.mintime.format($monthFormat) #slurp
+#*162*#$month($data_binding='ws_binding').outTempNight.mintime.format($yearFormat) #slurp
 #else
-#*WD|157*#0 #slurp
-#*WD|158*#00 #slurp
-#*WD|159*#00 #slurp
-#*WD|160*#00 #slurp
-#*WD|161*#00 #slurp
-#*WD|162*#00 #slurp
+#*157*#0 #slurp
+#*158*#00 #slurp
+#*159*#00 #slurp
+#*160*#00 #slurp
+#*161*#00 #slurp
+#*162*#00 #slurp
 #end if
-#if $month($data_binding='wd_binding').outTempDay.has_data
-#*WD|163*#$month($data_binding='wd_binding').outTempDay.minmax.degree_C.toString($addLabel=False, $localize=False) #slurp
-#*WD|164*#$month($data_binding='wd_binding').outTempDay.minmaxtime.format($hourFormat) #slurp
-#*WD|165*#$month($data_binding='wd_binding').outTempDay.minmaxtime.format($minuteFormat) #slurp
-#*WD|166*#$month($data_binding='wd_binding').outTempDay.minmaxtime.format($dayFormat) #slurp
-#*WD|167*#$month($data_binding='wd_binding').outTempDay.minmaxtime.format($monthFormat) #slurp
-#*WD|168*#$month($data_binding='wd_binding').outTempDay.minmaxtime.format($yearFormat) #slurp
+#if $month($data_binding='ws_binding').outTempDay.has_data
+#*163*#$month($data_binding='ws_binding').outTempDay.minmax.degree_C.toString($addLabel=False, $localize=False) #slurp
+#*164*#$month($data_binding='ws_binding').outTempDay.minmaxtime.format($hourFormat) #slurp
+#*165*#$month($data_binding='ws_binding').outTempDay.minmaxtime.format($minuteFormat) #slurp
+#*166*#$month($data_binding='ws_binding').outTempDay.minmaxtime.format($dayFormat) #slurp
+#*167*#$month($data_binding='ws_binding').outTempDay.minmaxtime.format($monthFormat) #slurp
+#*168*#$month($data_binding='ws_binding').outTempDay.minmaxtime.format($yearFormat) #slurp
 #else
-#*WD|163*#0 #slurp
-#*WD|164*#00 #slurp
-#*WD|165*#00 #slurp
-#*WD|166*#00 #slurp
-#*WD|167*#00 #slurp
-#*WD|168*#00 #slurp
+#*163*#0 #slurp
+#*164*#00 #slurp
+#*165*#00 #slurp
+#*166*#00 #slurp
+#*167*#00 #slurp
+#*168*#00 #slurp
 #end if
-#if $month($data_binding='wd_binding').outTempNight.has_data
-#*WD|169*#$month($data_binding='wd_binding').outTempNight.minmax.degree_C.toString($addLabel=False, $localize=False) #slurp
-#*WD|170*#$month($data_binding='wd_binding').outTempNight.minmaxtime.format($hourFormat) #slurp
-#*WD|171*#$month($data_binding='wd_binding').outTempNight.minmaxtime.format($minuteFormat) #slurp
-#*WD|172*#$month($data_binding='wd_binding').outTempNight.minmaxtime.format($dayFormat) #slurp
-#*WD|173*#$month($data_binding='wd_binding').outTempNight.minmaxtime.format($monthFormat) #slurp
-#*WD|174*#$month($data_binding='wd_binding').outTempNight.minmaxtime.format($yearFormat) #slurp
+#if $month($data_binding='ws_binding').outTempNight.has_data
+#*169*#$month($data_binding='ws_binding').outTempNight.minmax.degree_C.toString($addLabel=False, $localize=False) #slurp
+#*170*#$month($data_binding='ws_binding').outTempNight.minmaxtime.format($hourFormat) #slurp
+#*171*#$month($data_binding='ws_binding').outTempNight.minmaxtime.format($minuteFormat) #slurp
+#*172*#$month($data_binding='ws_binding').outTempNight.minmaxtime.format($dayFormat) #slurp
+#*173*#$month($data_binding='ws_binding').outTempNight.minmaxtime.format($monthFormat) #slurp
+#*174*#$month($data_binding='ws_binding').outTempNight.minmaxtime.format($yearFormat) #slurp
 #else
-#*WD|169*#0 #slurp
-#*WD|170*#00 #slurp
-#*WD|171*#00 #slurp
-#*WD|172*#00 #slurp
-#*WD|173*#00 #slurp
-#*WD|174*#00 #slurp
+#*169*#0 #slurp
+#*170*#00 #slurp
+#*171*#00 #slurp
+#*172*#00 #slurp
+#*173*#00 #slurp
+#*174*#00 #slurp
 #end if
-#*WD|175*#$month.windchill.max.degree_C.toString($addLabel=False, $localize=False) #slurp
-#*WD|176*#$month.windchill.maxtime.format($hourFormat) #slurp
-#*WD|177*#$month.windchill.maxtime.format($minuteFormat) #slurp
-#*WD|178*#$month.windchill.maxtime.format($dayFormat) #slurp
-#*WD|179*#$month.windchill.maxtime.format($monthFormat) #slurp
-#*WD|180*#$month.windchill.maxtime.format($yearFormat) #slurp
-#*WD|181*#0 #slurp
-#*WD|182*#00 #slurp
-#*WD|183*#00 #slurp
-#*WD|184*#00 #slurp
-#*WD|185*#00 #slurp
-#*WD|186*#00 #slurp
-#*WD|187*#$year.outTemp.max.degree_C.toString($addLabel=False, $localize=False) #slurp
-#*WD|188*#$year.outTemp.maxtime.format($hourFormat) #slurp
-#*WD|189*#$year.outTemp.maxtime.format($minuteFormat) #slurp
-#*WD|190*#$year.outTemp.maxtime.format($dayFormat) #slurp
-#*WD|191*#$year.outTemp.maxtime.format($monthFormat) #slurp
-#*WD|192*#$year.outTemp.maxtime.format($yearFormat) #slurp
-#*WD|193*#$year.outTemp.min.degree_C.toString($addLabel=False, $localize=False) #slurp
-#*WD|194*#$year.outTemp.mintime.format($hourFormat) #slurp
-#*WD|195*#$year.outTemp.mintime.format($minuteFormat) #slurp
-#*WD|196*#$year.outTemp.mintime.format($dayFormat) #slurp
-#*WD|197*#$year.outTemp.mintime.format($monthFormat) #slurp
-#*WD|198*#$year.outTemp.mintime.format($yearFormat) #slurp
-#*WD|199*#$year.wind.max.knot.toString($addLabel=False, $localize=False) #slurp #slurp
-#*WD|200*#$year.wind.maxtime.format($hourFormat) #slurp
-#*WD|201*#$year.wind.maxtime.format($minuteFormat) #slurp
-#*WD|202*#$year.wind.maxtime.format($dayFormat) #slurp
-#*WD|203*#$year.wind.maxtime.format($monthFormat) #slurp
-#*WD|204*#$year.wind.maxtime.format($yearFormat) #slurp
-#*WD|205*#$year.rainRate.max.mm_per_hour.toString($addLabel=False, $localize=False) #slurp #slurp
-#*WD|206*#$year.rainRate.maxtime.format($hourFormat) #slurp
-#*WD|207*#$year.rainRate.maxtime.format($minuteFormat) #slurp
-#*WD|208*#$year.rainRate.maxtime.format($dayFormat) #slurp
-#*WD|209*#$year.rainRate.maxtime.format($monthFormat) #slurp
-#*WD|210*#$year.rainRate.maxtime.format($yearFormat) #slurp
-#*WD|211*#$year.barometer.min.hPa.toString($addLabel=False, $localize=False) #slurp
-#*WD|212*#$year.barometer.mintime.format($hourFormat) #slurp
-#*WD|213*#$year.barometer.mintime.format($minuteFormat) #slurp
-#*WD|214*#$year.barometer.mintime.format($dayFormat) #slurp
-#*WD|215*#$year.barometer.mintime.format($monthFormat) #slurp
-#*WD|216*#$year.barometer.mintime.format($yearFormat) #slurp
-#*WD|217*#$year.barometer.max.hPa.toString($addLabel=False, $localize=False) #slurp
-#*WD|218*#$year.barometer.maxtime.format($hourFormat) #slurp
-#*WD|219*#$year.barometer.maxtime.format($minuteFormat) #slurp
-#*WD|220*#$year.barometer.maxtime.format($dayFormat) #slurp
-#*WD|221*#$year.barometer.maxtime.format($monthFormat) #slurp
-#*WD|222*#$year.barometer.maxtime.format($yearFormat) #slurp
-#*WD|223*#$year.rain.max.mm.toString($addLabel=False, $localize=False) #slurp
-#*WD|224*#$year.rain.maxtime.format($hourFormat) #slurp
-#*WD|225*#$year.rain.maxtime.format($minuteFormat) #slurp
-#*WD|226*#$year.rain.maxtime.format($dayFormat) #slurp
-#*WD|227*#$year.rain.maxtime.format($monthFormat) #slurp
-#*WD|228*#$year.rain.maxtime.format($yearFormat) #slurp
-#*WD|229*#0 #slurp
-#*WD|230*#00 #slurp
-#*WD|231*#00 #slurp
-#*WD|232*#00 #slurp
-#*WD|233*#00 #slurp
-#*WD|234*#00 #slurp
-#*WD|235*#$year.windSpeed.max.knot.toString($addLabel=False, $localize=False) #slurp
-#*WD|236*#$year.windSpeed.maxtime.format($hourFormat) #slurp
-#*WD|237*#$year.windSpeed.maxtime.format($minuteFormat) #slurp
-#*WD|238*#$year.windSpeed.maxtime.format($dayFormat) #slurp
-#*WD|239*#$year.windSpeed.maxtime.format($monthFormat) #slurp
-#*WD|240*#$year.windSpeed.maxtime.format($yearFormat) #slurp
-#*WD|241*#0 #slurp
-#*WD|242*#00 #slurp
-#*WD|243*#00 #slurp
-#*WD|244*#00 #slurp
-#*WD|245*#00 #slurp
-#*WD|246*#00 #slurp
-#*WD|247*#0 #slurp
-#*WD|248*#00 #slurp
-#*WD|249*#00 #slurp
-#*WD|250*#00 #slurp
-#*WD|251*#00 #slurp
-#*WD|252*#00 #slurp
-#*WD|253*#0 #slurp
-#*WD|254*#00 #slurp
-#*WD|255*#00 #slurp
-#*WD|256*#00 #slurp
-#*WD|257*#00 #slurp
-#*WD|258*#00 #slurp
-#*WD|259*#$year.windchill.min.degree_C.toString($addLabel=False, $localize=False) #slurp
-#*WD|260*#$year.windchill.mintime.format($hourFormat) #slurp
-#*WD|261*#$year.windchill.mintime.format($minuteFormat) #slurp
-#*WD|262*#$year.windchill.mintime.format($dayFormat) #slurp
-#*WD|263*#$year.windchill.mintime.format($monthFormat) #slurp
-#*WD|264*#$year.windchill.mintime.format($yearFormat) #slurp
-#*WD|265*#$year.wind.vecdir.toString($addLabel=False, $localize=False) #slurp
-#*WD|266*#$year.wind.maxtime.format($hourFormat) #slurp
-#*WD|267*#$year.wind.maxtime.format($minuteFormat) #slurp
-#*WD|268*#$year.wind.maxtime.format($dayFormat) #slurp
-#*WD|269*#$year.wind.maxtime.format($monthFormat) #slurp
-#*WD|270*#$year.wind.maxtime.format($yearFormat) #slurp
+#*175*#$month.windchill.max.degree_C.toString($addLabel=False, $localize=False) #slurp
+#*176*#$month.windchill.maxtime.format($hourFormat) #slurp
+#*177*#$month.windchill.maxtime.format($minuteFormat) #slurp
+#*178*#$month.windchill.maxtime.format($dayFormat) #slurp
+#*179*#$month.windchill.maxtime.format($monthFormat) #slurp
+#*180*#$month.windchill.maxtime.format($yearFormat) #slurp
+#*181*#0 #slurp
+#*182*#00 #slurp
+#*183*#00 #slurp
+#*184*#00 #slurp
+#*185*#00 #slurp
+#*186*#00 #slurp
+#*187*#$year.outTemp.max.degree_C.toString($addLabel=False, $localize=False) #slurp
+#*188*#$year.outTemp.maxtime.format($hourFormat) #slurp
+#*189*#$year.outTemp.maxtime.format($minuteFormat) #slurp
+#*190*#$year.outTemp.maxtime.format($dayFormat) #slurp
+#*191*#$year.outTemp.maxtime.format($monthFormat) #slurp
+#*192*#$year.outTemp.maxtime.format($yearFormat) #slurp
+#*193*#$year.outTemp.min.degree_C.toString($addLabel=False, $localize=False) #slurp
+#*194*#$year.outTemp.mintime.format($hourFormat) #slurp
+#*195*#$year.outTemp.mintime.format($minuteFormat) #slurp
+#*196*#$year.outTemp.mintime.format($dayFormat) #slurp
+#*197*#$year.outTemp.mintime.format($monthFormat) #slurp
+#*198*#$year.outTemp.mintime.format($yearFormat) #slurp
+#*199*#$year.wind.max.knot.toString($addLabel=False, $localize=False) #slurp #slurp
+#*200*#$year.wind.maxtime.format($hourFormat) #slurp
+#*201*#$year.wind.maxtime.format($minuteFormat) #slurp
+#*202*#$year.wind.maxtime.format($dayFormat) #slurp
+#*203*#$year.wind.maxtime.format($monthFormat) #slurp
+#*204*#$year.wind.maxtime.format($yearFormat) #slurp
+#*205*#$year.rainRate.max.mm_per_hour.toString($addLabel=False, $localize=False) #slurp #slurp
+#*206*#$year.rainRate.maxtime.format($hourFormat) #slurp
+#*207*#$year.rainRate.maxtime.format($minuteFormat) #slurp
+#*208*#$year.rainRate.maxtime.format($dayFormat) #slurp
+#*209*#$year.rainRate.maxtime.format($monthFormat) #slurp
+#*210*#$year.rainRate.maxtime.format($yearFormat) #slurp
+#*211*#$year.barometer.min.hPa.toString($addLabel=False, $localize=False) #slurp
+#*212*#$year.barometer.mintime.format($hourFormat) #slurp
+#*213*#$year.barometer.mintime.format($minuteFormat) #slurp
+#*214*#$year.barometer.mintime.format($dayFormat) #slurp
+#*215*#$year.barometer.mintime.format($monthFormat) #slurp
+#*216*#$year.barometer.mintime.format($yearFormat) #slurp
+#*217*#$year.barometer.max.hPa.toString($addLabel=False, $localize=False) #slurp
+#*218*#$year.barometer.maxtime.format($hourFormat) #slurp
+#*219*#$year.barometer.maxtime.format($minuteFormat) #slurp
+#*220*#$year.barometer.maxtime.format($dayFormat) #slurp
+#*221*#$year.barometer.maxtime.format($monthFormat) #slurp
+#*222*#$year.barometer.maxtime.format($yearFormat) #slurp
+#*223*#$year.rain.max.mm.toString($addLabel=False, $localize=False) #slurp
+#*224*#$year.rain.maxtime.format($hourFormat) #slurp
+#*225*#$year.rain.maxtime.format($minuteFormat) #slurp
+#*226*#$year.rain.maxtime.format($dayFormat) #slurp
+#*227*#$year.rain.maxtime.format($monthFormat) #slurp
+#*228*#$year.rain.maxtime.format($yearFormat) #slurp
+#*229*#0 #slurp
+#*230*#00 #slurp
+#*231*#00 #slurp
+#*232*#00 #slurp
+#*233*#00 #slurp
+#*234*#00 #slurp
+#*235*#$year.windSpeed.max.knot.toString($addLabel=False, $localize=False) #slurp
+#*236*#$year.windSpeed.maxtime.format($hourFormat) #slurp
+#*237*#$year.windSpeed.maxtime.format($minuteFormat) #slurp
+#*238*#$year.windSpeed.maxtime.format($dayFormat) #slurp
+#*239*#$year.windSpeed.maxtime.format($monthFormat) #slurp
+#*240*#$year.windSpeed.maxtime.format($yearFormat) #slurp
+#*241*#0 #slurp
+#*242*#00 #slurp
+#*243*#00 #slurp
+#*244*#00 #slurp
+#*245*#00 #slurp
+#*246*#00 #slurp
+#*247*#0 #slurp
+#*248*#00 #slurp
+#*249*#00 #slurp
+#*250*#00 #slurp
+#*251*#00 #slurp
+#*252*#00 #slurp
+#*253*#0 #slurp
+#*254*#00 #slurp
+#*255*#00 #slurp
+#*256*#00 #slurp
+#*257*#00 #slurp
+#*258*#00 #slurp
+#*259*#$year.windchill.min.degree_C.toString($addLabel=False, $localize=False) #slurp
+#*260*#$year.windchill.mintime.format($hourFormat) #slurp
+#*261*#$year.windchill.mintime.format($minuteFormat) #slurp
+#*262*#$year.windchill.mintime.format($dayFormat) #slurp
+#*263*#$year.windchill.mintime.format($monthFormat) #slurp
+#*264*#$year.windchill.mintime.format($yearFormat) #slurp
+#*265*#$year.wind.vecdir.toString($addLabel=False, $localize=False) #slurp
+#*266*#$year.wind.maxtime.format($hourFormat) #slurp
+#*267*#$year.wind.maxtime.format($minuteFormat) #slurp
+#*268*#$year.wind.maxtime.format($dayFormat) #slurp
+#*269*#$year.wind.maxtime.format($monthFormat) #slurp
+#*270*#$year.wind.maxtime.format($yearFormat) #slurp
 #if $year.windAv.has_data
-#*WD|271*#$year.windAv.vecdir.toString($addLabel=False, $localize=False) #slurp
-#*WD|272*#$year.windAv.maxtime.format($hourFormat) #slurp
-#*WD|273*#$year.windAv.maxtime.format($minuteFormat) #slurp
-#*WD|274*#$year.windAv.maxtime.format($dayFormat) #slurp
-#*WD|275*#$year.windAv.maxtime.format($monthFormat) #slurp
-#*WD|276*#$year.windAv.maxtime.format($yearFormat) #slurp
+#*271*#$year.windAv.vecdir.toString($addLabel=False, $localize=False) #slurp
+#*272*#$year.windAv.maxtime.format($hourFormat) #slurp
+#*273*#$year.windAv.maxtime.format($minuteFormat) #slurp
+#*274*#$year.windAv.maxtime.format($dayFormat) #slurp
+#*275*#$year.windAv.maxtime.format($monthFormat) #slurp
+#*276*#$year.windAv.maxtime.format($yearFormat) #slurp
 #else
-#*WD|271*#0 #slurp
-#*WD|272*#00 #slurp
-#*WD|273*#00 #slurp
-#*WD|274*#00 #slurp
-#*WD|275*#00 #slurp
-#*WD|276*#00 #slurp
+#*271*#0 #slurp
+#*272*#00 #slurp
+#*273*#00 #slurp
+#*274*#00 #slurp
+#*275*#00 #slurp
+#*276*#00 #slurp
 #end if
-#if $year($data_binding='wd_binding').outTempDay.has_data
-#*WD|277*#$year($data_binding='wd_binding').outTempDay.max.degree_C.toString($addLabel=False, $localize=False) #slurp
-#*WD|278*#$year($data_binding='wd_binding').outTempDay.maxtime.format($hourFormat) #slurp
-#*WD|279*#$year($data_binding='wd_binding').outTempDay.maxtime.format($minuteFormat) #slurp
-#*WD|280*#$year($data_binding='wd_binding').outTempDay.maxtime.format($dayFormat) #slurp
-#*WD|281*#$year($data_binding='wd_binding').outTempDay.maxtime.format($monthFormat) #slurp
-#*WD|282*#$year($data_binding='wd_binding').outTempDay.maxtime.format($yearFormat) #slurp
+#if $year($data_binding='ws_binding').outTempDay.has_data
+#*277*#$year($data_binding='ws_binding').outTempDay.max.degree_C.toString($addLabel=False, $localize=False) #slurp
+#*278*#$year($data_binding='ws_binding').outTempDay.maxtime.format($hourFormat) #slurp
+#*279*#$year($data_binding='ws_binding').outTempDay.maxtime.format($minuteFormat) #slurp
+#*280*#$year($data_binding='ws_binding').outTempDay.maxtime.format($dayFormat) #slurp
+#*281*#$year($data_binding='ws_binding').outTempDay.maxtime.format($monthFormat) #slurp
+#*282*#$year($data_binding='ws_binding').outTempDay.maxtime.format($yearFormat) #slurp
 #else
-#*WD|277*#0 #slurp
-#*WD|278*#00 #slurp
-#*WD|279*#00 #slurp
-#*WD|280*#00 #slurp
-#*WD|281*#00 #slurp
-#*WD|282*#00 #slurp
+#*277*#0 #slurp
+#*278*#00 #slurp
+#*279*#00 #slurp
+#*280*#00 #slurp
+#*281*#00 #slurp
+#*282*#00 #slurp
 #end if
-#if $year($data_binding='wd_binding').outTempNight.has_data
-#*WD|283*#$year($data_binding='wd_binding').outTempNight.min.degree_C.toString($addLabel=False, $localize=False) #slurp
-#*WD|284*#$year($data_binding='wd_binding').outTempNight.mintime.format($hourFormat) #slurp
-#*WD|285*#$year($data_binding='wd_binding').outTempNight.mintime.format($minuteFormat) #slurp
-#*WD|286*#$year($data_binding='wd_binding').outTempNight.mintime.format($dayFormat) #slurp
-#*WD|287*#$year($data_binding='wd_binding').outTempNight.mintime.format($monthFormat) #slurp
-#*WD|288*#$year($data_binding='wd_binding').outTempNight.mintime.format($yearFormat) #slurp
+#if $year($data_binding='ws_binding').outTempNight.has_data
+#*283*#$year($data_binding='ws_binding').outTempNight.min.degree_C.toString($addLabel=False, $localize=False) #slurp
+#*284*#$year($data_binding='ws_binding').outTempNight.mintime.format($hourFormat) #slurp
+#*285*#$year($data_binding='ws_binding').outTempNight.mintime.format($minuteFormat) #slurp
+#*286*#$year($data_binding='ws_binding').outTempNight.mintime.format($dayFormat) #slurp
+#*287*#$year($data_binding='ws_binding').outTempNight.mintime.format($monthFormat) #slurp
+#*288*#$year($data_binding='ws_binding').outTempNight.mintime.format($yearFormat) #slurp
 #else
-#*WD|283*#0 #slurp
-#*WD|284*#00 #slurp
-#*WD|285*#00 #slurp
-#*WD|286*#00 #slurp
-#*WD|287*#00 #slurp
-#*WD|288*#00 #slurp
+#*283*#0 #slurp
+#*284*#00 #slurp
+#*285*#00 #slurp
+#*286*#00 #slurp
+#*287*#00 #slurp
+#*288*#00 #slurp
 #end if
-#if $year($data_binding='wd_binding').outTempDay.has_data
-#*WD|289*#$year($data_binding='wd_binding').outTempDay.minmax.degree_C.toString($addLabel=False, $localize=False) #slurp
-#*WD|290*#$year($data_binding='wd_binding').outTempDay.minmaxtime.format($hourFormat) #slurp
-#*WD|291*#$year($data_binding='wd_binding').outTempDay.minmaxtime.format($minuteFormat) #slurp
-#*WD|292*#$year($data_binding='wd_binding').outTempDay.minmaxtime.format($dayFormat) #slurp
-#*WD|293*#$year($data_binding='wd_binding').outTempDay.minmaxtime.format($monthFormat) #slurp
-#*WD|294*#$year($data_binding='wd_binding').outTempDay.minmaxtime.format($yearFormat) #slurp
+#if $year($data_binding='ws_binding').outTempDay.has_data
+#*289*#$year($data_binding='ws_binding').outTempDay.minmax.degree_C.toString($addLabel=False, $localize=False) #slurp
+#*290*#$year($data_binding='ws_binding').outTempDay.minmaxtime.format($hourFormat) #slurp
+#*291*#$year($data_binding='ws_binding').outTempDay.minmaxtime.format($minuteFormat) #slurp
+#*292*#$year($data_binding='ws_binding').outTempDay.minmaxtime.format($dayFormat) #slurp
+#*293*#$year($data_binding='ws_binding').outTempDay.minmaxtime.format($monthFormat) #slurp
+#*294*#$year($data_binding='ws_binding').outTempDay.minmaxtime.format($yearFormat) #slurp
 #else
-#*WD|289*#0 #slurp
-#*WD|290*#00 #slurp
-#*WD|291*#00 #slurp
-#*WD|292*#00 #slurp
-#*WD|293*#00 #slurp
-#*WD|294*#00 #slurp
+#*289*#0 #slurp
+#*290*#00 #slurp
+#*291*#00 #slurp
+#*292*#00 #slurp
+#*293*#00 #slurp
+#*294*#00 #slurp
 #end if
-#if $year($data_binding='wd_binding').outTempNight.has_data
-#*WD|295*#$year($data_binding='wd_binding').outTempNight.maxmin.degree_C.toString($addLabel=False, $localize=False) #slurp
-#*WD|296*#$year($data_binding='wd_binding').outTempNight.maxmintime.format($hourFormat) #slurp
-#*WD|297*#$year($data_binding='wd_binding').outTempNight.maxmintime.format($minuteFormat) #slurp
-#*WD|298*#$year($data_binding='wd_binding').outTempNight.maxmintime.format($dayFormat) #slurp
-#*WD|299*#$year($data_binding='wd_binding').outTempNight.maxmintime.format($monthFormat) #slurp
-#*WD|300*#$year($data_binding='wd_binding').outTempNight.maxmintime.format($yearFormat) #slurp
+#if $year($data_binding='ws_binding').outTempNight.has_data
+#*295*#$year($data_binding='ws_binding').outTempNight.maxmin.degree_C.toString($addLabel=False, $localize=False) #slurp
+#*296*#$year($data_binding='ws_binding').outTempNight.maxmintime.format($hourFormat) #slurp
+#*297*#$year($data_binding='ws_binding').outTempNight.maxmintime.format($minuteFormat) #slurp
+#*298*#$year($data_binding='ws_binding').outTempNight.maxmintime.format($dayFormat) #slurp
+#*299*#$year($data_binding='ws_binding').outTempNight.maxmintime.format($monthFormat) #slurp
+#*300*#$year($data_binding='ws_binding').outTempNight.maxmintime.format($yearFormat) #slurp
 #else
-#*WD|295*#0 #slurp
-#*WD|296*#00 #slurp
-#*WD|297*#00 #slurp
-#*WD|298*#00 #slurp
-#*WD|299*#00 #slurp
-#*WD|300*#00 #slurp
+#*295*#0 #slurp
+#*296*#00 #slurp
+#*297*#00 #slurp
+#*298*#00 #slurp
+#*299*#00 #slurp
+#*300*#00 #slurp
 #end if
-#*WD|301*#$year.windchill.max.degree_C.toString($addLabel=False, $localize=False) #slurp
-#*WD|302*#$year.windchill.maxtime.format($hourFormat) #slurp
-#*WD|303*#$year.windchill.maxtime.format($minuteFormat) #slurp
-#*WD|304*#$year.windchill.maxtime.format($dayFormat) #slurp
-#*WD|305*#$year.windchill.maxtime.format($monthFormat) #slurp
-#*WD|306*#$year.windchill.maxtime.format($yearFormat) #slurp
-#*WD|307*#0 #slurp
-#*WD|308*#00 #slurp
-#*WD|309*#00 #slurp
-#*WD|310*#00 #slurp
-#*WD|311*#00 #slurp
-#*WD|312*#00 #slurp
-#*WD|313*#$alltime.outTemp.max.degree_C.toString($addLabel=False, $localize=False) #slurp
-#*WD|314*#$alltime.outTemp.maxtime.format($hourFormat) #slurp
-#*WD|315*#$alltime.outTemp.maxtime.format($minuteFormat) #slurp
-#*WD|316*#$alltime.outTemp.maxtime.format($dayFormat) #slurp
-#*WD|317*#$alltime.outTemp.maxtime.format($monthFormat) #slurp
-#*WD|318*#$alltime.outTemp.maxtime.format($yearFormat) #slurp
-#*WD|319*#$alltime.outTemp.min.degree_C.toString($addLabel=False, $localize=False) #slurp
-#*WD|320*#$alltime.outTemp.mintime.format($hourFormat) #slurp
-#*WD|321*#$alltime.outTemp.mintime.format($minuteFormat) #slurp
-#*WD|322*#$alltime.outTemp.mintime.format($dayFormat) #slurp
-#*WD|323*#$alltime.outTemp.mintime.format($monthFormat) #slurp
-#*WD|324*#$alltime.outTemp.mintime.format($yearFormat) #slurp
-#*WD|325*#$alltime.wind.max.knot.toString($addLabel=False, $localize=False) #slurp
-#*WD|326*#$alltime.wind.maxtime.format($hourFormat) #slurp
-#*WD|327*#$alltime.wind.maxtime.format($minuteFormat) #slurp
-#*WD|328*#$alltime.wind.maxtime.format($dayFormat) #slurp
-#*WD|329*#$alltime.wind.maxtime.format($monthFormat) #slurp
-#*WD|330*#$alltime.wind.maxtime.format($yearFormat) #slurp
-#*WD|331*#$alltime.rainRate.max.mm_per_hour.toString($addLabel=False, $localize=False) #slurp
-#*WD|332*#$alltime.rainRate.maxtime.format($hourFormat) #slurp
-#*WD|333*#$alltime.rainRate.maxtime.format($minuteFormat) #slurp
-#*WD|334*#$alltime.rainRate.maxtime.format($dayFormat) #slurp
-#*WD|335*#$alltime.rainRate.maxtime.format($monthFormat) #slurp
-#*WD|336*#$alltime.rainRate.maxtime.format($yearFormat) #slurp
-#*WD|337*#$alltime.barometer.min.hPa.toString($addLabel=False, $localize=False) #slurp
-#*WD|338*#$alltime.barometer.mintime.format($hourFormat) #slurp
-#*WD|339*#$alltime.barometer.mintime.format($minuteFormat) #slurp
-#*WD|340*#$alltime.barometer.mintime.format($dayFormat) #slurp
-#*WD|341*#$alltime.barometer.mintime.format($monthFormat) #slurp
-#*WD|342*#$alltime.barometer.mintime.format($yearFormat) #slurp
-#*WD|343*#$alltime.barometer.max.hPa.toString($addLabel=False, $localize=False) #slurp
-#*WD|344*#$alltime.barometer.maxtime.format($hourFormat) #slurp
-#*WD|345*#$alltime.barometer.maxtime.format($minuteFormat) #slurp
-#*WD|346*#$alltime.barometer.maxtime.format($dayFormat) #slurp
-#*WD|347*#$alltime.barometer.maxtime.format($monthFormat) #slurp
-#*WD|348*#$alltime.barometer.maxtime.format($yearFormat) #slurp
-#*WD|349*#$alltime.rain.max.mm.toString($addLabel=False, $localize=False) #slurp
-#*WD|350*#$alltime.rain.maxtime.format($hourFormat) #slurp
-#*WD|351*#$alltime.rain.maxtime.format($minuteFormat) #slurp
-#*WD|352*#$alltime.rain.maxtime.format($dayFormat) #slurp
-#*WD|353*#$alltime.rain.maxtime.format($monthFormat) #slurp
-#*WD|354*#$alltime.rain.maxtime.format($yearFormat) #slurp
-#*WD|355*#0 #slurp
-#*WD|356*#00 #slurp
-#*WD|357*#00 #slurp
-#*WD|358*#00 #slurp
-#*WD|359*#00 #slurp
-#*WD|360*#00 #slurp
-#*WD|361*#$alltime.windSpeed.max.knot.toString($addLabel=False, $localize=False) #slurp
-#*WD|362*#$alltime.windSpeed.maxtime.format($hourFormat) #slurp
-#*WD|363*#$alltime.windSpeed.maxtime.format($minuteFormat) #slurp
-#*WD|364*#$alltime.windSpeed.maxtime.format($dayFormat) #slurp
-#*WD|365*#$alltime.windSpeed.maxtime.format($monthFormat) #slurp
-#*WD|366*#$alltime.windSpeed.maxtime.format($yearFormat) #slurp
-#*WD|367*#0 #slurp
-#*WD|368*#00 #slurp
-#*WD|369*#00 #slurp
-#*WD|370*#00 #slurp
-#*WD|371*#00 #slurp
-#*WD|372*#00 #slurp
-#*WD|373*#0 #slurp
-#*WD|374*#00 #slurp
-#*WD|375*#00 #slurp
-#*WD|376*#00 #slurp
-#*WD|377*#00 #slurp
-#*WD|378*#00 #slurp
-#*WD|379*#0 #slurp
-#*WD|380*#00 #slurp
-#*WD|381*#00 #slurp
-#*WD|382*#00 #slurp
-#*WD|383*#00 #slurp
-#*WD|384*#00 #slurp
-#*WD|385*#$alltime.windchill.min.degree_C.toString($addLabel=False, $localize=False) #slurp
-#*WD|386*#$alltime.windchill.mintime.format($hourFormat) #slurp
-#*WD|387*#$alltime.windchill.mintime.format($minuteFormat) #slurp
-#*WD|388*#$alltime.windchill.mintime.format($dayFormat) #slurp
-#*WD|389*#$alltime.windchill.mintime.format($monthFormat) #slurp
-#*WD|390*#$alltime.windchill.mintime.format($yearFormat) #slurp
-#*WD|391*#$alltime.wind.max.knot.toString($addLabel=False, $localize=False) #slurp
-#*WD|392*#$alltime.wind.maxtime.format($hourFormat) #slurp
-#*WD|393*#$alltime.wind.maxtime.format($minuteFormat) #slurp
-#*WD|394*#$alltime.wind.maxtime.format($dayFormat) #slurp
-#*WD|395*#$alltime.wind.maxtime.format($monthFormat) #slurp
-#*WD|396*#$alltime.wind.maxtime.format($yearFormat) #slurp
-#*WD|397*#$alltime.windSpeed.max.knot.toString($addLabel=False, $localize=False) #slurp
-#*WD|398*#$alltime.windSpeed.maxtime.format($hourFormat) #slurp
-#*WD|399*#$alltime.windSpeed.maxtime.format($minuteFormat) #slurp
-#*WD|400*#$alltime.windSpeed.maxtime.format($dayFormat) #slurp
-#*WD|401*#$alltime.windSpeed.maxtime.format($monthFormat) #slurp
-#*WD|402*#$alltime.windSpeed.maxtime.format($yearFormat) #slurp
-#if $alltime($data_binding='wd_binding').outTempDay.has_data
-#*WD|403*#$alltime($data_binding='wd_binding').outTempDay.max.degree_C.toString($addLabel=False, $localize=False) #slurp
-#*WD|404*#$alltime($data_binding='wd_binding').outTempDay.maxtime.format($hourFormat) #slurp
-#*WD|405*#$alltime($data_binding='wd_binding').outTempDay.maxtime.format($minuteFormat) #slurp
-#*WD|406*#$alltime($data_binding='wd_binding').outTempDay.maxtime.format($dayFormat) #slurp
-#*WD|407*#$alltime($data_binding='wd_binding').outTempDay.maxtime.format($monthFormat) #slurp
-#*WD|408*#$alltime($data_binding='wd_binding').outTempDay.maxtime.format($yearFormat) #slurp
+#*301*#$year.windchill.max.degree_C.toString($addLabel=False, $localize=False) #slurp
+#*302*#$year.windchill.maxtime.format($hourFormat) #slurp
+#*303*#$year.windchill.maxtime.format($minuteFormat) #slurp
+#*304*#$year.windchill.maxtime.format($dayFormat) #slurp
+#*305*#$year.windchill.maxtime.format($monthFormat) #slurp
+#*306*#$year.windchill.maxtime.format($yearFormat) #slurp
+#*307*#0 #slurp
+#*308*#00 #slurp
+#*309*#00 #slurp
+#*310*#00 #slurp
+#*311*#00 #slurp
+#*312*#00 #slurp
+#*313*#$alltime.outTemp.max.degree_C.toString($addLabel=False, $localize=False) #slurp
+#*314*#$alltime.outTemp.maxtime.format($hourFormat) #slurp
+#*315*#$alltime.outTemp.maxtime.format($minuteFormat) #slurp
+#*316*#$alltime.outTemp.maxtime.format($dayFormat) #slurp
+#*317*#$alltime.outTemp.maxtime.format($monthFormat) #slurp
+#*318*#$alltime.outTemp.maxtime.format($yearFormat) #slurp
+#*319*#$alltime.outTemp.min.degree_C.toString($addLabel=False, $localize=False) #slurp
+#*320*#$alltime.outTemp.mintime.format($hourFormat) #slurp
+#*321*#$alltime.outTemp.mintime.format($minuteFormat) #slurp
+#*322*#$alltime.outTemp.mintime.format($dayFormat) #slurp
+#*323*#$alltime.outTemp.mintime.format($monthFormat) #slurp
+#*324*#$alltime.outTemp.mintime.format($yearFormat) #slurp
+#*325*#$alltime.wind.max.knot.toString($addLabel=False, $localize=False) #slurp
+#*326*#$alltime.wind.maxtime.format($hourFormat) #slurp
+#*327*#$alltime.wind.maxtime.format($minuteFormat) #slurp
+#*328*#$alltime.wind.maxtime.format($dayFormat) #slurp
+#*329*#$alltime.wind.maxtime.format($monthFormat) #slurp
+#*330*#$alltime.wind.maxtime.format($yearFormat) #slurp
+#*331*#$alltime.rainRate.max.mm_per_hour.toString($addLabel=False, $localize=False) #slurp
+#*332*#$alltime.rainRate.maxtime.format($hourFormat) #slurp
+#*333*#$alltime.rainRate.maxtime.format($minuteFormat) #slurp
+#*334*#$alltime.rainRate.maxtime.format($dayFormat) #slurp
+#*335*#$alltime.rainRate.maxtime.format($monthFormat) #slurp
+#*336*#$alltime.rainRate.maxtime.format($yearFormat) #slurp
+#*337*#$alltime.barometer.min.hPa.toString($addLabel=False, $localize=False) #slurp
+#*338*#$alltime.barometer.mintime.format($hourFormat) #slurp
+#*339*#$alltime.barometer.mintime.format($minuteFormat) #slurp
+#*340*#$alltime.barometer.mintime.format($dayFormat) #slurp
+#*341*#$alltime.barometer.mintime.format($monthFormat) #slurp
+#*342*#$alltime.barometer.mintime.format($yearFormat) #slurp
+#*343*#$alltime.barometer.max.hPa.toString($addLabel=False, $localize=False) #slurp
+#*344*#$alltime.barometer.maxtime.format($hourFormat) #slurp
+#*345*#$alltime.barometer.maxtime.format($minuteFormat) #slurp
+#*346*#$alltime.barometer.maxtime.format($dayFormat) #slurp
+#*347*#$alltime.barometer.maxtime.format($monthFormat) #slurp
+#*348*#$alltime.barometer.maxtime.format($yearFormat) #slurp
+#*349*#$alltime.rain.max.mm.toString($addLabel=False, $localize=False) #slurp
+#*350*#$alltime.rain.maxtime.format($hourFormat) #slurp
+#*351*#$alltime.rain.maxtime.format($minuteFormat) #slurp
+#*352*#$alltime.rain.maxtime.format($dayFormat) #slurp
+#*353*#$alltime.rain.maxtime.format($monthFormat) #slurp
+#*354*#$alltime.rain.maxtime.format($yearFormat) #slurp
+#*355*#0 #slurp
+#*356*#00 #slurp
+#*357*#00 #slurp
+#*358*#00 #slurp
+#*359*#00 #slurp
+#*360*#00 #slurp
+#*361*#$alltime.windSpeed.max.knot.toString($addLabel=False, $localize=False) #slurp
+#*362*#$alltime.windSpeed.maxtime.format($hourFormat) #slurp
+#*363*#$alltime.windSpeed.maxtime.format($minuteFormat) #slurp
+#*364*#$alltime.windSpeed.maxtime.format($dayFormat) #slurp
+#*365*#$alltime.windSpeed.maxtime.format($monthFormat) #slurp
+#*366*#$alltime.windSpeed.maxtime.format($yearFormat) #slurp
+#*367*#0 #slurp
+#*368*#00 #slurp
+#*369*#00 #slurp
+#*370*#00 #slurp
+#*371*#00 #slurp
+#*372*#00 #slurp
+#*373*#0 #slurp
+#*374*#00 #slurp
+#*375*#00 #slurp
+#*376*#00 #slurp
+#*377*#00 #slurp
+#*378*#00 #slurp
+#*379*#0 #slurp
+#*380*#00 #slurp
+#*381*#00 #slurp
+#*382*#00 #slurp
+#*383*#00 #slurp
+#*384*#00 #slurp
+#*385*#$alltime.windchill.min.degree_C.toString($addLabel=False, $localize=False) #slurp
+#*386*#$alltime.windchill.mintime.format($hourFormat) #slurp
+#*387*#$alltime.windchill.mintime.format($minuteFormat) #slurp
+#*388*#$alltime.windchill.mintime.format($dayFormat) #slurp
+#*389*#$alltime.windchill.mintime.format($monthFormat) #slurp
+#*390*#$alltime.windchill.mintime.format($yearFormat) #slurp
+#*391*#$alltime.wind.max.knot.toString($addLabel=False, $localize=False) #slurp
+#*392*#$alltime.wind.maxtime.format($hourFormat) #slurp
+#*393*#$alltime.wind.maxtime.format($minuteFormat) #slurp
+#*394*#$alltime.wind.maxtime.format($dayFormat) #slurp
+#*395*#$alltime.wind.maxtime.format($monthFormat) #slurp
+#*396*#$alltime.wind.maxtime.format($yearFormat) #slurp
+#*397*#$alltime.windSpeed.max.knot.toString($addLabel=False, $localize=False) #slurp
+#*398*#$alltime.windSpeed.maxtime.format($hourFormat) #slurp
+#*399*#$alltime.windSpeed.maxtime.format($minuteFormat) #slurp
+#*400*#$alltime.windSpeed.maxtime.format($dayFormat) #slurp
+#*401*#$alltime.windSpeed.maxtime.format($monthFormat) #slurp
+#*402*#$alltime.windSpeed.maxtime.format($yearFormat) #slurp
+#if $alltime($data_binding='ws_binding').outTempDay.has_data
+#*403*#$alltime($data_binding='ws_binding').outTempDay.max.degree_C.toString($addLabel=False, $localize=False) #slurp
+#*404*#$alltime($data_binding='ws_binding').outTempDay.maxtime.format($hourFormat) #slurp
+#*405*#$alltime($data_binding='ws_binding').outTempDay.maxtime.format($minuteFormat) #slurp
+#*406*#$alltime($data_binding='ws_binding').outTempDay.maxtime.format($dayFormat) #slurp
+#*407*#$alltime($data_binding='ws_binding').outTempDay.maxtime.format($monthFormat) #slurp
+#*408*#$alltime($data_binding='ws_binding').outTempDay.maxtime.format($yearFormat) #slurp
 #else
-#*WD|403*#0 #slurp
-#*WD|404*#00 #slurp
-#*WD|405*#00 #slurp
-#*WD|406*#00 #slurp
-#*WD|407*#00 #slurp
-#*WD|408*#00 #slurp
+#*403*#0 #slurp
+#*404*#00 #slurp
+#*405*#00 #slurp
+#*406*#00 #slurp
+#*407*#00 #slurp
+#*408*#00 #slurp
 #end if
-#if $alltime($data_binding='wd_binding').outTempNight.has_data
-#*WD|409*#$alltime($data_binding='wd_binding').outTempNight.min.degree_C.toString($addLabel=False, $localize=False) #slurp
-#*WD|410*#$alltime($data_binding='wd_binding').outTempNight.mintime.format($hourFormat) #slurp
-#*WD|411*#$alltime($data_binding='wd_binding').outTempNight.mintime.format($minuteFormat) #slurp
-#*WD|412*#$alltime($data_binding='wd_binding').outTempNight.mintime.format($dayFormat) #slurp
-#*WD|413*#$alltime($data_binding='wd_binding').outTempNight.mintime.format($monthFormat) #slurp
-#*WD|414*#$alltime($data_binding='wd_binding').outTempNight.mintime.format($yearFormat) #slurp
+#if $alltime($data_binding='ws_binding').outTempNight.has_data
+#*409*#$alltime($data_binding='ws_binding').outTempNight.min.degree_C.toString($addLabel=False, $localize=False) #slurp
+#*410*#$alltime($data_binding='ws_binding').outTempNight.mintime.format($hourFormat) #slurp
+#*411*#$alltime($data_binding='ws_binding').outTempNight.mintime.format($minuteFormat) #slurp
+#*412*#$alltime($data_binding='ws_binding').outTempNight.mintime.format($dayFormat) #slurp
+#*413*#$alltime($data_binding='ws_binding').outTempNight.mintime.format($monthFormat) #slurp
+#*414*#$alltime($data_binding='ws_binding').outTempNight.mintime.format($yearFormat) #slurp
 #else
-#*WD|409*#0 #slurp
-#*WD|410*#00 #slurp
-#*WD|411*#00 #slurp
-#*WD|412*#00 #slurp
-#*WD|413*#00 #slurp
-#*WD|414*#00 #slurp
+#*409*#0 #slurp
+#*410*#00 #slurp
+#*411*#00 #slurp
+#*412*#00 #slurp
+#*413*#00 #slurp
+#*414*#00 #slurp
 #end if
-#if $alltime($data_binding='wd_binding').outTempDay.has_data
-#*WD|415*#$alltime($data_binding='wd_binding').outTempDay.minmax.degree_C.toString($addLabel=False, $localize=False) #slurp
-#*WD|416*#$alltime($data_binding='wd_binding').outTempDay.minmaxtime.format($hourFormat) #slurp
-#*WD|417*#$alltime($data_binding='wd_binding').outTempDay.minmaxtime.format($minuteFormat) #slurp
-#*WD|418*#$alltime($data_binding='wd_binding').outTempDay.minmaxtime.format($dayFormat) #slurp
-#*WD|419*#$alltime($data_binding='wd_binding').outTempDay.minmaxtime.format($monthFormat) #slurp
-#*WD|420*#$alltime($data_binding='wd_binding').outTempDay.minmaxtime.format($yearFormat) #slurp
+#if $alltime($data_binding='ws_binding').outTempDay.has_data
+#*415*#$alltime($data_binding='ws_binding').outTempDay.minmax.degree_C.toString($addLabel=False, $localize=False) #slurp
+#*416*#$alltime($data_binding='ws_binding').outTempDay.minmaxtime.format($hourFormat) #slurp
+#*417*#$alltime($data_binding='ws_binding').outTempDay.minmaxtime.format($minuteFormat) #slurp
+#*418*#$alltime($data_binding='ws_binding').outTempDay.minmaxtime.format($dayFormat) #slurp
+#*419*#$alltime($data_binding='ws_binding').outTempDay.minmaxtime.format($monthFormat) #slurp
+#*420*#$alltime($data_binding='ws_binding').outTempDay.minmaxtime.format($yearFormat) #slurp
 #else
-#*WD|415*#0 #slurp
-#*WD|416*#00 #slurp
-#*WD|417*#00 #slurp
-#*WD|418*#00 #slurp
-#*WD|419*#00 #slurp
-#*WD|420*#00 #slurp
+#*415*#0 #slurp
+#*416*#00 #slurp
+#*417*#00 #slurp
+#*418*#00 #slurp
+#*419*#00 #slurp
+#*420*#00 #slurp
 #end if
-#if $alltime($data_binding='wd_binding').outTempNight.has_data
-#*WD|421*#$alltime($data_binding='wd_binding').outTempNight.maxmin.degree_C.toString($addLabel=False, $localize=False) #slurp
-#*WD|422*#$alltime($data_binding='wd_binding').outTempNight.maxmintime.format($hourFormat) #slurp
-#*WD|423*#$alltime($data_binding='wd_binding').outTempNight.maxmintime.format($minuteFormat) #slurp
-#*WD|424*#$alltime($data_binding='wd_binding').outTempNight.maxmintime.format($dayFormat) #slurp
-#*WD|425*#$alltime($data_binding='wd_binding').outTempNight.maxmintime.format($monthFormat) #slurp
-#*WD|426*#$alltime($data_binding='wd_binding').outTempNight.maxmintime.format($yearFormat) #slurp
+#if $alltime($data_binding='ws_binding').outTempNight.has_data
+#*421*#$alltime($data_binding='ws_binding').outTempNight.maxmin.degree_C.toString($addLabel=False, $localize=False) #slurp
+#*422*#$alltime($data_binding='ws_binding').outTempNight.maxmintime.format($hourFormat) #slurp
+#*423*#$alltime($data_binding='ws_binding').outTempNight.maxmintime.format($minuteFormat) #slurp
+#*424*#$alltime($data_binding='ws_binding').outTempNight.maxmintime.format($dayFormat) #slurp
+#*425*#$alltime($data_binding='ws_binding').outTempNight.maxmintime.format($monthFormat) #slurp
+#*426*#$alltime($data_binding='ws_binding').outTempNight.maxmintime.format($yearFormat) #slurp
 #else
-#*WD|421*#0 #slurp
-#*WD|422*#00 #slurp
-#*WD|423*#00 #slurp
-#*WD|424*#00 #slurp
-#*WD|425*#00 #slurp
-#*WD|426*#00 #slurp
+#*421*#0 #slurp
+#*422*#00 #slurp
+#*423*#00 #slurp
+#*424*#00 #slurp
+#*425*#00 #slurp
+#*426*#00 #slurp
 #end if
-#*WD|427*#$alltime.heatindex.max.degree_C.toString($addLabel=False, $localize=False) #slurp
-#*WD|428*#$alltime.heatindex.maxtime.format($hourFormat) #slurp
-#*WD|429*#$alltime.heatindex.maxtime.format($minuteFormat) #slurp
-#*WD|430*#$alltime.heatindex.maxtime.format($dayFormat) #slurp
-#*WD|431*#$alltime.heatindex.maxtime.format($monthFormat) #slurp
-#*WD|432*#$alltime.heatindex.maxtime.format($yearFormat) #slurp
-#*WD|433*#0 #slurp
-#*WD|434*#00 #slurp
-#*WD|435*#00 #slurp
-#*WD|436*#00 #slurp
-#*WD|437*#00 #slurp
-#*WD|438*#00 #slurp
-#*WD|439*##*barometer Hour 01 to 20. Hour 01=24 hours ago*##slurp
+#*427*#$alltime.heatindex.max.degree_C.toString($addLabel=False, $localize=False) #slurp
+#*428*#$alltime.heatindex.maxtime.format($hourFormat) #slurp
+#*429*#$alltime.heatindex.maxtime.format($minuteFormat) #slurp
+#*430*#$alltime.heatindex.maxtime.format($dayFormat) #slurp
+#*431*#$alltime.heatindex.maxtime.format($monthFormat) #slurp
+#*432*#$alltime.heatindex.maxtime.format($yearFormat) #slurp
+#*433*#0 #slurp
+#*434*#00 #slurp
+#*435*#00 #slurp
+#*436*#00 #slurp
+#*437*#00 #slurp
+#*438*#00 #slurp
+#*439*##*barometer Hour 01 to 20. Hour 01=24 hours ago*##slurp
 #for $i in range (20):
 #try
 $barometerHourArray[$i].hPa.toString($addLabel=False, $localize=False) #slurp
@@ -664,7 +677,7 @@ $barometerHourArray[$i].hPa.toString($addLabel=False, $localize=False) #slurp
 0 #slurp
 #end try
 #end for
-#*WD|459*##*'timestamp' Hour 01 to 20. Hour 01=24 hours ago*##slurp
+#*459*##*'timestamp' Hour 01 to 20. Hour 01=24 hours ago*##slurp
 #for $i in range (20):
 #try
 $dateTimeHourArray[$i].format($timeFormat) #slurp
@@ -672,26 +685,26 @@ $dateTimeHourArray[$i].format($timeFormat) #slurp
 0 #slurp
 #end try
 #end for
-#*WD|479*#0 #slurp
-#*WD|480*#0 #slurp
-#*WD|481*#0 #slurp
+#*479*#0 #slurp
+#*480*#0 #slurp
+#*481*#0 #slurp
 #try
 #set $datelastrain = date.fromtimestamp($last_rain.raw)
 #set $datenow=date.today()
-#set $numdays = ($datenow-$datelastrain).days
+#set $numdays = ($datenow - $datelastrain).days
 #except
 #set $numdays = '-'
 #end try
-#*WD|482*#$numdays #slurp
-#*WD|483*#$month_rainy_days #slurp
-#*WD|484*#$rainMon #slurp
-#*WD|485*#$rainTue #slurp
-#*WD|486*#$rainWed #slurp
-#*WD|487*#$rainThu #slurp
-#*WD|488*#$rainFri #slurp
-#*WD|489*#$rainSat #slurp
-#*WD|490*#$rainSun #slurp
-#*WD|491*##*Solar Hour 01 to 20. Hour 01=24 hours ago*##slurp
+#*482*#$numdays #slurp
+#*483*#$month_rainy_days #slurp
+#*484*#$rainMon #slurp
+#*485*#$rainTue #slurp
+#*486*#$rainWed #slurp
+#*487*#$rainThu #slurp
+#*488*#$rainFri #slurp
+#*489*#$rainSat #slurp
+#*490*#$rainSun #slurp
+#*491*##*Solar Hour 01 to 20. Hour 01=24 hours ago*##slurp
 #for $i in range (20):
 #try
 $radiationHourArray[$i].toString($addLabel=False, $localize=False) #slurp
@@ -699,7 +712,7 @@ $radiationHourArray[$i].toString($addLabel=False, $localize=False) #slurp
 0 #slurp
 #end try
 #end for
-#*WD|511*##*UV reading Hour 01 to 20. Hour 01=24 hours ago*##slurp
+#*511*##*UV reading Hour 01 to 20. Hour 01=24 hours ago*##slurp
 #for $i in range (20):
 #try
 $UVHourArray[$i].toString($localize=False) #slurp
@@ -707,12 +720,12 @@ $UVHourArray[$i].toString($localize=False) #slurp
 0 #slurp
 #end try
 #end for
-#*WD|531*#$forecast_underscore_text #slurp
-#*WD|532*#$day.ET.sum.toString($addLabel=False, $localize=False) #slurp
-#*WD|533*#0 #slurp
-#*WD|534*#$yesterday.rain.sum.mm.toString($addLabel=False, $localize=False) #slurp
-#*WD|535*#$station.version #slurp
-#*WD|536*##*Wind Dir Hour 01 to 20. Hour 01=24 hours ago*##slurp
+#*531*#$forecast_underscore_text #slurp
+#*532*#$day.ET.sum.toString($addLabel=False, $localize=False) #slurp
+#*533*#0 #slurp
+#*534*#$yesterday.rain.sum.mm.toString($addLabel=False, $localize=False) #slurp
+#*535*#$station.version #slurp
+#*536*##*Wind Dir Hour 01 to 20. Hour 01=24 hours ago*##slurp
 #for $i in range (20):
 #try
 $windDirHourArray[$i].toString($addLabel=False, $localize=False) #slurp
@@ -721,21 +734,21 @@ $windDirHourArray[$i].toString($addLabel=False, $localize=False) #slurp
 #end try
 #end for
 #if $almanac.hasExtras
-#*WD|556*#$almanac.sun.rise.format("%H:%M") #slurp
-#*WD|557*#$almanac.sun.set.format("%H:%M") #slurp
-#*WD|558*#$almanac.moon.rise.format("%H:%M") #slurp
-#*WD|559*#$almanac.moon.set.format("%H:%M") #slurp
-#*WD|560*#$almanac.moon_fullness #slurp
-#*WD|561*#$moonDays #slurp
+#*556*#$almanac.sun.rise.format("%H:%M") #slurp
+#*557*#$almanac.sun.set.format("%H:%M") #slurp
+#*558*#$almanac.moon.rise.format("%H:%M") #slurp
+#*559*#$almanac.moon.set.format("%H:%M") #slurp
+#*560*#$almanac.moon_fullness #slurp
+#*561*#$moonDays #slurp
 #else
-#*WD|556*#$almanac.sunrise.format("%H:%M") #slurp
-#*WD|557*#$almanac.sunset.format("%H:%M") #slurp
-#*WD|558*#NA #slurp
-#*WD|559*#NA #slurp
-#*WD|560*#$almanac.moon_fullness #slurp
-#*WD|561*#NA #slurp
+#*556*#$almanac.sunrise.format("%H:%M") #slurp
+#*557*#$almanac.sunset.format("%H:%M") #slurp
+#*558*#NA #slurp
+#*559*#NA #slurp
+#*560*#$almanac.moon_fullness #slurp
+#*561*#NA #slurp
 #end if
-#*WD|562*##*Windspeed Hour 21 to 24. Hour 24=most recent*##slurp
+#*562*##*WindSpeed Hour 21 to 24. Hour 24=most recent*##slurp
 #for $i in range (20,24):
 #try
 $windSpeedHourArray[$i].knot.toString($addLabel=False, $localize=False) #slurp
@@ -743,7 +756,7 @@ $windSpeedHourArray[$i].knot.toString($addLabel=False, $localize=False) #slurp
 0 #slurp
 #end try
 #end for
-#*WD|566*##*outTemp Hour 21 to 24. Hour 24=most recent*##slurp
+#*566*##*outTemp Hour 21 to 24. Hour 24=most recent*##slurp
 #for $i in range (20,24):
 #try
 $outTempHourArray[$i].degree_C.toString($addLabel=False, $localize=False) #slurp
@@ -751,7 +764,7 @@ $outTempHourArray[$i].degree_C.toString($addLabel=False, $localize=False) #slurp
 0 #slurp
 #end try
 #end for
-#*WD|570*##*rain Hour 21 to 24. Hour 24=most recent*##slurp
+#*570*##*rain Hour 21 to 24. Hour 24=most recent*##slurp
 #for $i in range (20,24):
 #try
 #set $rain_accum_formatted = $rainFormat % $rain_accum
@@ -760,7 +773,7 @@ $rain_accum_formatted #slurp
 0 #slurp
 #end try
 #end for
-#*WD|574*##*barometer Hour 21 to 24. Hour 24=most recent*##slurp
+#*574*##*barometer Hour 21 to 24. Hour 24=most recent*##slurp
 #for $i in range (20,24):
 #try
 $barometerHourArray[$i].hPa.toString($addLabel=False, $localize=False) #slurp
@@ -768,7 +781,7 @@ $barometerHourArray[$i].hPa.toString($addLabel=False, $localize=False) #slurp
 0 #slurp
 #end try
 #end for
-#*WD|578*##*'timestamp' Hour 21 to 24. Hour 24=most recent*##slurp
+#*578*##*'timestamp' Hour 21 to 24. Hour 24=most recent*##slurp
 #for $i in range (20,24):
 #try
 $dateTimeHourArray[$i].format($timeFormat) #slurp
@@ -776,7 +789,7 @@ $dateTimeHourArray[$i].format($timeFormat) #slurp
 0 #slurp
 #end try
 #end for
-#*WD|582*##*Solar Hour 21 to 24. Hour 24=most recent*##slurp
+#*582*##*Solar Hour 21 to 24. Hour 24=most recent*##slurp
 #for $i in range (20,24):
 #try
 $radiationHourArray[$i].toString($addLabel=False, $localize=False) #slurp
@@ -784,7 +797,7 @@ $radiationHourArray[$i].toString($addLabel=False, $localize=False) #slurp
 0 #slurp
 #end try
 #end for
-#*WD|586*##*UV reading Hour 21 to 24. Hour 24=most recent*##slurp
+#*586*##*UV reading Hour 21 to 24. Hour 24=most recent*##slurp
 #for $i in range (20,24):
 #try
 $UVHourArray[$i].toString($localize=False) #slurp
@@ -792,7 +805,7 @@ $UVHourArray[$i].toString($localize=False) #slurp
 0 #slurp
 #end try
 #end for
-#*WD|590*##*Win Dir Hour 21 to 24. Hour 24=most recent*##slurp
+#*590*##*Win Dir Hour 21 to 24. Hour 24=most recent*##slurp
 #for $i in range (20,24):
 #try
 $windDirHourArray[$i].toString($addLabel=False, $localize=False) #slurp
@@ -800,13 +813,13 @@ $windDirHourArray[$i].toString($addLabel=False, $localize=False) #slurp
 0 #slurp
 #end try
 #end for
-#*WD|594*##*Extra Sensor Low and Highs (Not Supported)*##slurp
+#*594*##*Extra Sensor Low and Highs (Not Supported)*##slurp
 #for $i in range(8)
 -100 #slurp
 100 #slurp
 #end for
-#*WD|610*#$dayornight #slurp
-#*WD|611*##*outHumidity Hour 01 to 24. Hour 01=24 hours ago, Hour 24=most recent*##slurp
+#*610*#$dayornight #slurp
+#*611*##*outHumidity Hour 01 to 24. Hour 01=24 hours ago, Hour 24=most recent*##slurp
 #for $i in range (24):
 #try
 $outHumidityHourArray[$i].toString($addLabel=False, $localize=False) #slurp
@@ -814,8 +827,8 @@ $outHumidityHourArray[$i].toString($addLabel=False, $localize=False) #slurp
 0 #slurp
 #end try
 #end for
-#*WD|635*#- #slurp
-#*WD|636*##*inTemp Hour 01 to 24. Hour 01=24 hours ago, Hour 24=most recent*##slurp
+#*635*#- #slurp
+#*636*##*inTemp Hour 01 to 24. Hour 01=24 hours ago, Hour 24=most recent*##slurp
 #for $i in range (24):
 #try
 $inTempHourArray[$i].degree_C.toString($addLabel=False, $localize=False) #slurp
@@ -823,103 +836,103 @@ $inTempHourArray[$i].degree_C.toString($addLabel=False, $localize=False) #slurp
 0 #slurp
 #end try
 #end for
-#*WD|660*#$month.radiation.max.toString($addLabel=False, $localize=False) #slurp
-#*WD|661*#$month.radiation.maxtime.format($hourFormat) #slurp
-#*WD|662*#$month.radiation.maxtime.format($minuteFormat) #slurp
-#*WD|663*#$month.radiation.maxtime.format($dayFormat) #slurp
-#*WD|664*#$month.radiation.maxtime.format($monthFormat) #slurp
-#*WD|665*#$month.radiation.maxtime.format($yearFormat) #slurp
-#*WD|666*#$month.UV.max.toString($localize=False) #slurp
-#*WD|667*#$month.UV.maxtime.format($hourFormat) #slurp
-#*WD|668*#$month.UV.maxtime.format($minuteFormat) #slurp
-#*WD|669*#$month.UV.maxtime.format($dayFormat) #slurp
-#*WD|670*#$month.UV.maxtime.format($monthFormat) #slurp
-#*WD|671*#$month.UV.maxtime.format($yearFormat) #slurp
-#*WD|672*#$year.radiation.max.toString($addLabel=False, $localize=False) #slurp
-#*WD|673*#$year.radiation.maxtime.format($hourFormat) #slurp
-#*WD|674*#$year.radiation.maxtime.format($minuteFormat) #slurp
-#*WD|675*#$year.radiation.maxtime.format($dayFormat) #slurp
-#*WD|676*#$year.radiation.maxtime.format($monthFormat) #slurp
-#*WD|677*#$year.radiation.maxtime.format($yearFormat) #slurp
-#*WD|678*#$year.UV.max.toString($localize=False) #slurp
-#*WD|679*#$year.UV.maxtime.format($hourFormat) #slurp
-#*WD|680*#$year.UV.maxtime.format($minuteFormat) #slurp
-#*WD|681*#$year.UV.maxtime.format($dayFormat) #slurp
-#*WD|682*#$year.UV.maxtime.format($monthFormat) #slurp
-#*WD|683*#$year.UV.maxtime.format($yearFormat) #slurp
-#*WD|684*#$alltime.radiation.max.toString($addLabel=False, $localize=False) #slurp
-#*WD|685*#$alltime.radiation.maxtime.format($hourFormat) #slurp
-#*WD|686*#$alltime.radiation.maxtime.format($minuteFormat) #slurp
-#*WD|687*#$alltime.radiation.maxtime.format($dayFormat) #slurp
-#*WD|688*#$alltime.radiation.maxtime.format($monthFormat) #slurp
-#*WD|689*#$alltime.radiation.maxtime.format($yearFormat) #slurp
-#*WD|690*#$alltime.UV.max.toString($localize=False) #slurp
-#*WD|691*#$alltime.UV.maxtime.format($hourFormat) #slurp
-#*WD|692*#$alltime.UV.maxtime.format($minuteFormat) #slurp
-#*WD|693*#$alltime.UV.maxtime.format($dayFormat) #slurp
-#*WD|694*#$alltime.UV.maxtime.format($monthFormat) #slurp
-#*WD|695*#$alltime.UV.maxtime.format($yearFormat) #slurp
-#*WD|696*#$today_sunshine_hours #slurp
-#*WD|697*#0 #slurp
-#*WD|698*#$current.dateTime.format($hourFormat) #slurp
-#*WD|699*#$current.dateTime.format($minuteFormat) #slurp
-#*WD|700*#$current.dateTime.format($dayFormat) #slurp
+#*660*#$month.radiation.max.toString($addLabel=False, $localize=False) #slurp
+#*661*#$month.radiation.maxtime.format($hourFormat) #slurp
+#*662*#$month.radiation.maxtime.format($minuteFormat) #slurp
+#*663*#$month.radiation.maxtime.format($dayFormat) #slurp
+#*664*#$month.radiation.maxtime.format($monthFormat) #slurp
+#*665*#$month.radiation.maxtime.format($yearFormat) #slurp
+#*666*#$month.UV.max.toString($localize=False) #slurp
+#*667*#$month.UV.maxtime.format($hourFormat) #slurp
+#*668*#$month.UV.maxtime.format($minuteFormat) #slurp
+#*669*#$month.UV.maxtime.format($dayFormat) #slurp
+#*670*#$month.UV.maxtime.format($monthFormat) #slurp
+#*671*#$month.UV.maxtime.format($yearFormat) #slurp
+#*672*#$year.radiation.max.toString($addLabel=False, $localize=False) #slurp
+#*673*#$year.radiation.maxtime.format($hourFormat) #slurp
+#*674*#$year.radiation.maxtime.format($minuteFormat) #slurp
+#*675*#$year.radiation.maxtime.format($dayFormat) #slurp
+#*676*#$year.radiation.maxtime.format($monthFormat) #slurp
+#*677*#$year.radiation.maxtime.format($yearFormat) #slurp
+#*678*#$year.UV.max.toString($localize=False) #slurp
+#*679*#$year.UV.maxtime.format($hourFormat) #slurp
+#*680*#$year.UV.maxtime.format($minuteFormat) #slurp
+#*681*#$year.UV.maxtime.format($dayFormat) #slurp
+#*682*#$year.UV.maxtime.format($monthFormat) #slurp
+#*683*#$year.UV.maxtime.format($yearFormat) #slurp
+#*684*#$alltime.radiation.max.toString($addLabel=False, $localize=False) #slurp
+#*685*#$alltime.radiation.maxtime.format($hourFormat) #slurp
+#*686*#$alltime.radiation.maxtime.format($minuteFormat) #slurp
+#*687*#$alltime.radiation.maxtime.format($dayFormat) #slurp
+#*688*#$alltime.radiation.maxtime.format($monthFormat) #slurp
+#*689*#$alltime.radiation.maxtime.format($yearFormat) #slurp
+#*690*#$alltime.UV.max.toString($localize=False) #slurp
+#*691*#$alltime.UV.maxtime.format($hourFormat) #slurp
+#*692*#$alltime.UV.maxtime.format($minuteFormat) #slurp
+#*693*#$alltime.UV.maxtime.format($dayFormat) #slurp
+#*694*#$alltime.UV.maxtime.format($monthFormat) #slurp
+#*695*#$alltime.UV.maxtime.format($yearFormat) #slurp
+#*696*#$today_sunshine_hours #slurp
+#*697*#0 #slurp
+#*698*#$current.dateTime.format($hourFormat) #slurp
+#*699*#$current.dateTime.format($minuteFormat) #slurp
+#*700*#$current.dateTime.format($dayFormat) #slurp
 #if $current.radiation.has_data
-#*WD|701*#s1 #slurp
+#*701*#s1 #slurp
 #else
-#*WD|701*#s0 #slurp
+#*701*#s0 #slurp
 #end if
 #if $current.UV.has_data
-#*WD|702*#u1 #slurp
+#*702*#u1 #slurp
 #else
-#*WD|702*#u0 #slurp
+#*702*#u0 #slurp
 #end if
 #if ($current.soilTemp1.has_data) or ($current.soilTemp2.has_data) or ($current.soilTemp3.has_data) or ($current.soilTemp4.has_data)
-#*WD|703*#s1 #slurp
+#*703*#s1 #slurp
 #else
-#*WD|703*#s0 #slurp
+#*703*#s0 #slurp
 #end if
-#*WD|704*##*NexStorm Not Supported*##slurp
+#*704*##*NexStorm Not Supported*##slurp
 #for $i in range (24):
 0 #slurp
 #end for
-#*WD|728*#- #slurp
-#*WD|729*#$month.dewpoint.max.degree_C.toString($addLabel=False, $localize=False) #slurp
-#*WD|730*#$month.dewpoint.maxtime.format($hourFormat) #slurp
-#*WD|731*#$month.dewpoint.maxtime.format($minuteFormat) #slurp
-#*WD|732*#$month.dewpoint.maxtime.format($dayFormat) #slurp
-#*WD|733*#$month.dewpoint.maxtime.format($monthFormat) #slurp
-#*WD|734*#$month.dewpoint.maxtime.format($yearFormat) #slurp
-#*WD|735*#$month.dewpoint.min.degree_C.toString($addLabel=False, $localize=False) #slurp
-#*WD|736*#$month.dewpoint.mintime.format($hourFormat) #slurp
-#*WD|737*#$month.dewpoint.mintime.format($minuteFormat) #slurp
-#*WD|738*#$month.dewpoint.mintime.format($dayFormat) #slurp
-#*WD|739*#$month.dewpoint.mintime.format($monthFormat) #slurp
-#*WD|740*#$month.dewpoint.mintime.format($yearFormat) #slurp
-#*WD|741*#$year.dewpoint.max.degree_C.toString($addLabel=False, $localize=False) #slurp
-#*WD|742*#$year.dewpoint.maxtime.format($hourFormat) #slurp
-#*WD|743*#$year.dewpoint.maxtime.format($minuteFormat) #slurp
-#*WD|744*#$year.dewpoint.maxtime.format($dayFormat) #slurp
-#*WD|745*#$year.dewpoint.maxtime.format($monthFormat) #slurp
-#*WD|746*#$year.dewpoint.maxtime.format($yearFormat) #slurp
-#*WD|747*#$year.dewpoint.min.degree_C.toString($addLabel=False, $localize=False) #slurp
-#*WD|748*#$year.dewpoint.mintime.format($hourFormat) #slurp
-#*WD|749*#$year.dewpoint.mintime.format($minuteFormat) #slurp
-#*WD|750*#$year.dewpoint.mintime.format($dayFormat) #slurp
-#*WD|751*#$year.dewpoint.mintime.format($monthFormat) #slurp
-#*WD|752*#$year.dewpoint.mintime.format($yearFormat) #slurp
-#*WD|753*#$alltime.dewpoint.max.degree_C.toString($addLabel=False, $localize=False) #slurp
-#*WD|754*#$alltime.dewpoint.maxtime.format($hourFormat) #slurp
-#*WD|755*#$alltime.dewpoint.maxtime.format($minuteFormat) #slurp
-#*WD|756*#$alltime.dewpoint.maxtime.format($dayFormat) #slurp
-#*WD|757*#$alltime.dewpoint.maxtime.format($monthFormat) #slurp
-#*WD|758*#$alltime.dewpoint.maxtime.format($yearFormat) #slurp
-#*WD|759*#$alltime.dewpoint.min.degree_C.toString($addLabel=False, $localize=False) #slurp
-#*WD|760*#$alltime.dewpoint.mintime.format($hourFormat) #slurp
-#*WD|761*#$alltime.dewpoint.mintime.format($minuteFormat) #slurp
-#*WD|762*#$alltime.dewpoint.mintime.format($dayFormat) #slurp
-#*WD|763*#$alltime.dewpoint.mintime.format($monthFormat) #slurp
-#*WD|764*#$alltime.dewpoint.mintime.format($yearFormat) #slurp
-#*WD|765*#$cbi.format(format_string="%.1f") #slurp
-#*WD|766*#- #slurp
-#*WD|767*#!!EOR!! #slurp
+#*728*#- #slurp
+#*729*#$month.dewpoint.max.degree_C.toString($addLabel=False, $localize=False) #slurp
+#*730*#$month.dewpoint.maxtime.format($hourFormat) #slurp
+#*731*#$month.dewpoint.maxtime.format($minuteFormat) #slurp
+#*732*#$month.dewpoint.maxtime.format($dayFormat) #slurp
+#*733*#$month.dewpoint.maxtime.format($monthFormat) #slurp
+#*734*#$month.dewpoint.maxtime.format($yearFormat) #slurp
+#*735*#$month.dewpoint.min.degree_C.toString($addLabel=False, $localize=False) #slurp
+#*736*#$month.dewpoint.mintime.format($hourFormat) #slurp
+#*737*#$month.dewpoint.mintime.format($minuteFormat) #slurp
+#*738*#$month.dewpoint.mintime.format($dayFormat) #slurp
+#*739*#$month.dewpoint.mintime.format($monthFormat) #slurp
+#*740*#$month.dewpoint.mintime.format($yearFormat) #slurp
+#*741*#$year.dewpoint.max.degree_C.toString($addLabel=False, $localize=False) #slurp
+#*742*#$year.dewpoint.maxtime.format($hourFormat) #slurp
+#*743*#$year.dewpoint.maxtime.format($minuteFormat) #slurp
+#*744*#$year.dewpoint.maxtime.format($dayFormat) #slurp
+#*745*#$year.dewpoint.maxtime.format($monthFormat) #slurp
+#*746*#$year.dewpoint.maxtime.format($yearFormat) #slurp
+#*747*#$year.dewpoint.min.degree_C.toString($addLabel=False, $localize=False) #slurp
+#*748*#$year.dewpoint.mintime.format($hourFormat) #slurp
+#*749*#$year.dewpoint.mintime.format($minuteFormat) #slurp
+#*750*#$year.dewpoint.mintime.format($dayFormat) #slurp
+#*751*#$year.dewpoint.mintime.format($monthFormat) #slurp
+#*752*#$year.dewpoint.mintime.format($yearFormat) #slurp
+#*753*#$alltime.dewpoint.max.degree_C.toString($addLabel=False, $localize=False) #slurp
+#*754*#$alltime.dewpoint.maxtime.format($hourFormat) #slurp
+#*755*#$alltime.dewpoint.maxtime.format($minuteFormat) #slurp
+#*756*#$alltime.dewpoint.maxtime.format($dayFormat) #slurp
+#*757*#$alltime.dewpoint.maxtime.format($monthFormat) #slurp
+#*758*#$alltime.dewpoint.maxtime.format($yearFormat) #slurp
+#*759*#$alltime.dewpoint.min.degree_C.toString($addLabel=False, $localize=False) #slurp
+#*760*#$alltime.dewpoint.mintime.format($hourFormat) #slurp
+#*761*#$alltime.dewpoint.mintime.format($minuteFormat) #slurp
+#*762*#$alltime.dewpoint.mintime.format($dayFormat) #slurp
+#*763*#$alltime.dewpoint.mintime.format($monthFormat) #slurp
+#*764*#$alltime.dewpoint.mintime.format($yearFormat) #slurp
+#*765*#$cbi.format(format_string="%.1f") #slurp
+#*766*#- #slurp
+#*767*#!!EOR!!#slurp

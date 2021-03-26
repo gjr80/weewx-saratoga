@@ -1,41 +1,55 @@
+##errorCatcher Echo
 #*
-This program is free software; you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation; either version 2 of the License, or
-(at your option) any later version.
+A template to generate clientrawdaily.txt for the Saratoga Weather Website templates.
 
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
+Copyright (C) 2021 Gary Roderick                    gjroderick<at>gmail.com
 
-###############################################################################
-#                                                                             #
-#                          clientrawdaily.txt Template                        #
-#                                                                             #
-# Version: 0.1.0                                         Date: xx xxxxx 2021  #
-#                                                                             #
-###############################################################################
+This program is free software: you can redistribute it and/or modify it under
+the terms of the GNU General Public License as published by the Free Software
+Foundation, either version 3 of the License, or (at your option) any later
+version.
+
+This program is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
+PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License along with
+this program.  If not, see http://www.gnu.org/licenses/.
+
+
+Description
+
+This template is part of the WeeWX-Saratoga extension and produces 
+clientrawdaily.txt containing data for use with Saratoga Weather Website 
+templates.
+
+Pre-Requisites
+
+- WeeWX-Saratoga WeeWX extension
+- PyEphem for inclusion of ephemeris and insolation data
+
+Version: 0.1.0                                      Date: xx xxxxx 2021
+
 *#
-##Setup format strings
-##
+#*
+Inline python code to setup/initialise a number of variable for use in the
+template
+*#
+## setup format strings
 #set $hourFormat = "%H"
 #set $minuteFormat = "%M"
 #set $dayFormat = "%d"
 #set $monthFormat = "%m"
 ##
-##End Setup format strings
-##
-##Cache tagged stats required in clientraw
-##
+## cache tagged stats required in clientrawdaily
 #set $rainYearmonthlyArray = $yearmonthly.rain.sumQuery
 #set $outTempMonthdailyMaxArray = $monthdaily.outTemp.maxQuery
 #set $outTempMonthdailyMinArray = $monthdaily.outTemp.minQuery
 #set $rainMonthdailyArray = $monthdaily.rain.sumQuery
 #set $barometerMonthdailyArray = $monthdaily.barometer.avgQuery
-## CHECK ME - should this be windSpeed or wind, was wind
+## TODO. Should this be windSpeed or wind, was wind
 #set $windSpeedMonthdailyArray = $monthdaily.windSpeed.avgQuery
-## CHECK ME - should this be windSpeed or wind, was wind
+## TODO. Should this be windSpeed or wind, was wind
 #set $windMonthdailyVecdirArray = $monthdaily.wind.vecdirQuery
 #set $outHumidityMonthdailyArray = $monthdaily.outHumidity.avgQuery
 #set $outTempSixhourArray = $sixhour.outTemp.avgQuery
@@ -47,11 +61,7 @@ GNU General Public License for more details.
 #set $UVSixhourArray = $sixhour.UV.avgQuery
 #set $inTempSixhourArray = $sixhour.inTemp.avgQuery
 ##
-##End Cache tagged stats required in clientraw
-##
-##
-##Assign monthly rain totals to correct month
-##
+## assign monthly rain totals to correct month
 #set $moY = int($current.dateTime.format($monthFormat))
 #set $rainJan = rainYearmonthlyArray[(13-$moY)%12].mm.toString($NONE_string="0.0", $localize=False)
 #set $rainFeb = rainYearmonthlyArray[(14-$moY)%12].mm.toString($NONE_string="0.0", $localize=False)
@@ -66,10 +76,15 @@ GNU General Public License for more details.
 #set $rainNov = rainYearmonthlyArray[(23-$moY)%12].mm.toString($NONE_string="0.0", $localize=False)
 #set $rainDec = rainYearmonthlyArray[(12-$moY)%12].mm.toString($NONE_string="0.0", $localize=False)
 ##
-##End assign monthly rain totals to correct month
-##
-#*WD|000*#12345 #slurp
-#*WD|001*##*Previous 31 days max Temperature Readings. Day 1=31 days ago, Day31=yesterday*##slurp
+#*
+   main template code
+   A few simple conventions:
+    - one field per line
+    - field numbers are commented at the start of each line
+    - each field ands with a space except for the EOR
+*#
+#*000*#12345 #slurp
+#*001*##*Previous 31 days max Temperature Readings. Day 1=31 days ago, Day31=yesterday*##slurp
 #for $i in range (31):
 #try
 $outTempMonthdailyMaxArray[$i].degree_C.toString($addLabel=False, $localize=False) #slurp
@@ -77,7 +92,7 @@ $outTempMonthdailyMaxArray[$i].degree_C.toString($addLabel=False, $localize=Fals
 0 #slurp
 #end try
 #end for
-#*WD|032*##*Previous 31 days min Temperature Readings. Day 1=31 days ago, Day31=yesterday*##slurp
+#*032*##*Previous 31 days min Temperature Readings. Day 1=31 days ago, Day31=yesterday*##slurp
 #for $i in range (31):
 #try
 $outTempMonthdailyMinArray[$i].degree_C.toString($addLabel=False, $localize=False) #slurp
@@ -85,7 +100,7 @@ $outTempMonthdailyMinArray[$i].degree_C.toString($addLabel=False, $localize=Fals
 0 #slurp
 #end try
 #end for
-#*WD|063*##*Previous 31 days rainfall Readings. Day 1=31 days ago, Day31=yesterday*##slurp
+#*063*##*Previous 31 days rainfall Readings. Day 1=31 days ago, Day31=yesterday*##slurp
 #for $i in range (31):
 #try
 $rainMonthdailyArray[$i].mm.toString($addLabel=False, $localize=False) #slurp
@@ -93,7 +108,7 @@ $rainMonthdailyArray[$i].mm.toString($addLabel=False, $localize=False) #slurp
 0 #slurp
 #end try
 #end for
-#*WD|094*##*Previous 31 days barometer Readings. Day 1=31 days ago, Day31=yesterday*##slurp
+#*094*##*Previous 31 days barometer Readings. Day 1=31 days ago, Day31=yesterday*##slurp
 #for $i in range (31):
 #try
 $barometerMonthdailyArray[$i].hPa.toString($addLabel=False, $localize=False) #slurp
@@ -101,7 +116,7 @@ $barometerMonthdailyArray[$i].hPa.toString($addLabel=False, $localize=False) #sl
 0 #slurp
 #end try
 #end for
-#*WD|125*##*Previous 31 days avg windSpeed Readings. Day 1=31 days ago, Day31=yesterday*##slurp
+#*125*##*Previous 31 days avg windSpeed Readings. Day 1=31 days ago, Day31=yesterday*##slurp
 #for $i in range (31):
 #try
 $windSpeedMonthdailyArray[$i].knot.toString($addLabel=False, $localize=False) #slurp
@@ -109,7 +124,7 @@ $windSpeedMonthdailyArray[$i].knot.toString($addLabel=False, $localize=False) #s
 0 #slurp
 #end try
 #end for
-#*WD|156*##*Previous 31 days wind direction Readings. Day 1=31 days ago, Day31=yesterday*##slurp
+#*156*##*Previous 31 days wind direction Readings. Day 1=31 days ago, Day31=yesterday*##slurp
 #for $i in range (31):
 #try
 $windMonthdailyVecdirArray[$i].toString($addLabel=False, $localize=False) #slurp
@@ -117,19 +132,19 @@ $windMonthdailyVecdirArray[$i].toString($addLabel=False, $localize=False) #slurp
 0 #slurp
 #end try
 #end for
-#*WD|187*#$rainJan #slurp
-#*WD|188*#$rainFeb #slurp
-#*WD|189*#$rainMar #slurp
-#*WD|190*#$rainApr #slurp
-#*WD|191*#$rainMay #slurp
-#*WD|192*#$rainJun #slurp
-#*WD|193*#$rainJul #slurp
-#*WD|194*#$rainAug #slurp
-#*WD|195*#$rainSep #slurp
-#*WD|196*#$rainOct #slurp
-#*WD|197*#$rainNov #slurp
-#*WD|198*#$rainDec #slurp
-#*WD|199*##*Previous 31 days outHumidity Readings. Day 1=31 days ago, Day31=yesterday*##slurp
+#*187*#$rainJan #slurp
+#*188*#$rainFeb #slurp
+#*189*#$rainMar #slurp
+#*190*#$rainApr #slurp
+#*191*#$rainMay #slurp
+#*192*#$rainJun #slurp
+#*193*#$rainJul #slurp
+#*194*#$rainAug #slurp
+#*195*#$rainSep #slurp
+#*196*#$rainOct #slurp
+#*197*#$rainNov #slurp
+#*198*#$rainDec #slurp
+#*199*##*Previous 31 days outHumidity Readings. Day 1=31 days ago, Day31=yesterday*##slurp
 #for $i in range (31):
 #try
 $outHumidityMonthdailyArray[$i].toString($addLabel=False, $localize=False) #slurp
@@ -137,10 +152,10 @@ $outHumidityMonthdailyArray[$i].toString($addLabel=False, $localize=False) #slur
 0 #slurp
 #end try
 #end for
-#*WD|230*#$current.dateTime.format($hourFormat) #slurp
-#*WD|231*#$current.dateTime.format($minuteFormat) #slurp
-#*WD|232*#$current.dateTime.format($dayFormat) #slurp
-#*WD|233*##*Previous 7 days of 6 hourly Temperature Readings. Day 1 #1=7 days ago, Day 7 #4=now*##slurp
+#*230*#$current.dateTime.format($hourFormat) #slurp
+#*231*#$current.dateTime.format($minuteFormat) #slurp
+#*232*#$current.dateTime.format($dayFormat) #slurp
+#*233*##*Previous 7 days of 6 hourly Temperature Readings. Day 1 #1=7 days ago, Day 7 #4=now*##slurp
 #for $i in range(28)
 #try
 $outTempSixhourArray[$i].toString($addLabel=False, $localize=False) #slurp
@@ -148,7 +163,7 @@ $outTempSixhourArray[$i].toString($addLabel=False, $localize=False) #slurp
 0 #slurp
 #end try
 #end for
-#*WD|261*##*Previous 7 days of 6 hourly Barometer Readings. Day 1 #1=7 days ago, Day 7 #4=now*##slurp
+#*261*##*Previous 7 days of 6 hourly Barometer Readings. Day 1 #1=7 days ago, Day 7 #4=now*##slurp
 #for $i in range(28)
 #try
 $barometerSixhourArray[$i].toString($addLabel=False, $localize=False) #slurp
@@ -156,7 +171,7 @@ $barometerSixhourArray[$i].toString($addLabel=False, $localize=False) #slurp
 0 #slurp
 #end try
 #end for
-#*WD|289*##*Previous 7 days of 6 hourly Humidity Readings. Day 1 #1=7 days ago, Day 7 #4=now*##slurp
+#*289*##*Previous 7 days of 6 hourly Humidity Readings. Day 1 #1=7 days ago, Day 7 #4=now*##slurp
 #for $i in range(28)
 #try
 $outHumiditySixhourArray[$i].toString($addLabel=False, $localize=False) #slurp
@@ -164,7 +179,7 @@ $outHumiditySixhourArray[$i].toString($addLabel=False, $localize=False) #slurp
 0 #slurp
 #end try
 #end for
-#*WD|317*##*Previous 7 days of 6 hourly wind direction Readings. Day 1 #1=7 days ago, Day 7 #4=now*##slurp
+#*317*##*Previous 7 days of 6 hourly wind direction Readings. Day 1 #1=7 days ago, Day 7 #4=now*##slurp
 #for $i in range(28)
 #try
 $windSixhourVecdirArray[$i].toString($addLabel=False, $localize=False) #slurp
@@ -172,7 +187,7 @@ $windSixhourVecdirArray[$i].toString($addLabel=False, $localize=False) #slurp
 0 #slurp
 #end try
 #end for
-#*WD|345*##*Previous 7 days of 6 hourly Wind Speed Readings. Day 1 #1=7 days ago, Day 7 #4=now*##slurp
+#*345*##*Previous 7 days of 6 hourly Wind Speed Readings. Day 1 #1=7 days ago, Day 7 #4=now*##slurp
 #for $i in range(28)
 #try
 $windSpeedSixhourArray[$i].toString($addLabel=False, $localize=False) #slurp
@@ -180,7 +195,7 @@ $windSpeedSixhourArray[$i].toString($addLabel=False, $localize=False) #slurp
 0 #slurp
 #end try
 #end for
-#*WD|373*##*Previous 7 days of 6 hourly Radiation Readings. Day 1 #1=7 days ago, Day 7 #4=now*##slurp
+#*373*##*Previous 7 days of 6 hourly Radiation Readings. Day 1 #1=7 days ago, Day 7 #4=now*##slurp
 #for $i in range(28)
 #try
 $radiationSixhourArray[$i].toString($addLabel=False, $localize=False) #slurp
@@ -188,7 +203,7 @@ $radiationSixhourArray[$i].toString($addLabel=False, $localize=False) #slurp
 0 #slurp
 #end try
 #end for
-#*WD|401*##*Previous 7 days of 6 hourly UV Readings. Day 1 #1=7 days ago, Day 7 #4=now*##slurp
+#*401*##*Previous 7 days of 6 hourly UV Readings. Day 1 #1=7 days ago, Day 7 #4=now*##slurp
 #for $i in range(28)
 #try
 $UVSixhourArray[$i].toString($localize=False) #slurp
@@ -196,35 +211,35 @@ $UVSixhourArray[$i].toString($localize=False) #slurp
 0 #slurp
 #end try
 #end for
-#*WD|429*#0 #slurp
+#*429*#0 #slurp
 #if $rainfall_man_avg_exists
-#*WD|430*#$jan_rain_man_avg.mm.toString($addLabel=False, $localize=False) #slurp
-#*WD|431*#$feb_rain_man_avg.mm.toString($addLabel=False, $localize=False) #slurp
-#*WD|432*#$mar_rain_man_avg.mm.toString($addLabel=False, $localize=False) #slurp
-#*WD|433*#$apr_rain_man_avg.mm.toString($addLabel=False, $localize=False) #slurp
-#*WD|434*#$may_rain_man_avg.mm.toString($addLabel=False, $localize=False) #slurp
-#*WD|435*#$jun_rain_man_avg.mm.toString($addLabel=False, $localize=False) #slurp
-#*WD|436*#$jul_rain_man_avg.mm.toString($addLabel=False, $localize=False) #slurp
-#*WD|437*#$aug_rain_man_avg.mm.toString($addLabel=False, $localize=False) #slurp
-#*WD|438*#$sep_rain_man_avg.mm.toString($addLabel=False, $localize=False) #slurp
-#*WD|439*#$oct_rain_man_avg.mm.toString($addLabel=False, $localize=False) #slurp
-#*WD|440*#$nov_rain_man_avg.mm.toString($addLabel=False, $localize=False) #slurp
-#*WD|441*#$dec_rain_man_avg.mm.toString($addLabel=False, $localize=False) #slurp
+#*430*#$jan_rain_man_avg.mm.toString($addLabel=False, $localize=False) #slurp
+#*431*#$feb_rain_man_avg.mm.toString($addLabel=False, $localize=False) #slurp
+#*432*#$mar_rain_man_avg.mm.toString($addLabel=False, $localize=False) #slurp
+#*433*#$apr_rain_man_avg.mm.toString($addLabel=False, $localize=False) #slurp
+#*434*#$may_rain_man_avg.mm.toString($addLabel=False, $localize=False) #slurp
+#*435*#$jun_rain_man_avg.mm.toString($addLabel=False, $localize=False) #slurp
+#*436*#$jul_rain_man_avg.mm.toString($addLabel=False, $localize=False) #slurp
+#*437*#$aug_rain_man_avg.mm.toString($addLabel=False, $localize=False) #slurp
+#*438*#$sep_rain_man_avg.mm.toString($addLabel=False, $localize=False) #slurp
+#*439*#$oct_rain_man_avg.mm.toString($addLabel=False, $localize=False) #slurp
+#*440*#$nov_rain_man_avg.mm.toString($addLabel=False, $localize=False) #slurp
+#*441*#$dec_rain_man_avg.mm.toString($addLabel=False, $localize=False) #slurp
 #else
-#*WD|430*#$avrainjan.mm.toString($addLabel=False, $localize=False) #slurp
-#*WD|431*#$avrainfeb.mm.toString($addLabel=False, $localize=False) #slurp
-#*WD|432*#$avrainmay.mm.toString($addLabel=False, $localize=False) #slurp
-#*WD|433*#$avrainapr.mm.toString($addLabel=False, $localize=False) #slurp
-#*WD|434*#$avrainmay.mm.toString($addLabel=False, $localize=False) #slurp
-#*WD|435*#$avrainjun.mm.toString($addLabel=False, $localize=False) #slurp
-#*WD|436*#$avrainjul.mm.toString($addLabel=False, $localize=False) #slurp
-#*WD|437*#$avrainaug.mm.toString($addLabel=False, $localize=False) #slurp
-#*WD|438*#$avrainsep.mm.toString($addLabel=False, $localize=False) #slurp
-#*WD|439*#$avrainoct.mm.toString($addLabel=False, $localize=False) #slurp
-#*WD|440*#$avrainnov.mm.toString($addLabel=False, $localize=False) #slurp
-#*WD|441*#$avraindec.mm.toString($addLabel=False, $localize=False) #slurp
+#*430*#$avrainjan.mm.toString($addLabel=False, $localize=False) #slurp
+#*431*#$avrainfeb.mm.toString($addLabel=False, $localize=False) #slurp
+#*432*#$avrainmay.mm.toString($addLabel=False, $localize=False) #slurp
+#*433*#$avrainapr.mm.toString($addLabel=False, $localize=False) #slurp
+#*434*#$avrainmay.mm.toString($addLabel=False, $localize=False) #slurp
+#*435*#$avrainjun.mm.toString($addLabel=False, $localize=False) #slurp
+#*436*#$avrainjul.mm.toString($addLabel=False, $localize=False) #slurp
+#*437*#$avrainaug.mm.toString($addLabel=False, $localize=False) #slurp
+#*438*#$avrainsep.mm.toString($addLabel=False, $localize=False) #slurp
+#*439*#$avrainoct.mm.toString($addLabel=False, $localize=False) #slurp
+#*440*#$avrainnov.mm.toString($addLabel=False, $localize=False) #slurp
+#*441*#$avraindec.mm.toString($addLabel=False, $localize=False) #slurp
 #end if
-#*WD|442*##*Previous 7 days of 6 hourly Indoor Temperature Readings. Day 1 #1=7 days ago, Day 7 #4=now*##slurp
+#*442*##*Previous 7 days of 6 hourly Indoor Temperature Readings. Day 1 #1=7 days ago, Day 7 #4=now*##slurp
 #for $i in range(28)
 #try
 $inTempSixhourArray[$i].toString($addLabel=False, $localize=False) #slurp
@@ -232,4 +247,4 @@ $inTempSixhourArray[$i].toString($addLabel=False, $localize=False) #slurp
 0 #slurp
 #end try
 #end for
-#*WD|470*#!!EOR!! #slurp
+#*470*#!!EOR!!#slurp
