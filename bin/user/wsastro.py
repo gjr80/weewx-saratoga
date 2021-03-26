@@ -1,7 +1,7 @@
 """
-wdastro.py
+wsastro.py
 
-Astronomical search list extensions for WeeWX-WD
+Astronomical search list extensions for WeeWX-Saratoga
 
 This program is free software; you can redistribute it and/or modify it under
 the terms of the GNU General Public License as published by the Free Software
@@ -12,35 +12,11 @@ This program is distributed in the hope that it will be useful, but WITHOUT ANY
 WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
 PARTICULAR PURPOSE.  See the GNU General Public License for more details.
 
-Version: 2.1.3                                          Date: 15 February 2021
+Version: 0.1.0                                          Date: xx xxxxx 2021
 
 Revision History
-    15 February 2021    v2.1.3
-        - no change, version number change only
-    17 November 2020    v2.1.2
-        - no change, version number change only
-    11 November 2020    v2.1.1
-        - no change, version number change only
-    1 November 2020     v2.1.0
-        - logging is now WeeWX 3 and 4 compatible
-    30 August 2020      v2.0.1
-        - no change, version number change only
-    20 August 2020      v2.0.0
-      - minor formatting changes
-      - WeeWX 3.2+/4.x python2/3 compatible
-
-Previous bitbucket revision history
-    31 March 2017       v1.0.3
-      - no change, version number change only
-    14 December 2016    v1.0.2
-      - no change, version number change only
-    30 November 2016    v1.0.1
-      - added support for second level debug messaging (ie debug = 2)
-    10 January 2015     v1.0.0
-      - rewritten for WeeWX v3.0.0
-    21 October 2014     v0.9.4 (never released)
-      - initial implementation
-
+    xx xxxxx 2021       v0.1.0
+        -   initial release
 """
 
 # python imports
@@ -80,7 +56,7 @@ except ImportError:
     def logdbg(msg):
         logmsg(syslog.LOG_DEBUG, msg)
 
-WEEWXWD_ASTRO_VERSION = '2.1.3'
+WS_ASTRO_VERSION = '0.1.0'
 
 
 class MoonApsis(SearchList):
@@ -288,7 +264,7 @@ class MoonApsis(SearchList):
           next_perigee_ts: ValueHelper containing date-time of next apogee
                            (could be next year)
           next_perigee_dist_km: Earth to Moon distance in km at next perigee
-                                (Weewx has no notion of km/mi so cannot use a
+                                (WeeWX has no notion of km/mi so cannot use a
                                 ValueHelper)
           max_apogee: Tuple with details of apogee where Moon is furthest from
                       Earth (ie max apogee) this year.

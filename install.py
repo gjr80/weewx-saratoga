@@ -147,7 +147,7 @@ class WSInstaller(ExtensionInstaller):
                 }
             },
             files=[('bin/user', ['bin/user/stackedwindrose.py',
-                                 'bin/user/wdastro.py',
+                                 'bin/user/wsastro.py',
                                  'bin/user/wsschema.py',
                                  'bin/user/wdsearchlist.py',
                                  'bin/user/wdtaggedstats.py',
