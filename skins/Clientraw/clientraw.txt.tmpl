@@ -19,7 +19,7 @@ this program.  If not, see http://www.gnu.org/licenses/.
 
 Description
 
-This template is part of the WeeWX-Saratoga extension and produces 
+This template is part of the WeeWX-Saratoga extension and produces
 clientraw.txt containing data for use with Saratoga Weather Website templates.
 
 Pre-Requisites
@@ -183,39 +183,39 @@ $rainHourArray[$i].mm.toString($addLabel=False, $localize=False) #slurp
 0 #slurp
 #end try
 #end for
-#*110*#$day.heatindex.max.degree_C.toString($addLabel=False, $localize=False) #slurp
-#*111*#$day.heatindex.min.degree_C.toString($addLabel=False, $localize=False) #slurp
-#*112*#$current.heatindex.degree_C.toString($addLabel=False, $localize=False) #slurp
-#*113*#$day.windSpeed.max.knot.toString($useThisFormat="%.1f", $localize=False) #slurp
-#*114*#0 #slurp
-#*115*#--- #slurp
-#*116*#--- #slurp
-#*117*#$current.windDir.toString($addLabel=False, $localize=False) #slurp
-#*118*#0 #slurp
-#*119*#0 #slurp
-#*120*#0 #slurp
-#*121*#0 #slurp
-#*122*#0 #slurp
-#*123*#0 #slurp
-#*124*#0 #slurp
-#*125*#0 #slurp
-#*126*#0 #slurp
-#*127*#$current.radiation.toString($addLabel=False, $localize=False) #slurp
-#*128*#$day.inTemp.max.degree_C.toString($addLabel=False, $localize=False) #slurp
-#*129*#$day.inTemp.min.degree_C.toString($addLabel=False, $localize=False) #slurp
-#*130*#$current($data_binding='ws_binding').appTemp.degree_C.toString($addLabel=False, $localize=False) #slurp
-#*131*#$day.barometer.max.hPa.toString($addLabel=False, $localize=False) #slurp
-#*132*#$day.barometer.min.hPa.toString($addLabel=False, $localize=False) #slurp
-#*133*#$day.wind.max.knot.toString($useThisFormat="%.1f", $localize=False) #slurp
-#*134*#$day.wind.maxtime #slurp
-#*135*#$day.wind.maxtime #slurp
-#*136*#$day($data_binding='ws_binding').appTemp.max.degree_C.toString($addLabel=False, $localize=False) #slurp
-#*137*#$day($data_binding='ws_binding').appTemp.min.degree_C.toString($addLabel=False, $localize=False) #slurp
-#*138*#$day.dewpoint.max.degree_C.toString($addLabel=False, $localize=False) #slurp
-#*139*#$day.dewpoint.min.degree_C.toString($addLabel=False, $localize=False) #slurp
-#*140*#$current.windGust.knot.toString($useThisFormat="%.1f", $localize=False) #slurp
-#*141*#$current.dateTime.format($yearFormat) #slurp
-#*142*#0 #slurp
+#*WD|110*#$day.heatindex.max.degree_C.toString($addLabel=False, $localize=False) #slurp
+#*WD|111*#$day.heatindex.min.degree_C.toString($addLabel=False, $localize=False) #slurp
+#*WD|112*#$current.heatindex.degree_C.toString($addLabel=False, $localize=False) #slurp
+#*WD|113*#$day.windSpeed.max.knot.toString($useThisFormat="%.1f", $localize=False) #slurp
+#*WD|114*#0 #slurp
+#*WD|115*#--- #slurp
+#*WD|116*#--- #slurp
+#*WD|117*#$current.windDir.toString($addLabel=False, $localize=False) #slurp
+#*WD|118*#0 #slurp
+#*WD|119*#0 #slurp
+#*WD|120*#0 #slurp
+#*WD|121*#0 #slurp
+#*WD|122*#0 #slurp
+#*WD|123*#0 #slurp
+#*WD|124*#0 #slurp
+#*WD|125*#0 #slurp
+#*WD|126*#0 #slurp
+#*WD|127*#$current.radiation.toString($addLabel=False, $localize=False) #slurp
+#*WD|128*#$day.inTemp.max.degree_C.toString($addLabel=False, $localize=False) #slurp
+#*WD|129*#$day.inTemp.min.degree_C.toString($addLabel=False, $localize=False) #slurp
+#*WD|130*#$current($data_binding='wd_binding').appTemp.degree_C.toString($addLabel=False, $localize=False) #slurp
+#*WD|131*#$day.barometer.max.hPa.toString($addLabel=False, $localize=False) #slurp
+#*WD|132*#$day.barometer.min.hPa.toString($addLabel=False, $localize=False) #slurp
+#*WD|133*#$day.wind.max.knot.toString($useThisFormat="%.1f", $localize=False) #slurp
+#*WD|134*#$day.wind.maxtime.toString($useThisFormat="%H:%M:%S") #slurp
+#*WD|135*#$day.wind.maxtime.toString($useThisFormat="%H:%M:%S") #slurp
+#*WD|136*#$day($data_binding='wd_binding').appTemp.max.degree_C.toString($addLabel=False, $localize=False) #slurp
+#*WD|137*#$day($data_binding='wd_binding').appTemp.min.degree_C.toString($addLabel=False, $localize=False) #slurp
+#*WD|138*#$day.dewpoint.max.degree_C.toString($addLabel=False, $localize=False) #slurp
+#*WD|139*#$day.dewpoint.min.degree_C.toString($addLabel=False, $localize=False) #slurp
+#*WD|140*#$current.windGust.knot.toString($useThisFormat="%.1f", $localize=False) #slurp
+#*WD|141*#$current.dateTime.format($yearFormat) #slurp
+#*WD|142*#0 #slurp
 #if $trend.outTemp.raw is not None
 #set $trendBool = -1 + 2 * int($trend.outTemp.raw >= 0)
 #else
@@ -254,17 +254,18 @@ $rainHourArray[$i].mm.toString($addLabel=False, $localize=False) #slurp
 ##
 ###*162*#$nineamrain.mm.toString($addLabel=False, $localize=False) #slurp
 ##
-#*163*#$day.outHumidity.max.toString($addLabel=False, $localize=False) #slurp
-#*164*#$day.outHumidity.min.toString($addLabel=False, $localize=False) #slurp
-#*165*#$day.rain.sum.mm.toString($addLabel=False, $localize=False) #slurp
-#*166*#$day.windchill.mintime.toString($addLabel=False, $localize=False) #slurp
-#*167*#0 #slurp
-#*168*#0 #slurp
-#*169*#0 #slurp
-#*170*#0 #slurp
-#*171*#0 #slurp
-#*172*#0 #slurp
-#*173*#$day_windrun.km.toString($addLabel=False, $localize=False) #slurp
-#*174*#$day.outTemp.maxtime.toString($addLabel=False, $localize=False) #slurp
-#*175*#$day.outTemp.mintime.toString($addLabel=False, $localize=False) #slurp
-#*176*#!!EOR!!#slurp
+#*WD|163*#$day.outHumidity.max.toString($addLabel=False, $localize=False) #slurp
+#*WD|164*#$day.outHumidity.min.toString($addLabel=False, $localize=False) #slurp
+#*WD|165*#$day.rain.sum.mm.toString($addLabel=False, $localize=False) #slurp
+#*WD|166*#$day.windchill.mintime.toString($useThisFormat="%H:%M:%S", $addLabel=False, $localize=False) #slurp
+#*WD|167*#0 #slurp
+#*WD|168*#0 #slurp
+#*WD|169*#0 #slurp
+#*WD|170*#0 #slurp
+#*WD|171*#0 #slurp
+#*WD|172*#0 #slurp
+#*WD|173*#$day_windrun.km.toString($addLabel=False, $localize=False) #slurp
+#*WD|174*#$day.outTemp.maxtime.toString($useThisFormat="%H:%M:%S", $addLabel=False, $localize=False) #slurp
+#*WD|175*#$day.outTemp.mintime.toString($useThisFormat="%H:%M:%S", $addLabel=False, $localize=False) #slurp
+#*WD|176*#--- #slurp
+#*WD|177*#!!C10.37S120!! #slurp
