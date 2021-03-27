@@ -62,22 +62,22 @@ template
     - each field ands with a space except for the EOR
 *#
 #*000*#12345 #slurp
-#*001*#$current.windSpeed.knot.toString($useThisFormat="%.1f", $localize=False) #slurp
-#*002*#$current.windGust.knot.toString($useThisFormat="%.1f", $localize=False) #slurp
-#*003*#$current.windDir.toString($addLabel=False, $localize=False) #slurp
-#*004*#$current.outTemp.degree_C.toString($addLabel=False, $localize=False) #slurp
-#*005*#$current.outHumidity.toString($addLabel=False, $localize=False) #slurp
-#*006*#$current.barometer.hPa.toString($addLabel=False, $localize=False) #slurp
-#*007*#$day.rain.sum.mm.toString($addLabel=False, $localize=False) #slurp
-#*008*#$month.rain.sum.mm.toString($addLabel=False, $localize=False) #slurp
-#*009*#$year.rain.sum.mm.toString($addLabel=False, $localize=False) #slurp
+#*001*#$current.windSpeed.knot.format($format_string="%.1f", $add_label=False, $localize=False) #slurp
+#*002*#$current.windGust.knot.format($format_string="%.1f", $add_label=False, $localize=False) #slurp
+#*003*#$current.windDir.format($format_string="%.0f", $add_label=False, $localize=False) #slurp
+#*004*#$current.outTemp.degree_C.format($format_string="%.1f", $add_label=False, $localize=False) #slurp
+#*005*#$current.outHumidity.format($format_string="%.0f", $add_label=False, $localize=False) #slurp
+#*006*#$current.barometer.hPa.format($format_string="%.1f", $add_label=False, $localize=False) #slurp
+#*007*#$day.rain.sum.mm.format($format_string="%.1f", $add_label=False, $localize=False) #slurp
+#*008*#$month.rain.sum.mm.format($format_string="%.1f", $add_label=False, $localize=False) #slurp
+#*009*#$year.rain.sum.mm.format($format_string="%.1f", $add_label=False, $localize=False) #slurp
 #set $currentRainRateMinute = round($current.rainRate.mm_per_hour.raw/60.0, 1)
 #*010*#$currentRainRateMinute #slurp
 #set $dayMaxRainRateMinute = round($day.rainRate.max.mm_per_hour.raw/60.0, 1)
 #*011*#$dayMaxRainRateMinute #slurp
-#*012*#$current.inTemp.degree_C.toString($addLabel=False, $localize=False) #slurp
-#*013*#$current.inHumidity.toString($addLabel=False, $localize=False) #slurp
-#*014*#$current.soilTemp1.degree_C.toString($addLabel=False, $NONE_string='-100', $localize=False) #slurp
+#*012*#$current.inTemp.degree_C.format($format_string="%.1f", $add_label=False, $localize=False) #slurp
+#*013*#$current.inHumidity.format($format_string="%.0f", $add_label=False, $localize=False) #slurp
+#*014*#$current.soilTemp1.degree_C.format($format_string="%.1f", $add_label=False, $None_string='-100', $localize=False) #slurp
 #if $varExists('forecast_icon') and $forecast_icon != '' and $forecast_icon != None
 #*015*#$forecast_icon #slurp
 #elif $current($data_binding='wssupp_binding', $max_delta=600).forecastIcon.exists
@@ -88,7 +88,7 @@ template
 #*016*#0 #slurp
 #*017*#0 #slurp
 #*018*#0 #slurp
-#*019*#$yesterday.rain.sum.mm.toString($addLabel=False, $localize=False) #slurp
+#*019*#$yesterday.rain.sum.mm.format($format_string="%.1f", $add_label=False, $localize=False) #slurp
 #*020*#-100 #slurp
 #*021*#-100 #slurp
 #*022*#-100 #slurp
@@ -123,10 +123,10 @@ template
 #*041*#100 #slurp
 #*042*#100 #slurp
 #*043*#100 #slurp
-#*044*#$current.windchill.degree_C.toString($addLabel=False, $localize=False) #slurp
-#*045*#$current($data_binding='ws_binding').humidex.degree_C.toString($addLabel=False, $localize=False) #slurp
-#*046*#$day.outTemp.max.degree_C.toString($addLabel=False, $localize=False) #slurp
-#*047*#$day.outTemp.min.degree_C.toString($addLabel=False, $localize=False) #slurp
+#*044*#$current.windchill.degree_C.format($format_string="%.1f", $add_label=False, $localize=False) #slurp
+#*045*#$current($data_binding='ws_binding').humidex.degree_C.format($format_string="%.1f", $add_label=False, $localize=False) #slurp
+#*046*#$day.outTemp.max.degree_C.format($format_string="%.1f", $add_label=False, $localize=False) #slurp
+#*047*#$day.outTemp.min.degree_C.format($format_string="%.1f", $add_label=False, $localize=False) #slurp
 #try
 #*048*#$current($data_binding='wssupp_binding', $max_delta=600).currentIcon.nolabel("%d", "---") #slurp
 #except
@@ -137,44 +137,44 @@ template
 #except
 #*049*#--- #slurp
 #end try
-#*050*##if $varExists('trend') then $trend.barometer.toString($useThisFormat="%+.2f", $NONE_string='0', $localize=False) else 0# #slurp
+#*050*##if $varExists('trend') then $trend.barometer.format($format_string="%+.2f", $add_label=False, $None_string='0', $localize=False) else 0# #slurp
 #*051*##*Previous 20 Hours Wind Knots Readings*##slurp
 #for $i in range (4,24):
 #try
-$windSpeedHourArray[$i].knot.toString($addLabel=False, $localize=False) #slurp
+$windSpeedHourArray[$i].knot.format($format_string="%.1f", $add_label=False, $localize=False) #slurp
 #except
 0 #slurp
 #end try
 #end for
-#*071*#$day.wind.max.knot.toString($useThisFormat="%.1f", $localize=False) #slurp
-#*072*#$current.dewpoint.degree_C.toString($addLabel=False, $localize=False) #slurp
-#*073*#$cloudbase.foot.toString($addLabel=False, $localize=False) #slurp
+#*071*#$day.wind.max.knot.format($useThisFormat="%.1f", $add_label=False, $localize=False) #slurp
+#*072*#$current.dewpoint.degree_C.format($format_string="%.1f", $add_label=False, $localize=False) #slurp
+#*073*#$cloudbase.foot.format($format_string="%.0f", $add_label=False, $localize=False) #slurp
 #*074*#$current.dateTime.format($dateFormat) #slurp
-#*075*#$day($data_binding='ws_binding').humidex.max.degree_C.toString($addLabel=False, $localize=False) #slurp
-#*076*#$day($data_binding='ws_binding').humidex.min.degree_C.toString($addLabel=False, $localize=False) #slurp
-#*077*#$day.windchill.max.degree_C.toString($addLabel=False, $localize=False) #slurp
-#*078*#$day.windchill.min.degree_C.toString($addLabel=False, $localize=False) #slurp
-#*079*#$current.UV.toString($localize=False) #slurp
-#*080*#$current($timestamp=$now-3600, $max_delta=180).windSpeed.knot.toString($addLabel=False, $localize=False) #slurp
-#*081*#$current($timestamp=$now-3240, $max_delta=180).windSpeed.knot.toString($addLabel=False, $localize=False) #slurp
-#*082*#$current($timestamp=$now-2880, $max_delta=180).windSpeed.knot.toString($addLabel=False, $localize=False) #slurp
-#*083*#$current($timestamp=$now-2520, $max_delta=180).windSpeed.knot.toString($addLabel=False, $localize=False) #slurp
-#*084*#$current($timestamp=$now-2160, $max_delta=180).windSpeed.knot.toString($addLabel=False, $localize=False) #slurp
-#*085*#$current($timestamp=$now-1800, $max_delta=180).windSpeed.knot.toString($addLabel=False, $localize=False) #slurp
-#*086*#$current($timestamp=$now-1440, $max_delta=180).windSpeed.knot.toString($addLabel=False, $localize=False) #slurp
-#*087*#$current($timestamp=$now-1080, $max_delta=180).windSpeed.knot.toString($addLabel=False, $localize=False) #slurp
-#*088*#$current($timestamp=$now-720, $max_delta=180).windSpeed.knot.toString($addLabel=False, $localize=False) #slurp
-#*089*#$current($timestamp=$now-360, $max_delta=180).windSpeed.knot.toString($addLabel=False, $localize=False) #slurp
-#*090*#$current($timestamp=$now-3600, $max_delta=180).outTemp.degree_C.toString($addLabel=False, $localize=False) #slurp
-#*091*#$current($timestamp=$now-3240, $max_delta=180).outTemp.degree_C.toString($addLabel=False, $localize=False) #slurp
-#*092*#$current($timestamp=$now-2880, $max_delta=180).outTemp.degree_C.toString($addLabel=False, $localize=False) #slurp
-#*093*#$current($timestamp=$now-2520, $max_delta=180).outTemp.degree_C.toString($addLabel=False, $localize=False) #slurp
-#*094*#$current($timestamp=$now-2160, $max_delta=180).outTemp.degree_C.toString($addLabel=False, $localize=False) #slurp
-#*095*#$current($timestamp=$now-1800, $max_delta=180).outTemp.degree_C.toString($addLabel=False, $localize=False) #slurp
-#*096*#$current($timestamp=$now-1440, $max_delta=180).outTemp.degree_C.toString($addLabel=False, $localize=False) #slurp
-#*097*#$current($timestamp=$now-1080, $max_delta=180).outTemp.degree_C.toString($addLabel=False, $localize=False) #slurp
-#*098*#$current($timestamp=$now-720, $max_delta=180).outTemp.degree_C.toString($addLabel=False, $localize=False) #slurp
-#*099*#$current($timestamp=$now-360, $max_delta=180).outTemp.degree_C.toString($addLabel=False, $localize=False) #slurp
+#*075*#$day($data_binding='ws_binding').humidex.max.degree_C.format($format_string="%.1f", $add_label=False, $localize=False) #slurp
+#*076*#$day($data_binding='ws_binding').humidex.min.degree_C.format($format_string="%.1f", $add_label=False, $localize=False) #slurp
+#*077*#$day.windchill.max.degree_C.format($format_string="%.1f", $add_label=False, $localize=False) #slurp
+#*078*#$day.windchill.min.degree_C.format($format_string="%.1f", $add_label=False, $localize=False) #slurp
+#*079*#$current.UV.format($format_string="%.1f", $localize=False) #slurp
+#*080*#$current($timestamp=$now-3600, $max_delta=180).windSpeed.knot.format($format_string="%.1f", $add_label=False, $localize=False) #slurp
+#*081*#$current($timestamp=$now-3240, $max_delta=180).windSpeed.knot.format($format_string="%.1f", $add_label=False, $localize=False) #slurp
+#*082*#$current($timestamp=$now-2880, $max_delta=180).windSpeed.knot.format($format_string="%.1f", $add_label=False, $localize=False) #slurp
+#*083*#$current($timestamp=$now-2520, $max_delta=180).windSpeed.knot.format($format_string="%.1f", $add_label=False, $localize=False) #slurp
+#*084*#$current($timestamp=$now-2160, $max_delta=180).windSpeed.knot.format($format_string="%.1f", $add_label=False, $localize=False) #slurp
+#*085*#$current($timestamp=$now-1800, $max_delta=180).windSpeed.knot.format($format_string="%.1f", $add_label=False, $localize=False) #slurp
+#*086*#$current($timestamp=$now-1440, $max_delta=180).windSpeed.knot.format($format_string="%.1f", $add_label=False, $localize=False) #slurp
+#*087*#$current($timestamp=$now-1080, $max_delta=180).windSpeed.knot.format($format_string="%.1f", $add_label=False, $localize=False) #slurp
+#*088*#$current($timestamp=$now-720, $max_delta=180).windSpeed.knot.format($format_string="%.1f", $add_label=False, $localize=False) #slurp
+#*089*#$current($timestamp=$now-360, $max_delta=180).windSpeed.knot.format($format_string="%.1f", $add_label=False, $localize=False) #slurp
+#*090*#$current($timestamp=$now-3600, $max_delta=180).outTemp.degree_C.format($format_string="%.1f", $add_label=False, $localize=False) #slurp
+#*091*#$current($timestamp=$now-3240, $max_delta=180).outTemp.degree_C.format($format_string="%.1f", $add_label=False, $localize=False) #slurp
+#*092*#$current($timestamp=$now-2880, $max_delta=180).outTemp.degree_C.format($format_string="%.1f", $add_label=False, $localize=False) #slurp
+#*093*#$current($timestamp=$now-2520, $max_delta=180).outTemp.degree_C.format($format_string="%.1f", $add_label=False, $localize=False) #slurp
+#*094*#$current($timestamp=$now-2160, $max_delta=180).outTemp.degree_C.format($format_string="%.1f", $add_label=False, $localize=False) #slurp
+#*095*#$current($timestamp=$now-1800, $max_delta=180).outTemp.degree_C.format($format_string="%.1f", $add_label=False, $localize=False) #slurp
+#*096*#$current($timestamp=$now-1440, $max_delta=180).outTemp.degree_C.format($format_string="%.1f", $add_label=False, $localize=False) #slurp
+#*097*#$current($timestamp=$now-1080, $max_delta=180).outTemp.degree_C.format($format_string="%.1f", $add_label=False, $localize=False) #slurp
+#*098*#$current($timestamp=$now-720, $max_delta=180).outTemp.degree_C.format($format_string="%.1f", $add_label=False, $localize=False) #slurp
+#*099*#$current($timestamp=$now-360, $max_delta=180).outTemp.degree_C.format($format_string="%.1f", $add_label=False, $localize=False) #slurp
 #*100*##*Previous 10 Hours Rain Readings*##slurp
 #for $i in range (10):
 #try
