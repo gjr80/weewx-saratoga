@@ -146,7 +146,7 @@ $windSpeedHourArray[$i].knot.format($format_string="%.1f", $add_label=False, $lo
 0 #slurp
 #end try
 #end for
-#*071*#$day.wind.max.knot.format($useThisFormat="%.1f", $add_label=False, $localize=False) #slurp
+#*071*#$day.wind.max.knot.format($format_string="%.1f", $add_label=False, $localize=False) #slurp
 #*072*#$current.dewpoint.degree_C.format($format_string="%.1f", $add_label=False, $localize=False) #slurp
 #*073*#$cloudbase.foot.format($format_string="%.0f", $add_label=False, $localize=False) #slurp
 #*074*#$current.dateTime.format($dateFormat) #slurp
@@ -178,19 +178,19 @@ $windSpeedHourArray[$i].knot.format($format_string="%.1f", $add_label=False, $lo
 #*100*##*Previous 10 Hours Rain Readings*##slurp
 #for $i in range (10):
 #try
-$rainHourArray[$i].mm.toString($addLabel=False, $localize=False) #slurp
+$rainHourArray[$i].mm.format($format_string="%.1f", $add_label=False, $localize=False) #slurp
 #except
 0 #slurp
 #end try
 #end for
-#*110*#$day.heatindex.max.degree_C.toString($addLabel=False, $localize=False) #slurp
-#*111*#$day.heatindex.min.degree_C.toString($addLabel=False, $localize=False) #slurp
-#*112*#$current.heatindex.degree_C.toString($addLabel=False, $localize=False) #slurp
-#*113*#$day.windSpeed.max.knot.toString($useThisFormat="%.1f", $localize=False) #slurp
+#*110*#$day.heatindex.max.degree_C.format($format_string="%.1f", $add_label=False, $localize=False) #slurp
+#*111*#$day.heatindex.min.degree_C.format($format_string="%.1f", $add_label=False, $localize=False) #slurp
+#*112*#$current.heatindex.degree_C.format($format_string="%.1f", $add_label=False, $localize=False) #slurp
+#*113*#$day.windSpeed.max.knot.format($format_string="%.1f", $add_label=False, $localize=False) #slurp
 #*114*#0 #slurp
 #*115*#--- #slurp
 #*116*#--- #slurp
-#*117*#$current.windDir.toString($addLabel=False, $localize=False) #slurp
+#*117*#$current.windDir.format($format_string="%.0f", $add_label=False, $localize=False) #slurp
 #*118*#0 #slurp
 #*119*#0 #slurp
 #*120*#0 #slurp
@@ -200,20 +200,20 @@ $rainHourArray[$i].mm.toString($addLabel=False, $localize=False) #slurp
 #*124*#0 #slurp
 #*125*#0 #slurp
 #*126*#0 #slurp
-#*127*#$current.radiation.toString($addLabel=False, $localize=False) #slurp
-#*128*#$day.inTemp.max.degree_C.toString($addLabel=False, $localize=False) #slurp
-#*129*#$day.inTemp.min.degree_C.toString($addLabel=False, $localize=False) #slurp
-#*130*#$current($data_binding='ws_binding').appTemp.degree_C.toString($addLabel=False, $localize=False) #slurp
-#*131*#$day.barometer.max.hPa.toString($addLabel=False, $localize=False) #slurp
-#*132*#$day.barometer.min.hPa.toString($addLabel=False, $localize=False) #slurp
-#*133*#$day.wind.max.knot.toString($useThisFormat="%.1f", $localize=False) #slurp
-#*134*#$day.wind.maxtime.toString($useThisFormat="%H:%M:%S") #slurp
-#*135*#$day.wind.maxtime.toString($useThisFormat="%H:%M:%S") #slurp
-#*136*#$day($data_binding='ws_binding').appTemp.max.degree_C.toString($addLabel=False, $localize=False) #slurp
-#*137*#$day($data_binding='ws_binding').appTemp.min.degree_C.toString($addLabel=False, $localize=False) #slurp
-#*138*#$day.dewpoint.max.degree_C.toString($addLabel=False, $localize=False) #slurp
-#*139*#$day.dewpoint.min.degree_C.toString($addLabel=False, $localize=False) #slurp
-#*140*#$current.windGust.knot.toString($useThisFormat="%.1f", $localize=False) #slurp
+#*127*#$current.radiation.format($format_string="%.0f", $add_label=False, $localize=False) #slurp
+#*128*#$day.inTemp.max.degree_C.format($format_string="%.1f", $add_label=False, $localize=False) #slurp
+#*129*#$day.inTemp.min.degree_C.format($format_string="%.1f", $add_label=False, $localize=False) #slurp
+#*130*#$current($data_binding='ws_binding').appTemp.degree_C.format($format_string="%.1f", $add_label=False, $localize=False) #slurp
+#*131*#$day.barometer.max.hPa.format($format_string="%.1f", $add_label=False, $localize=False) #slurp
+#*132*#$day.barometer.min.hPa.format($format_string="%.1f", $add_label=False, $localize=False) #slurp
+#*133*#$day.wind.max.knot.format($format_string="%.1f", $add_label=False, $localize=False) #slurp
+#*134*#$day.wind.maxtime.format($format_string="%H:%M:%S") #slurp
+#*135*#$day.wind.maxtime.format($format_string="%H:%M:%S") #slurp
+#*136*#$day($data_binding='ws_binding').appTemp.max.degree_C.format($format_string="%.1f", $add_label=False, $localize=False) #slurp
+#*137*#$day($data_binding='ws_binding').appTemp.min.degree_C.format($format_string="%.1f", $add_label=False, $localize=False) #slurp
+#*138*#$day.dewpoint.max.degree_C.format($format_string="%.1f", $add_label=False, $localize=False) #slurp
+#*139*#$day.dewpoint.min.degree_C.format($format_string="%.1f", $add_label=False, $localize=False) #slurp
+#*140*#$current.windGust.knot.format($format_string="%.1f", $add_label=False, $localize=False) #slurp
 #*141*#$current.dateTime.format($yearFormat) #slurp
 #*142*#0 #slurp
 #if $trend.outTemp.raw is not None
@@ -234,35 +234,35 @@ $rainHourArray[$i].mm.toString($addLabel=False, $localize=False) #slurp
 #set $trendBool = 0
 #end if
 #*145*#$trendBool #slurp
-#*146*#$current($timestamp=$now-3600, $max_delta=180).windDir.toString($addLabel=False, $localize=False) #slurp
-#*147*#$current($timestamp=$now-3240, $max_delta=180).windDir.toString($addLabel=False, $localize=False) #slurp
-#*148*#$current($timestamp=$now-2880, $max_delta=180).windDir.toString($addLabel=False, $localize=False) #slurp
-#*149*#$current($timestamp=$now-2520, $max_delta=180).windDir.toString($addLabel=False, $localize=False) #slurp
-#*150*#$current($timestamp=$now-2160, $max_delta=180).windDir.toString($addLabel=False, $localize=False) #slurp
-#*151*#$current($timestamp=$now-1800, $max_delta=180).windDir.toString($addLabel=False, $localize=False) #slurp
-#*152*#$current($timestamp=$now-1440, $max_delta=180).windDir.toString($addLabel=False, $localize=False) #slurp
-#*153*#$current($timestamp=$now-1080, $max_delta=180).windDir.toString($addLabel=False, $localize=False) #slurp
-#*154*#$current($timestamp=$now-720, $max_delta=180).windDir.toString($addLabel=False, $localize=False) #slurp
-#*155*#$current($timestamp=$now-360, $max_delta=180).windDir.toString($addLabel=False, $localize=False) #slurp
+#*146*#$current($timestamp=$now-3600, $max_delta=180).windDir.format($format_string="%.0f", $add_label=False, $localize=False) #slurp
+#*147*#$current($timestamp=$now-3240, $max_delta=180).windDir.format($format_string="%.0f", $add_label=False, $localize=False) #slurp
+#*148*#$current($timestamp=$now-2880, $max_delta=180).windDir.format($format_string="%.0f", $add_label=False, $localize=False) #slurp
+#*149*#$current($timestamp=$now-2520, $max_delta=180).windDir.format($format_string="%.0f", $add_label=False, $localize=False) #slurp
+#*150*#$current($timestamp=$now-2160, $max_delta=180).windDir.format($format_string="%.0f", $add_label=False, $localize=False) #slurp
+#*151*#$current($timestamp=$now-1800, $max_delta=180).windDir.format($format_string="%.0f", $add_label=False, $localize=False) #slurp
+#*152*#$current($timestamp=$now-1440, $max_delta=180).windDir.format($format_string="%.0f", $add_label=False, $localize=False) #slurp
+#*153*#$current($timestamp=$now-1080, $max_delta=180).windDir.format($format_string="%.0f", $add_label=False, $localize=False) #slurp
+#*154*#$current($timestamp=$now-720, $max_delta=180).windDir.format($format_string="%.0f", $add_label=False, $localize=False) #slurp
+#*155*#$current($timestamp=$now-360, $max_delta=180).windDir.format($format_string="%.0f", $add_label=False, $localize=False) #slurp
 #*156*#0 #slurp
 #*157*#0 #slurp
-#*158*#$current($timestamp=$now-600, $max_delta=180).windSpeed.knot.toString($useThisFormat="%.1f", $localize=False) #slurp
+#*158*#$current($timestamp=$now-600, $max_delta=180).windSpeed.knot.format($format_string="%.1f", $localize=False) #slurp
 #*159*#0 #slurp
 #*160*#$almanac.lat #slurp
 #*161*##if $station.longitude[2] == 'E'#-#end if#$almanac.lon #slurp
-#*162*#$since($hour=9).rain.sum.mm.toString($addLabel=False, $localize=False) #slurp
-#*163*#$day.outHumidity.max.toString($addLabel=False, $localize=False) #slurp
-#*164*#$day.outHumidity.min.toString($addLabel=False, $localize=False) #slurp
-#*165*#$day.rain.sum.mm.toString($addLabel=False, $localize=False) #slurp
-#*166*#$day.windchill.mintime.toString($useThisFormat="%H:%M:%S", $addLabel=False, $localize=False) #slurp
+#*162*#$since($hour=9).rain.sum.mm.format($format_string="%.1f", $add_label=False, $localize=False) #slurp
+#*163*#$day.outHumidity.max.format($format_string="%.0f", $add_label=False, $localize=False) #slurp
+#*164*#$day.outHumidity.min.format($format_string="%.0f", $add_label=False, $localize=False) #slurp
+#*165*#$day.rain.sum.mm.format($format_string="%.1f", $add_label=False, $localize=False) #slurp
+#*166*#$day.windchill.mintime.format($format_string="%H:%M:%S", $add_label=False, $localize=False) #slurp
 #*167*#0 #slurp
 #*168*#0 #slurp
 #*169*#0 #slurp
 #*170*#0 #slurp
 #*171*#0 #slurp
 #*172*#0 #slurp
-#*173*#$day_windrun.km.toString($addLabel=False, $localize=False) #slurp
-#*174*#$day.outTemp.maxtime.toString($useThisFormat="%H:%M:%S", $addLabel=False, $localize=False) #slurp
-#*175*#$day.outTemp.mintime.toString($useThisFormat="%H:%M:%S", $addLabel=False, $localize=False) #slurp
+#*173*#$day_windrun.km.format($format_string="%.1f", $add_label=False, $localize=False) #slurp
+#*174*#$day.outTemp.maxtime.format($format_string="%H:%M:%S", $add_label=False, $localize=False) #slurp
+#*175*#$day.outTemp.mintime.format($format_string="%H:%M:%S", $add_label=False, $localize=False) #slurp
 #*176*#--- #slurp
 #*177*#!!C10.37S120!!#slurp
