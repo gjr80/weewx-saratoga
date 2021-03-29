@@ -61,7 +61,7 @@ template
 #*001*##*Last 60 Minutes Wind Speed. Min 01=60 min ago, Min 60=now*##slurp
 #for $i in range (60):
 #try
-$windSpeedMinuteArray[$i].knot.toString($addLabel=False, $localize=False) #slurp
+$windSpeedMinuteArray[$i].knot.format($format_string="%.1f", $add_label=False, $localize=False) #slurp
 #except TypeError
 0 #slurp
 #except IndexError
@@ -71,7 +71,7 @@ $windSpeedMinuteArray[$i].knot.toString($addLabel=False, $localize=False) #slurp
 #*061*##*Last 60 Minutes Wind Gust. Min 01=60 min ago, Min 60=now*##slurp
 #for $i in range (60):
 #try
-$windGustMinuteArray[$i].knot.toString($addLabel=False, $localize=False) #slurp
+$windGustMinuteArray[$i].knot.format($format_string="%.1f", $add_label=False, $localize=False) #slurp
 #except TypeError
 0 #slurp
 #except IndexError
@@ -81,7 +81,7 @@ $windGustMinuteArray[$i].knot.toString($addLabel=False, $localize=False) #slurp
 #*121*##*Last 60 Minutes Wind Direction. Min 01=60 min ago, Min 60=now*##slurp
 #for $i in range (60):
 #try
-$windDirMinuteArray[$i].toString($addLabel=False, $localize=False) #slurp
+$windDirMinuteArray[$i].format($format_string="%.0f", $add_label=False, $localize=False) #slurp
 #except TypeError
 0 #slurp
 #except IndexError
@@ -91,7 +91,7 @@ $windDirMinuteArray[$i].toString($addLabel=False, $localize=False) #slurp
 #*181*##*Last 60 Minutes Outside Temp. Min 01=60 min ago, Min 60=now*##slurp
 #for $i in range (60):
 #try
-$outTempMinuteArray[$i].degree_C.toString($addLabel=False, $localize=False) #slurp
+$outTempMinuteArray[$i].degree_C.format($format_string="%.1f", $add_label=False, $localize=False) #slurp
 #except TypeError
 0 #slurp
 #except IndexError
@@ -101,7 +101,7 @@ $outTempMinuteArray[$i].degree_C.toString($addLabel=False, $localize=False) #slu
 #*241*##*Last 60 Minutes Outside Humidity. Min 01=60 min ago, Min 60=now*##slurp
 #for $i in range (60):
 #try
-$outHumidityMinuteArray[$i].toString($addLabel=False, $localize=False) #slurp
+$outHumidityMinuteArray[$i].format($format_string="%.0f", $add_label=False, $localize=False) #slurp
 #except TypeError
 0 #slurp
 #except IndexError
@@ -111,7 +111,7 @@ $outHumidityMinuteArray[$i].toString($addLabel=False, $localize=False) #slurp
 #*301*##*Last 60 Minutes Barometer. Min 01=60 min ago, Min 60=now*##slurp
 #for $i in range (60):
 #try
-$barometerMinuteArray[$i].toString($addLabel=False, $localize=False) #slurp
+$barometerMinuteArray[$i].format($format_string="%.1f", $add_label=False, $localize=False) #slurp
 #except TypeError
 0 #slurp
 #except IndexError
@@ -141,7 +141,7 @@ $rain_accum_str #slurp
 #*421*##*Last 60 Minutes Solar. Min 01=60 min ago, Min 60=now*##slurp
 #for $i in range (60):
 #try
-$radiationMinuteArray[$i].toString($addLabel=False, $localize=False) #slurp
+$radiationMinuteArray[$i].format($format_string="%.0f", $add_label=False, $localize=False) #slurp
 #except TypeError
 0 #slurp
 #except IndexError
@@ -151,7 +151,7 @@ $radiationMinuteArray[$i].toString($addLabel=False, $localize=False) #slurp
 #*481*##*Last 24 Hours of 15 minute Solar Readings. Hr 01, Min 00=24 hr ago, Hr 24, Min 45=now*##slurp
 #for $i in range (96):
 #try
-$radiationFifteenminuteArray[$i].toString($addLabel=False, $localize=False) #slurp
+$radiationFifteenminuteArray[$i].format($format_string="%.0f", $add_label=False, $localize=False) #slurp
 #except TypeError
 0 #slurp
 #except IndexError
@@ -161,7 +161,7 @@ $radiationFifteenminuteArray[$i].toString($addLabel=False, $localize=False) #slu
 #*577*##*Last 24 Hours of 15 minute UV Readings. Hr 01, Min 00=24 hr ago, Hr 24, Min 45=now*##slurp
 #for $i in range (96):
 #try
-$UVFifteenminuteArray[$i].toString($localize=False) #slurp
+$UVFifteenminuteArray[$i].format($format_string="%.1f", $add_label=False, $localize=False) #slurp
 #except TypeError
 0 #slurp
 #except IndexError
