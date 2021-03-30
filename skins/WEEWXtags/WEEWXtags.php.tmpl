@@ -275,8 +275,8 @@ template
 #end if
 ##
 ## humidex calculation
-#set $humidexF = $current($data_binding='ws_binding', $max_delta=60).humidex.degree_F.raw
-#set $humidexC = $current($data_binding='ws_binding', $max_delta=60).humidex.degree_C.raw
+#set $humidexF = $current($max_delta=60).humidex.degree_F.raw
+#set $humidexC = $current($max_delta=60).humidex.degree_C.raw
 ##
 ## BoM Apparent Temperature Solar calculations
 ## Uses Australian Bureau of Meteorology formula
@@ -323,8 +323,8 @@ template
 #else
     #set $minRain =(.01, "cm")
 #end if
-#set $monthRainDays = $month.rain.sum_ge($minRain).format($format_string="%4d", $add_label=False, $None_string="0"", $localize=False).strip()
-#set $yearRainDays = $year.rain.sum_ge($minRain).format($format_string="%4d", $add_label=False, $None_string="0"", $localize=False).strip()
+#set $monthRainDays = $month.rain.sum_ge($minRain).format($format_string="%4d", $add_label=False, $None_string="0", $localize=False).strip()
+#set $yearRainDays = $year.rain.sum_ge($minRain).format($format_string="%4d", $add_label=False, $None_string="0", $localize=False).strip()
 ##
 ## rain last hour calculation
 ## TODO. Can this be replaced by a tag
@@ -470,47 +470,47 @@ if ( isset($_REQUEST['sce']) && strtolower($_REQUEST['sce']) == 'view' ) {
 #raw $heatinodp = #end raw '$current.heatindex.format($format_string="%.0f", $add_label=False, $None_string=$naString, $localize=False)';    // current heat index,no decimal place
 #raw $windch = #end raw '$current.windchill.format($add_label=False, $localize=False)';   // current wind-chill
 #raw $windchnodp = #end raw '$current.windchill.format($format_string="%.0f", $add_label=False, $None_string=$naString, $localize=False)';    // current wind-chill, no decimal place
-#raw $humidexfaren = #end raw '$current($data_binding='ws_binding', $max_delta=60).humidex.degree_F.format($format_string="%.0f", $add_label=False, $None_string=$naString, $localize=False)';nolabel($degree_F_Format, $naString)';  // Humidex value in oF
-#raw $humidexcelsius = #end raw '$current($data_binding='ws_binding', $max_delta=60).humidex.degree_C.format($format_string=$degree_C_Format, $add_label=False, $None_string=$naString, $localize=False)';    // Humidex value in oC
+#raw $humidexfaren = #end raw '$current($max_delta=60).humidex.degree_F.format($format_string="%.0f", $add_label=False, $None_string=$naString, $localize=False)';nolabel($degree_F_Format, $naString)';  // Humidex value in oF
+#raw $humidexcelsius = #end raw '$current($max_delta=60).humidex.degree_C.format($format_string=$degree_C_Format, $add_label=False, $None_string=$naString, $localize=False)';    // Humidex value in oC
 #if $unit.unit_type_dict.group_temperature == "degree_F"
-#raw $apparenttemp = #end raw '$current($data_binding='ws_binding', $max_delta=60).appTemp.degree_F.format($format_string=$degree_F_Format, $add_label=False, $None_string=$naString, $localize=False)'; // Apparent temperature
+#raw $apparenttemp = #end raw '$current($max_delta=60).appTemp.degree_F.format($format_string=$degree_F_Format, $add_label=False, $None_string=$naString, $localize=False)'; // Apparent temperature
 #else
-#raw $apparenttemp = #end raw '$current($data_binding='ws_binding', $max_delta=60).appTemp.degree_C.format($format_string=$degree_C_Format, $add_label=False, $None_string=$naString, $localize=False)'; // Apparent temperature
+#raw $apparenttemp = #end raw '$current($max_delta=60).appTemp.degree_C.format($format_string=$degree_C_Format, $add_label=False, $None_string=$naString, $localize=False)'; // Apparent temperature
 #end if
-#raw $apparenttempc = #end raw '$current($data_binding='ws_binding', $max_delta=60).appTemp.degree_C.format($format_string=$degree_C_Format, $add_label=False, $None_string=$naString, $localize=False)';   // Apparent temperature, oC
-#raw $apparenttempf = #end raw '$current($data_binding='ws_binding', $max_delta=60).appTemp.degree_F.format($format_string=$degree_F_Format, $add_label=False, $None_string=$naString, $localize=False)';   // Apparent temperature, oF
+#raw $apparenttempc = #end raw '$current($max_delta=60).appTemp.degree_C.format($format_string=$degree_C_Format, $add_label=False, $None_string=$naString, $localize=False)';   // Apparent temperature, oC
+#raw $apparenttempf = #end raw '$current($max_delta=60).appTemp.degree_F.format($format_string=$degree_F_Format, $add_label=False, $None_string=$naString, $localize=False)';   // Apparent temperature, oF
 #raw $apparentsolartemp = #end raw '$apptempRadiation'; // Apparent temperature in the sun (you need a solar sensor)
 #raw $apparentsolartempc = #end raw '$apptempRadiation';    // Apparent temperature in the sun, oC (you need a solar sensor)
 #raw $apparentsolartempf = #end raw '$apptempRadiationF';   // Apparent temperature in the sun, oF (you need a solar sensor)
 //
-#if $current($data_binding='wssupp_binding', $max_delta=60).tempNormalHigh.exists
-#raw $WUmaxtemp = #end raw '$current($data_binding='wssupp_binding', $max_delta=60).tempNormalHigh.format($format_string="%.0f", $add_label=False, $None_string=$naString, $localize=False)'; // Todays average max temperature from the selected Wunderground almanac station
+#if $current($data_binding='ws_supp_binding', $max_delta=60).tempNormalHigh.exists
+#raw $WUmaxtemp = #end raw '$current($data_binding='ws_supp_binding', $max_delta=60).tempNormalHigh.format($format_string="%.0f", $add_label=False, $None_string=$naString, $localize=False)'; // Todays average max temperature from the selected Wunderground almanac station
 #else
 #raw $WUmaxtemp = #end raw '0'; // Todays average max temperature from the selected Wunderground almanac station
 #end if
-#if $current($data_binding='wssupp_binding', $max_delta=60).tempNormalLow.exists
-#raw $WUmintemp = #end raw '$current($data_binding='wssupp_binding', $max_delta=60).tempNormalLow.format($format_string="%.0f", $add_label=False, $None_string=$naString, $localize=False)'; // Todays average min temperature from the selected Wunderground almanac station
+#if $current($data_binding='ws_supp_binding', $max_delta=60).tempNormalLow.exists
+#raw $WUmintemp = #end raw '$current($data_binding='ws_supp_binding', $max_delta=60).tempNormalLow.format($format_string="%.0f", $add_label=False, $None_string=$naString, $localize=False)'; // Todays average min temperature from the selected Wunderground almanac station
 #else
 #raw $WUmintemp = #end raw '0'; // Todays average min temperature from the selected Wunderground almanac station
 #end if
 //
-#if $current($data_binding='wssupp_binding', $max_delta=60).tempRecordHigh.exists
-#raw $WUmaxtempr = #end raw '$current($data_binding='wssupp_binding', $max_delta=60).tempRecordHigh.format($format_string="%.0f", $add_label=False, $None_string=$naString, $localize=False)';    // Todays record max temperature from the selected Wunderground almanac station
+#if $current($data_binding='ws_supp_binding', $max_delta=60).tempRecordHigh.exists
+#raw $WUmaxtempr = #end raw '$current($data_binding='ws_supp_binding', $max_delta=60).tempRecordHigh.format($format_string="%.0f", $add_label=False, $None_string=$naString, $localize=False)';    // Todays record max temperature from the selected Wunderground almanac station
 #else
 #raw $WUmaxtempr = #end raw '0';    // Todays record max temperature from the selected Wunderground almanac station
 #end if
-#if $current($data_binding='wssupp_binding', $max_delta=60).tempRecordLow.exists
-#raw $WUmintempr = #end raw '$current($data_binding='wssupp_binding', $max_delta=60).tempRecordLow.format($format_string="%.0f", $add_label=False, $None_string=$naString, $localize=False)';    // Todays record min temperature from the selected Wunderground almanac station
+#if $current($data_binding='ws_supp_binding', $max_delta=60).tempRecordLow.exists
+#raw $WUmintempr = #end raw '$current($data_binding='ws_supp_binding', $max_delta=60).tempRecordLow.format($format_string="%.0f", $add_label=False, $None_string=$naString, $localize=False)';    // Todays record min temperature from the selected Wunderground almanac station
 #else
 #raw $WUmintempr = #end raw '0';    // Todays record min temperature from the selected Wunderground almanac station
 #end if
-#if $current($data_binding='wssupp_binding', $max_delta=60).tempRecordHighYear.exists
-#raw $WUmaxtempryr = #end raw '$current($data_binding='wssupp_binding', $max_delta=60).tempRecordHighYear.format($format_string="%d", $add_label=False, $None_string=$naString, $localize=False)';  // Year that it occured
+#if $current($data_binding='ws_supp_binding', $max_delta=60).tempRecordHighYear.exists
+#raw $WUmaxtempryr = #end raw '$current($data_binding='ws_supp_binding', $max_delta=60).tempRecordHighYear.format($format_string="%d", $add_label=False, $None_string=$naString, $localize=False)';  // Year that it occured
 #else
 #raw $WUmaxtempryr = #end raw '$naString';  // Year that it occured
 #end if
-#if $current($data_binding='wssupp_binding', $max_delta=60).tempRecordLowYear.exists
-#raw $WUmintempryr = #end raw '$current($data_binding='wssupp_binding', $max_delta=60).tempRecordLowYear.format($format_string="%d", $add_label=False, $None_string=$naString, $localize=False)';  // Year that it occured
+#if $current($data_binding='ws_supp_binding', $max_delta=60).tempRecordLowYear.exists
+#raw $WUmintempryr = #end raw '$current($data_binding='ws_supp_binding', $max_delta=60).tempRecordLowYear.format($format_string="%d", $add_label=False, $None_string=$naString, $localize=False)';  // Year that it occured
 #else
 #raw $WUmintempryr = #end raw '$naString';  // Year that it occured
 #end if
@@ -588,13 +588,13 @@ if ( isset($_REQUEST['sce']) && strtolower($_REQUEST['sce']) == 'view' ) {
 // Yesterday:
 // ----------
 #raw $yesterdayrain = #end raw '$yesterday.rain.sum.format($add_label=False, $None_string='0.0', $localize=False)';   // Yesterday rain
-#if $current($data_binding='wssupp_binding', $max_delta=600).stormStart.exists
-#raw $vpstormrainstart = #end raw '$current($data_binding='wssupp_binding', $max_delta=600).stormStart.format($dateFormat, '0/0/0')';  //Davis VP Storm rain start date
+#if $current($data_binding='ws_supp_binding', $max_delta=600).stormStart.exists
+#raw $vpstormrainstart = #end raw '$current($data_binding='ws_supp_binding', $max_delta=600).stormStart.format($dateFormat, '0/0/0')';  //Davis VP Storm rain start date
 #else
 #raw $vpstormrainstart = #end raw '0/0/0';  //Davis VP Storm rain start date
 #end if
-#if $current($data_binding='wssupp_binding', $max_delta=600).stormRain.exists
-#raw $vpstormrain = #end raw '$current($data_binding='wssupp_binding', $max_delta=600).stormRain.format($skin_dict.Units.StringFormats[$skin_dict.Units.Groups.group_rain],"0.0")';           //Davis VP Storm rain value
+#if $current($data_binding='ws_supp_binding', $max_delta=600).stormRain.exists
+#raw $vpstormrain = #end raw '$current($data_binding='ws_supp_binding', $max_delta=600).stormRain.format($skin_dict.Units.StringFormats[$skin_dict.Units.Groups.group_rain],"0.0")';           //Davis VP Storm rain value
 #else
 #raw $vpstormrain = #end raw '0.0';           //Davis VP Storm rain value
 #end if
@@ -604,9 +604,9 @@ if ( isset($_REQUEST['sce']) && strtolower($_REQUEST['sce']) == 'view' ) {
 #if $day.radiation.has_data
 #raw $VPsolar = #end raw '$current.radiation.format($add_label=False, $localize=False)';//  Solar energy number (W/M2)
 #raw $highsolar = #end raw '$day.radiation.max.format($add_label=False, $localize=False)';// Daily high solar (for Davis VP and Grow stations)
-#if $current($data_binding='wssupp_binding', $max_delta=600).maxSolarRad.exists and $current($data_binding='wssupp_binding', $max_delta=600).maxSolarRad.raw is not None
-#if $current($data_binding='wssupp_binding', $max_delta=600).maxSolarRad.raw > 0 and $current.radiation.raw is not None
-#set $percent = int(round(100.0 * $current.radiation.raw / $current($data_binding='wssupp_binding', $max_delta=600).maxSolarRad.raw))
+#if $current($data_binding='ws_supp_binding', $max_delta=600).maxSolarRad.exists and $current($data_binding='ws_supp_binding', $max_delta=600).maxSolarRad.raw is not None
+#if $current($data_binding='ws_supp_binding', $max_delta=600).maxSolarRad.raw > 0 and $current.radiation.raw is not None
+#set $percent = int(round(100.0 * $current.radiation.raw / $current($data_binding='ws_supp_binding', $max_delta=600).maxSolarRad.raw))
 #else
 #set $percent = 0
 #end if
@@ -1038,16 +1038,16 @@ $icon_array[35] =  'windyrain.gif';           // Wind+rain
   #if $current_icon != None
     #raw $iconnumber = #end raw '$current_icon';
     #raw $current_icon = $icon_array#end raw[$current_icon]; // name of our condition icon
-  #elif $current($data_binding='wssupp_binding', $max_delta=600).currentIcon.exists
-    #raw $iconnumber = #end raw '$current($data_binding='wssupp_binding', $max_delta=600).currentIcon.format($format_string="%d", $add_label=False, $None_string="0", $localize=False)';
-    #raw $current_icon = $icon_array#end raw[$current($data_binding='wssupp_binding', $max_delta=600).currentIcon.format($format_string="%d", $add_label=False, $None_string="0", $localize=False)]; // name of our condition icon
+  #elif $current($data_binding='ws_supp_binding', $max_delta=600).currentIcon.exists
+    #raw $iconnumber = #end raw '$current($data_binding='ws_supp_binding', $max_delta=600).currentIcon.format($format_string="%d", $add_label=False, $None_string="0", $localize=False)';
+    #raw $current_icon = $icon_array#end raw[$current($data_binding='ws_supp_binding', $max_delta=600).currentIcon.format($format_string="%d", $add_label=False, $None_string="0", $localize=False)]; // name of our condition icon
   #else
     #raw $iconnumber = #end raw '0';
     #raw $current_icon = $icon_array#end raw[0]; // name of our condition icon
   #end if
-#elif $current($data_binding='wssupp_binding', $max_delta=600).currentIcon.exists
-  #raw $iconnumber = #end raw '$current($data_binding='wssupp_binding', $max_delta=600).currentIcon.format($format_string="%d", $add_label=False, $None_string="0", $localize=False)';
-  #raw $current_icon = $icon_array#end raw[$current($data_binding='wssupp_binding', $max_delta=600).currentIcon.format($format_string="%d", $add_label=False, $None_string="0", $localize=False)]; // name of our condition icon
+#elif $current($data_binding='ws_supp_binding', $max_delta=600).currentIcon.exists
+  #raw $iconnumber = #end raw '$current($data_binding='ws_supp_binding', $max_delta=600).currentIcon.format($format_string="%d", $add_label=False, $None_string="0", $localize=False)';
+  #raw $current_icon = $icon_array#end raw[$current($data_binding='ws_supp_binding', $max_delta=600).currentIcon.format($format_string="%d", $add_label=False, $None_string="0", $localize=False)]; // name of our condition icon
 #else
   #raw $iconnumber = '0'; #end raw         // icon number
   #raw $current_icon = $icon_array[0]; #end raw // name of our condition icon
@@ -1063,13 +1063,13 @@ $weathercond = 'Dry';
 #if $varExists('current_text')
 #if $current_text != ""
 #raw $Currentsolardescription = #end raw '$current_text';
-#elif $current($data_binding='wssupp_binding', $max_delta=600).currentText.exists
-#raw $Currentsolardescription = #end raw '$current($data_binding='wssupp_binding', $max_delta=600).currentText.raw';
+#elif $current($data_binding='ws_supp_binding', $max_delta=600).currentText.exists
+#raw $Currentsolardescription = #end raw '$current($data_binding='ws_supp_binding', $max_delta=600).currentText.raw';
 #else
 #raw $Currentsolardescription = #end raw 'Not Available';
 #end if
-#elif $current($data_binding='wssupp_binding', $max_delta=600).currentText.exists
-#raw $Currentsolardescription = #end raw '$current($data_binding='wssupp_binding', $max_delta=600).currentText.raw';
+#elif $current($data_binding='ws_supp_binding', $max_delta=600).currentText.exists
+#raw $Currentsolardescription = #end raw '$current($data_binding='ws_supp_binding', $max_delta=600).currentText.raw';
 #else
 #raw $Currentsolardescription = #end raw 'Not Available';
 #end if
@@ -1134,9 +1134,9 @@ $lighteningcountlast30minutesnextstorm = '0';
 //
 #raw $avwindlastimediate15 = #end raw '$span($time_delta=900).windSpeed.avg.format($add_label=False, $localize=False)'; // average wind speed
 #raw $avwindlastimediate30 = #end raw '$span($time_delta=1800).windSpeed.avg.format($add_label=False, $localize=False)'; // average wind speed
-#if $day($data_binding='ws_binding').humidex.has_data
-#raw $todayhihumidex = #end raw '$day($data_binding='ws_binding').humidex.max.format($add_label=False, $localize=False)'; //today's high humidex
-#raw $todaylohumidex = #end raw '$day($data_binding='ws_binding').humidex.min.format($add_label=False, $localize=False)'; //today's low Humidex
+#if $day.humidex.has_data
+#raw $todayhihumidex = #end raw '$day.humidex.max.format($add_label=False, $localize=False)'; //today's high humidex
+#raw $todaylohumidex = #end raw '$day.humidex.min.format($add_label=False, $localize=False)'; //today's low Humidex
 #else
 #raw $todayhihumidex = #end raw '$naString'; //today's high humidex
 #raw $todaylohumidex = #end raw '$naString'; //today's low Humidex
@@ -1537,8 +1537,8 @@ $lighteningcountlast30minutesnextstorm = '0';
 #raw $etcurrentweek = #end raw '$seven_day.ET.sum.format($add_label=False, $localize=False)'; // ET total for the last 7 days
 #raw $sunshinehourstodateday = #end raw '$today_sunshine_hours';
 #raw $sunshinehourstodatemonth = #end raw '$month_sunshine_hours';
-#if $current($data_binding='wssupp_binding', $max_delta=600).maxSolarRad.exists
-#raw $maxsolarfortime = #end raw '$current($data_binding='wssupp_binding', $max_delta=600).maxSolarRad.format($add_label=False, $localize=False)';
+#if $current($data_binding='ws_supp_binding', $max_delta=600).maxSolarRad.exists
+#raw $maxsolarfortime = #end raw '$current($data_binding='ws_supp_binding', $max_delta=600).maxSolarRad.format($add_label=False, $localize=False)';
 #else
 #raw $maxsolarfortime = #end raw '0';
 #end if

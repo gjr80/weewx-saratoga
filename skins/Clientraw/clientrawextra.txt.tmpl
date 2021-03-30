@@ -63,8 +63,9 @@ template
 #set $dateTimeHourArray = $onehour.dateTime.datetimeQuery
 ##
 ## set forecast text
-#set $f_text = $current($data_binding='wssupp_binding', $max_delta=1800).forecastText.raw
+#set $f_text = $current($data_binding='ws_supp_binding', $max_delta=1800).forecastText.raw
 #set $forecast_underscore_text = $f_text.replace(' ', '_') if $f_text is not None else '--'
+#set $forecast_underscore_text = "fred"
 ##
 ## set day/night flag
 #set $timereport = $current.dateTime.raw

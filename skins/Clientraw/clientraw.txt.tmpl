@@ -80,8 +80,8 @@ template
 #*014*#$current.soilTemp1.degree_C.format($format_string="%.1f", $add_label=False, $None_string='-100', $localize=False) #slurp
 #if $varExists('forecast_icon') and $forecast_icon != '' and $forecast_icon != None
 #*015*#$forecast_icon #slurp
-#elif $current($data_binding='wssupp_binding', $max_delta=600).forecastIcon.exists
-#*015*#$current($data_binding='wssupp_binding', $max_delta=600).forecastIcon.nolabel("%d", "---") #slurp
+#elif $current($data_binding='ws_supp_binding', $max_delta=600).forecastIcon.exists
+#*015*#$current($data_binding='ws_supp_binding', $max_delta=600).forecastIcon.nolabel("%d", "---") #slurp
 #else
 #*015*#0 #slurp
 #end if
@@ -104,9 +104,9 @@ template
 #set $stationLocation = $station.location.replace(" ","")
 #*032*#$stationLocation-$current.dateTime.format($timeLongFormat) #slurp
 #*033*#0 #slurp
-#if $current($data_binding='wssupp_binding', $max_delta=600).maxSolarRad.exists and $current.radiation.exists and $current.radiation.raw is not None and $current($data_binding='wssupp_binding', $max_delta=600).maxSolarRad.raw is not None
-#if $current($data_binding='wssupp_binding', $max_delta=600).maxSolarRad.raw > 0 and $current.radiation.raw is not None
-#set $percent = "%d" % (100.0 * $current.radiation.raw / $current($data_binding='wssupp_binding', $max_delta=600).maxSolarRad.raw)
+#if $current($data_binding='ws_supp_binding', $max_delta=600).maxSolarRad.exists and $current.radiation.exists and $current.radiation.raw is not None and $current($data_binding='ws_supp_binding', $max_delta=600).maxSolarRad.raw is not None
+#if $current($data_binding='ws_supp_binding', $max_delta=600).maxSolarRad.raw > 0 and $current.radiation.raw is not None
+#set $percent = "%d" % (100.0 * $current.radiation.raw / $current($data_binding='ws_supp_binding', $max_delta=600).maxSolarRad.raw)
 #else
 #set $percent = 0
 #end if
@@ -124,16 +124,16 @@ template
 #*042*#100 #slurp
 #*043*#100 #slurp
 #*044*#$current.windchill.degree_C.format($format_string="%.1f", $add_label=False, $localize=False) #slurp
-#*045*#$current($data_binding='ws_binding').humidex.degree_C.format($format_string="%.1f", $add_label=False, $localize=False) #slurp
+#*045*#$current.humidex.degree_C.format($format_string="%.1f", $add_label=False, $localize=False) #slurp
 #*046*#$day.outTemp.max.degree_C.format($format_string="%.1f", $add_label=False, $localize=False) #slurp
 #*047*#$day.outTemp.min.degree_C.format($format_string="%.1f", $add_label=False, $localize=False) #slurp
 #try
-#*048*#$current($data_binding='wssupp_binding', $max_delta=600).currentIcon.nolabel("%d", "---") #slurp
+#*048*#$current($data_binding='ws_supp_binding', $max_delta=600).currentIcon.nolabel("%d", "---") #slurp
 #except
 #*048*#0 #slurp
 #end try
 #try
-#*049*#$current($data_binding='wssupp_binding', $max_delta=600).currentText.nolabel("%s", "---").replace(' ', '_') #slurp
+#*049*#$current($data_binding='ws_supp_binding', $max_delta=600).currentText.nolabel("%s", "---").replace(' ', '_') #slurp
 #except
 #*049*#--- #slurp
 #end try
@@ -150,8 +150,8 @@ $windSpeedHourArray[$i].knot.format($format_string="%.1f", $add_label=False, $lo
 #*072*#$current.dewpoint.degree_C.format($format_string="%.1f", $add_label=False, $localize=False) #slurp
 #*073*#$cloudbase.foot.format($format_string="%.0f", $add_label=False, $localize=False) #slurp
 #*074*#$current.dateTime.format($dateFormat) #slurp
-#*075*#$day($data_binding='ws_binding').humidex.max.degree_C.format($format_string="%.1f", $add_label=False, $localize=False) #slurp
-#*076*#$day($data_binding='ws_binding').humidex.min.degree_C.format($format_string="%.1f", $add_label=False, $localize=False) #slurp
+#*075*#$day.humidex.max.degree_C.format($format_string="%.1f", $add_label=False, $localize=False) #slurp
+#*076*#$day.humidex.min.degree_C.format($format_string="%.1f", $add_label=False, $localize=False) #slurp
 #*077*#$day.windchill.max.degree_C.format($format_string="%.1f", $add_label=False, $localize=False) #slurp
 #*078*#$day.windchill.min.degree_C.format($format_string="%.1f", $add_label=False, $localize=False) #slurp
 #*079*#$current.UV.format($format_string="%.1f", $localize=False) #slurp
@@ -203,14 +203,14 @@ $rainHourArray[$i].mm.format($format_string="%.1f", $add_label=False, $localize=
 #*127*#$current.radiation.format($format_string="%.0f", $add_label=False, $localize=False) #slurp
 #*128*#$day.inTemp.max.degree_C.format($format_string="%.1f", $add_label=False, $localize=False) #slurp
 #*129*#$day.inTemp.min.degree_C.format($format_string="%.1f", $add_label=False, $localize=False) #slurp
-#*130*#$current($data_binding='ws_binding').appTemp.degree_C.format($format_string="%.1f", $add_label=False, $localize=False) #slurp
+#*130*#$current.appTemp.degree_C.format($format_string="%.1f", $add_label=False, $localize=False) #slurp
 #*131*#$day.barometer.max.hPa.format($format_string="%.1f", $add_label=False, $localize=False) #slurp
 #*132*#$day.barometer.min.hPa.format($format_string="%.1f", $add_label=False, $localize=False) #slurp
 #*133*#$day.wind.max.knot.format($format_string="%.1f", $add_label=False, $localize=False) #slurp
 #*134*#$day.wind.maxtime.format($format_string="%H:%M:%S") #slurp
 #*135*#$day.wind.maxtime.format($format_string="%H:%M:%S") #slurp
-#*136*#$day($data_binding='ws_binding').appTemp.max.degree_C.format($format_string="%.1f", $add_label=False, $localize=False) #slurp
-#*137*#$day($data_binding='ws_binding').appTemp.min.degree_C.format($format_string="%.1f", $add_label=False, $localize=False) #slurp
+#*136*#$day.appTemp.max.degree_C.format($format_string="%.1f", $add_label=False, $localize=False) #slurp
+#*137*#$day.appTemp.min.degree_C.format($format_string="%.1f", $add_label=False, $localize=False) #slurp
 #*138*#$day.dewpoint.max.degree_C.format($format_string="%.1f", $add_label=False, $localize=False) #slurp
 #*139*#$day.dewpoint.min.degree_C.format($format_string="%.1f", $add_label=False, $localize=False) #slurp
 #*140*#$current.windGust.knot.format($format_string="%.1f", $add_label=False, $localize=False) #slurp
@@ -228,8 +228,8 @@ $rainHourArray[$i].mm.format($format_string="%.1f", $add_label=False, $localize=
 #set $trendBool = 0
 #end if
 #*144*#$trendBool #slurp
-#if $trend($data_binding='ws_binding').humidex.raw is not None
-#set $trendBool = -1 + 2 * int($trend($data_binding='ws_binding').humidex.raw >= 0)
+#if $trend.humidex.raw is not None
+#set $trendBool = -1 + 2 * int($trend.humidex.raw >= 0)
 #else
 #set $trendBool = 0
 #end if
