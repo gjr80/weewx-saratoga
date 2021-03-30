@@ -470,7 +470,7 @@ if ( isset($_REQUEST['sce']) && strtolower($_REQUEST['sce']) == 'view' ) {
 #raw $heatinodp = #end raw '$current.heatindex.format($format_string="%.0f", $add_label=False, $None_string=$naString, $localize=False)';    // current heat index,no decimal place
 #raw $windch = #end raw '$current.windchill.format($add_label=False, $localize=False)';   // current wind-chill
 #raw $windchnodp = #end raw '$current.windchill.format($format_string="%.0f", $add_label=False, $None_string=$naString, $localize=False)';    // current wind-chill, no decimal place
-#raw $humidexfaren = #end raw '$current($max_delta=60).humidex.degree_F.format($format_string="%.0f", $add_label=False, $None_string=$naString, $localize=False)';nolabel($degree_F_Format, $naString)';  // Humidex value in oF
+#raw $humidexfaren = #end raw '$current($max_delta=60).humidex.degree_F.format($format_string="%.0f", $add_label=False, $None_string=$naString, $localize=False)';  // Humidex value in oF
 #raw $humidexcelsius = #end raw '$current($max_delta=60).humidex.degree_C.format($format_string=$degree_C_Format, $add_label=False, $None_string=$naString, $localize=False)';    // Humidex value in oC
 #if $unit.unit_type_dict.group_temperature == "degree_F"
 #raw $apparenttemp = #end raw '$current($max_delta=60).appTemp.degree_F.format($format_string=$degree_F_Format, $add_label=False, $None_string=$naString, $localize=False)'; // Apparent temperature
