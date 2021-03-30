@@ -126,7 +126,7 @@ class WSInstaller(ExtensionInstaller):
                         'database_name': 'wdsupp'
                     }
                 },
-                'Weewx-Saratoga': {
+                'WeewxSaratoga': {
                     'data_binding': 'ws_binding',
                     'sunshine_threshold': '120',
                     'Supplementary': {
