@@ -105,11 +105,11 @@ template
 #*032*#$stationLocation-$current.dateTime.format($timeLongFormat) #slurp
 #*033*#0 #slurp
 #if $current($data_binding='ws_supp_binding', $max_delta=600).maxSolarRad.exists and $current.radiation.exists and $current.radiation.raw is not None and $current($data_binding='ws_supp_binding', $max_delta=600).maxSolarRad.raw is not None
-#if $current($data_binding='ws_supp_binding', $max_delta=600).maxSolarRad.raw > 0 and $current.radiation.raw is not None
-#set $percent = "%d" % (100.0 * $current.radiation.raw / $current($data_binding='ws_supp_binding', $max_delta=600).maxSolarRad.raw)
-#else
-#set $percent = 0
-#end if
+    #if $current($data_binding='ws_supp_binding', $max_delta=600).maxSolarRad.raw > 0 and $current.radiation.raw is not None
+        #set $percent = "%d" % (100.0 * $current.radiation.raw / $current($data_binding='ws_supp_binding', $max_delta=600).maxSolarRad.raw)
+    #else
+        #set $percent = 0
+    #end if
 #*034*#$percent #slurp
 #else
 #*034*#--- #slurp
@@ -140,11 +140,11 @@ template
 #*050*##if $varExists('trend') then $trend.barometer.format($format_string="%+.2f", $add_label=False, $None_string='0', $localize=False) else 0# #slurp
 #*051*##*Previous 20 Hours Wind Knots Readings*##slurp
 #for $i in range (4,24):
-#try
+    #try
 $windSpeedHourArray[$i].knot.format($format_string="%.1f", $add_label=False, $localize=False) #slurp
-#except
+    #except
 0 #slurp
-#end try
+    #end try
 #end for
 #*071*#$day.wind.max.knot.format($format_string="%.1f", $add_label=False, $localize=False) #slurp
 #*072*#$current.dewpoint.degree_C.format($format_string="%.1f", $add_label=False, $localize=False) #slurp
@@ -182,11 +182,11 @@ $windSpeedHourArray[$i].knot.format($format_string="%.1f", $add_label=False, $lo
 #*099*#$current($timestamp=$now-360, $max_delta=180).outTemp.degree_C.format($format_string="%.1f", $add_label=False, $localize=False) #slurp
 #*100*##*Previous 10 Hours Rain Readings*##slurp
 #for $i in range (10):
-#try
+    #try
 $rainHourArray[$i].mm.format($format_string="%.1f", $add_label=False, $localize=False) #slurp
-#except
+    #except
 0 #slurp
-#end try
+    #end try
 #end for
 #*110*#$day.heatindex.max.degree_C.format($format_string="%.1f", $add_label=False, $localize=False) #slurp
 #*111*#$day.heatindex.min.degree_C.format($format_string="%.1f", $add_label=False, $localize=False) #slurp
@@ -227,22 +227,26 @@ $rainHourArray[$i].mm.format($format_string="%.1f", $add_label=False, $localize=
 #*141*#$current.dateTime.format($yearFormat) #slurp
 #*142*#0 #slurp
 #if $trend.outTemp.raw is not None
-#set $trendBool = -1 + 2 * int($trend.outTemp.raw >= 0)
+    #set $trendBool = -1 + 2 * int($trend.outTemp.raw >= 0)
 #else
-#set $trendBool = 0
+    #set $trendBool = 0
 #end if
 #*143*#$trendBool #slurp
 #if $trend.outHumidity.raw is not None
-#set $trendBool = -1 + 2 * int($trend.outHumidity.raw >= 0)
+    #set $trendBool = -1 + 2 * int($trend.outHumidity.raw >= 0)
 #else
-#set $trendBool = 0
+    #set $trendBool = 0
 #end if
 #*144*#$trendBool #slurp
-#if $trend.humidex.raw is not None
-#set $trendBool = -1 + 2 * int($trend.humidex.raw >= 0)
-#else
-#set $trendBool = 0
-#end if
+#try
+    #if $trend.humidex.raw is not None
+        #set $trendBool = -1 + 2 * int($trend.humidex.raw >= 0)
+    #else
+        #set $trendBool = 0
+    #end if
+#except
+    #set $trendBool = 0
+#end try
 #*145*#$trendBool #slurp
 #*146*#$current($timestamp=$now-3600, $max_delta=180).windDir.format($format_string="%.0f", $add_label=False, $localize=False) #slurp
 #*147*#$current($timestamp=$now-3240, $max_delta=180).windDir.format($format_string="%.0f", $add_label=False, $localize=False) #slurp
