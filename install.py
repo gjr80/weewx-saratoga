@@ -52,6 +52,7 @@ class WSInstaller(ExtensionInstaller):
             process_services=['user.ws.WsWXCalculate'],
             archive_services=['user.ws.WsArchive',
                               'user.ws.WsSuppArchive'],
+            report_services=['user.rtcr.RealtimeClientraw'],
             config={
                 'StdReport': {
                     'WEEWXtagsReport': {
@@ -143,10 +144,14 @@ class WSInstaller(ExtensionInstaller):
                             'file': '/path/and/filename',
                             'enable': 'False'
                         }
+                    },
+                    'RealtimeClientraw': {
+
                     }
                 }
             },
-            files=[('bin/user', ['bin/user/stackedwindrose.py',
+            files=[('bin/user', ['bin/user/rtcr.py',
+                                 'bin/user/stackedwindrose.py',
                                  'bin/user/wsastro.py',
                                  'bin/user/wsschema.py',
                                  'bin/user/wssearchlist.py',
