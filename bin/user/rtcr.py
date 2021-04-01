@@ -86,52 +86,63 @@ Abbreviated instructions for use:
 
 1.  Put this file in $BIN_ROOT/user.
 
-2.  Add the following stanza to weewx.conf:
+2.  If using with the WeeWX-Saratoga extension to support the Saratoga Weather
+Web templates add a [[RealtimeClientraw]] stanza under [WeewxSaratoga] in
+weewx.conf as follows:
 
-[RealtimeClientraw]
-    # Path to clientraw.txt. Relative paths are relative to HTML_ROOT. Default
-    # is HTML_ROOT.
-    rtcr_path = /home/weewx/public_html
+[WeewSaratoga]
+    ....
+    [[RealtimeClientraw]]
+        # Path to clientraw.txt. Can be an absolute or relative path. Relative
+        # paths are relative to HTML_ROOT. Optional, default setting is to use
+        # HTML_ROOT.
+        rtcr_path = /home/weewx/public_html
 
-    # Minimum interval (seconds) between file generation. Ideally
-    # clientraw.txt would be generated on receipt of every loop packet (there
-    # is no point in generating more frequently than this); however, in some
-    # cases the user may wish to generate clientraw.txt less frequently. The
-    # min_interval option sets the minimum time between successive
-    # clientraw.txt generations. Generation will be skipped on arrival of a
-    # loop packet if min_interval seconds have NOT elapsed since the last
-    # generation. If min_interval is 0 or omitted generation will occur on
-    # every loop packet (as will be the case if min_interval < station loop
-    period). Optional, default is 0.
-    min_interval =
+        # Minimum interval (seconds) between file generation. Ideally
+        # clientraw.txt would be generated on receipt of every loop packet (there
+        # is no point in generating more frequently than this); however, in some
+        # cases the user may wish to generate clientraw.txt less frequently. The
+        # min_interval option sets the minimum time between successive
+        # clientraw.txt generations. Generation will be skipped on arrival of a
+        # loop packet if min_interval seconds have NOT elapsed since the last
+        # generation. If min_interval is 0 or omitted generation will occur on
+        # every loop packet (as will be the case if min_interval < station loop
+        period). Optional, default is 0.
+        min_interval = 0
 
-    # Binding to use for appTemp data. Optional, leave blank for no binding for
-    # appTemp data. Default is no additional binding.
-    additional_binding =
+        # Update windrun value each loop period or just on each archive period.
+        # Optional, default is False.
+        windrun_loop = false
 
-    # Update windrun value each loop period or just on each archive period.
-    # Optional, default is False.
-    windrun_loop = false
+        # Stations that provide partial packets are supported through a cache that
+        # caches packet data. max_cache_age is the maximum age  in seconds for
+        # which cached data is retained. Optional, default is 600 seconds.
+        max_cache_age = 600
 
-    # Stations that provide partial packets are supported through a cache that
-    # caches packet data. max_cache_age is the maximum age  in seconds for
-    # which cached data is retained. Optional, default is 600 seconds.
-    max_cache_age = 600
+        # Period in seconds over which average wind speed is calculated.
+        # Optional, default is 300.
+        avgspeed_period = 300
 
-    avgspeed_period = 300
-    gust_period = 300
+        # Period in seconds over which gust speed is calculated. Optional,
+        # default is 300.
+        gust_period = 300
 
-    # Period in seconds over which to calculate trends. Anecdotally,
-    # clientraw.txt appears to use 1 hour for each but barometer trends are
-    # commonly calculated over a 3 hour period. Optional, default is 3600.
-    baro_trend_period = 3600
-    temp_trend_period = 3600
-    humidity_trend_period = 3600
-    humidex_trend_period = 3600
+        # Period in seconds over which to calculate trends. Anecdotally,
+        # clientraw.txt appears to use 1 hour for each but barometer trends are
+        # commonly calculated over a 3 hour period. Optional, default is 3600.
+        baro_trend_period = 3600
+        temp_trend_period = 3600
+        humidity_trend_period = 3600
+        humidex_trend_period = 3600
 
-    # Largest acceptable difference in seconds for which a record is considered
-    # a match. Optional, default is 200.
-    grace = 200
+        # When searching for a previous record the largest difference in time
+        # in seconds for which a record is considered a match. Optional,
+        # default is 200.
+        grace = 200
+
+3.  If using for some other purpose add a [RealtimeClientraw] stanza to
+weewx.conf containing the settings at step 2 above. Note the different number
+of square brackets and different hierarchical location of the stanza.
 
 4.  Add the RealtimeClientraw service to the list of report services under
 [Engine] [[Services]] in weewx.conf:
@@ -2422,7 +2433,7 @@ seed_functions = ListOfDicts({'wind': RtcrBuffer.seed_vector})
 # ============================================================================
 
 class ObsTuple(tuple):
-    """Class to repsent and observation in time.
+    """Class to represent and observation in time.
 
     A observation can be uniquely represented by the value of the observation
     and the time at which it was observed. This can be represented in a 2 way
