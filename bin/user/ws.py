@@ -533,12 +533,6 @@ class WsSuppArchive(weewx.engine.StdService):
                 self.loop_packet = {}
 
                 # set the unit groups for our obs
-                obs_group_dict["tempRecordHigh"] = "group_temperature"
-                obs_group_dict["tempNormalHigh"] = "group_temperature"
-                obs_group_dict["tempRecordLow"] = "group_temperature"
-                obs_group_dict["tempNormalLow"] = "group_temperature"
-                obs_group_dict["tempRecordHighYear"] = "group_count"
-                obs_group_dict["tempRecordLowYear"] = "group_count"
                 obs_group_dict["maxSolarRad"] = "group_radiation"
                 obs_group_dict["forecastIcon"] = "group_count"
                 obs_group_dict["currentIcon"] = "group_count"

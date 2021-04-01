@@ -51,12 +51,6 @@ ws_supp_schema = [
     ('forecastText',        'VARCHAR(256)'),
     ('currentIcon',         'INTEGER'),
     ('currentText',         'VARCHAR(256)'),
-    ('tempRecordHigh',      'REAL'),
-    ('tempNormalHigh',      'REAL'),
-    ('tempRecordHighYear',  'INTEGER'),
-    ('tempRecordLow',       'REAL'),
-    ('tempNormalLow',       'REAL'),
-    ('tempRecordLowYear',   'INTEGER'),
     ('vantageForecastIcon', 'INTEGER'),
     ('vantageForecastRule', 'VARCHAR(256)'),
     ('maxSolarRad',         'REAL')
