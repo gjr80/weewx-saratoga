@@ -383,8 +383,8 @@ if ( isset($_REQUEST['sce']) && strtolower($_REQUEST['sce']) == 'view' ) {
 //
 // Units
 // -----#end raw
-#raw $uomtemp = #end raw '$unit.label.outTemp.strip(' ')'; //  = 'C', 'F',  (or  'C', 'F', or '&deg;C', '&deg;F' )
-#raw $uombaro = #end raw '$unit.label.barometer.strip(' ')'; //  = 'inHg', 'hPa', 'kPa', 'mb'
+#raw $uomtemp = #end raw '&deg;$unit.unit_type.outTemp[-1:]'; //  = 'C', 'F',  (or  'C', 'F', or '&deg;C', '&deg;F' )
+#raw $uombaro = #end raw '$unit.unit_type.barometer'; //  = 'inHg', 'hPa', 'kPa', 'mb'
 #raw $uomwind = #end raw '$unit.label.windSpeed.strip(' ')'; //  = 'kts','mph','kmh','km/h','m/s','Bft'
 #raw $uomrain = #end raw '$unit.label.rain.strip(' ')'; //  = 'mm', 'in'
 #raw $datefmt = #end raw '$dmYFormat.strip(' ')'; //  =  'd/m/y', 'm/d/y'
@@ -588,13 +588,13 @@ if ( isset($_REQUEST['sce']) && strtolower($_REQUEST['sce']) == 'view' ) {
 // Yesterday:
 // ----------
 #raw $yesterdayrain = #end raw '$yesterday.rain.sum.format($add_label=False, $None_string='0.0', $localize=False)';   // Yesterday rain
-#if $current($data_binding='ws_supp_binding', $max_delta=600).stormStart.exists
-#raw $vpstormrainstart = #end raw '$current($data_binding='ws_supp_binding', $max_delta=600).stormStart.format($dateFormat, '0/0/0')';  //Davis VP Storm rain start date
+#if $current.stormStart.exists
+#raw $vpstormrainstart = #end raw '$current.stormStart.format($dateFormat, '0/0/0')';  //Davis VP Storm rain start date
 #else
 #raw $vpstormrainstart = #end raw '0/0/0';  //Davis VP Storm rain start date
 #end if
-#if $current($data_binding='ws_supp_binding', $max_delta=600).stormRain.exists
-#raw $vpstormrain = #end raw '$current($data_binding='ws_supp_binding', $max_delta=600).stormRain.format($skin_dict.Units.StringFormats[$skin_dict.Units.Groups.group_rain],"0.0")';           //Davis VP Storm rain value
+#if $current.stormRain.exists
+#raw $vpstormrain = #end raw '$current.stormRain.format($add_label=False, $None_string='0.0', $localize=False)';           //Davis VP Storm rain value
 #else
 #raw $vpstormrain = #end raw '0.0';           //Davis VP Storm rain value
 #end if
