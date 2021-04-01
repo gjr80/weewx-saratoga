@@ -1417,7 +1417,7 @@ class RealtimeClientrawThread(threading.Thread):
         # 114 - lightning count in last minute - will not implement
         data[114] = 0
         # 115 - time of last lightning strike - will not implement
-        data[115] = '00:00'
+        data[115] = '---'
         # 116 - date of last lightning strike - will not implement
         data[116] = '---'
         # 117 - wind average direction
@@ -1431,43 +1431,43 @@ class RealtimeClientrawThread(threading.Thread):
             extra_temp7 = packet_wx[self.extra_temp7]
         else:
             extra_temp7 = None
-        data[120] = extra_temp7 if extra_temp7 is not None else 0.0
+        data[120] = extra_temp7 if extra_temp7 is not None else -100
         # 121 - extra temperature sensor 8 (Celsius)
         if self.extra_temp8 and self.extra_temp8 in packet_wx:
             extra_temp8 = packet_wx[self.extra_temp8]
         else:
             extra_temp8 = None
-        data[121] = extra_temp8 if extra_temp8 is not None else 0.0
+        data[121] = extra_temp8 if extra_temp8 is not None else -100
         # 122 - extra humidity sensor 4
         if self.extra_hum4 and self.extra_hum4 in packet_wx:
             extra_hum4 = packet_wx[self.extra_hum4]
         else:
             extra_hum4 = None
-        data[122] = extra_hum4 if extra_hum4 is not None else 0.0
+        data[122] = extra_hum4 if extra_hum4 is not None else -100
         # 123 - extra humidity sensor 5
         if self.extra_hum5 and self.extra_hum5 in packet_wx:
             extra_hum5 = packet_wx[self.extra_hum5]
         else:
             extra_hum5 = None
-        data[123] = extra_hum5 if extra_hum5 is not None else 0.0
+        data[123] = extra_hum5 if extra_hum5 is not None else -100
         # 124 - extra humidity sensor 6
         if self.extra_hum6 and self.extra_hum6 in packet_wx:
             extra_hum6 = packet_wx[self.extra_hum6]
         else:
             extra_hum6 = None
-        data[124] = extra_hum6 if extra_hum6 is not None else 0.0
+        data[124] = extra_hum6 if extra_hum6 is not None else -100
         # 125 - extra humidity sensor 7
         if self.extra_hum7 and self.extra_hum7 in packet_wx:
             extra_hum7 = packet_wx[self.extra_hum7]
         else:
             extra_hum7 = None
-        data[125] = extra_hum7 if extra_hum7 is not None else 0.0
+        data[125] = extra_hum7 if extra_hum7 is not None else -100
         # 126 - extra humidity sensor 8
         if self.extra_hum8 and self.extra_hum8 in packet_wx:
             extra_hum8 = packet_wx[self.extra_hum8]
         else:
             extra_hum8 = None
-        data[126] = extra_hum8 if extra_hum8 is not None else 0.0
+        data[126] = extra_hum8 if extra_hum8 is not None else -100
         # 127 - vp solar
         data[127] = packet_wx['radiation'] if packet_wx['radiation'] is not None else 0.0
         # 128 - maximum inTemp (Celsius)
