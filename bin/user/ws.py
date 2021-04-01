@@ -344,7 +344,6 @@ davis_fr_dict = {
 #                     Exceptions that could get thrown
 # ============================================================================
 
-
 class MissingApiKey(IOError):
     """Raised when an API key cannot be found for an external source/service."""
 
@@ -356,7 +355,6 @@ class MissingFile(IOError):
 # ==============================================================================
 #                              Class WsWXCalculate
 # ==============================================================================
-
 
 class WsWXCalculate(weewx.engine.StdService):
     """Service to calculate WeeWX-Saratoga specific observations."""
@@ -402,7 +400,6 @@ class WsWXCalculate(weewx.engine.StdService):
 # ==============================================================================
 #                                Class WsArchive
 # ==============================================================================
-
 
 class WsArchive(weewx.engine.StdService):
     """Service to store Weewx-Saratoga specific archive data."""
@@ -485,13 +482,12 @@ class WsArchive(weewx.engine.StdService):
 #                              Class WsSuppArchive
 # ==============================================================================
 
-
 class WsSuppArchive(weewx.engine.StdService):
     """Service to archive WeeWX-Saratoga supplementary data.
 
 
-        Collects and archives WU API sourced data, Davis console forecast/storm 
-        data and theoretical max solar radiation data in the WeeWX-Saratoga supp
+        Collects and archives WU API sourced data, Davis console forecast data
+        and theoretical max solar radiation data in the WeeWX-Saratoga supp
         database. Data is only kept for a limited time before being dropped.
     """
 
@@ -543,8 +539,6 @@ class WsSuppArchive(weewx.engine.StdService):
                 obs_group_dict["tempNormalLow"] = "group_temperature"
                 obs_group_dict["tempRecordHighYear"] = "group_count"
                 obs_group_dict["tempRecordLowYear"] = "group_count"
-                obs_group_dict["stormRain"] = "group_rain"
-                obs_group_dict["stormStart"] = "group_time"
                 obs_group_dict["maxSolarRad"] = "group_radiation"
                 obs_group_dict["forecastIcon"] = "group_count"
                 obs_group_dict["currentIcon"] = "group_count"
@@ -623,9 +617,9 @@ class WsSuppArchive(weewx.engine.StdService):
         """Action on a new archive record being created.
 
         Add anything we have to the archive record and then save to our
-        database. Grab any forecast/storm loop data and theoretical max
-        solar radiation. Archive our data, delete any stale records and
-        'vacuum' the database if required.
+        database. Grab any forecast loop data and theoretical max solar
+        radiation. Archive our data, delete any stale records and 'vacuum' the
+        database if required.
         """
 
         # If we have a result queue check to see if we have received
@@ -703,8 +697,6 @@ class WsSuppArchive(weewx.engine.StdService):
         # update stashed loop packet data
         self.loop_packet['forecastIcon'] = event.packet.get('forecastIcon')
         self.loop_packet['forecastRule'] = event.packet.get('forecastRule')
-        self.loop_packet['stormRain'] = event.packet.get('stormRain')
-        self.loop_packet['stormStart'] = event.packet.get('stormStart')
         self.loop_packet['maxSolarRad'] = event.packet.get('maxSolarRad')
 
     def process_loop(self):
@@ -713,8 +705,6 @@ class WsSuppArchive(weewx.engine.StdService):
             Adds following fields (if available) to data dictionary:
                 - forecast icon (Vantage only)
                 - forecast rule (Vantage only)(Note returns full text forecast)
-                - stormRain (Vantage only)
-                - stormStart (Vantage only)
                 - current theoretical max solar radiation
         """
 
@@ -730,12 +720,6 @@ class WsSuppArchive(weewx.engine.StdService):
             except KeyError:
                 if weewx.debug >= 2:
                     logdbg("Could not decode Vantage forecast code")
-        # vantage stormRain
-        if self.loop_packet.get('stormRain') is not None:
-            _data['stormRain'] = self.loop_packet['stormRain']
-        # vantage stormStart
-        if self.loop_packet.get('stormStart') is not None:
-            _data['stormStart'] = self.loop_packet['stormStart']
         # theoretical solar radiation value
         if self.loop_packet.get('maxSolarRad') is not None:
             _data['maxSolarRad'] = self.loop_packet['maxSolarRad']
@@ -778,13 +762,14 @@ class WsSuppArchive(weewx.engine.StdService):
 
     @staticmethod
     def vacuum_database(dbm):
-        """Vacuum our database to save space."""
+        """Vacuum our database to save space.
 
-        # SQLite databases need a little help to prevent them from continually
-        # growing in size even though we prune records from the database.
-        # Vacuum will only work on SQLite databases.  It will compact the
-        # database file. It should be OK to run this on a MySQL database - it
-        # will silently fail.
+        SQLite databases need a little help to prevent them from continually
+        growing in size even though we prune records from the database. Vacuum
+        will only work on SQLite databases. It will compact the database file.
+        It should be OK to run this on a MySQL database - it will silently
+        fail.
+        """
 
         # Get time now as a ts
         t1 = time.time()
@@ -828,7 +813,6 @@ class WsSuppArchive(weewx.engine.StdService):
 # ============================================================================
 #                           class ThreadedSource
 # ============================================================================
-
 
 class ThreadedSource(threading.Thread):
     """Base class for a threaded external source.
@@ -946,7 +930,6 @@ class ThreadedSource(threading.Thread):
 # ============================================================================
 #                              class WuSource
 # ============================================================================
-
 
 class WuSource(ThreadedSource):
     """Thread that obtains WU API forecast text and places it in a queue.
@@ -1399,7 +1382,6 @@ class WuSource(ThreadedSource):
 #                    class WeatherUndergroundAPIForecast
 # ============================================================================
 
-
 class WeatherUndergroundAPIForecast(object):
     """Obtain a forecast from the Weather Underground API.
 
@@ -1517,7 +1499,6 @@ class WeatherUndergroundAPIForecast(object):
 # ============================================================================
 #                           class DarkSkySource
 # ============================================================================
-
 
 class DarkSkySource(ThreadedSource):
     """Thread that obtains Dark Sky data and places it in a queue.
@@ -1886,7 +1867,6 @@ class DarkSkySource(ThreadedSource):
 #                           class DarkskyForecastAPI
 # ==============================================================================
 
-
 class DarkskyForecastAPI(object):
     """Query the Darksky API and return the API response.
 
@@ -2037,7 +2017,6 @@ class DarkskyForecastAPI(object):
 # ==============================================================================
 #                               class FileSource
 # ==============================================================================
-
 
 class FileSource(ThreadedSource):
     """Class to obtain forecast and current conditions from a formatted text
@@ -2204,7 +2183,6 @@ class FileSource(ThreadedSource):
 #                                   Utilities
 # ==============================================================================
 
-
 def toint(string, default=None):
     """Convert a string to an integer whilst handling None and a default.
 
@@ -2315,7 +2293,6 @@ def check_enable(cfg_dict, service, *args):
 #                            class SimpleWuSource
 # ============================================================================
 
-
 class SimpleWuSource(WuSource):
     """Simplified version of WuSource object for testing.
 
@@ -2352,7 +2329,6 @@ class SimpleWuSource(WuSource):
 # ============================================================================
 #                         class SimpleDarkSkySource
 # ============================================================================
-
 
 class SimpleDarkSkySource(DarkSkySource):
     """Simplified version of DarkSkySource object for testing.
@@ -2391,7 +2367,6 @@ class SimpleDarkSkySource(DarkSkySource):
 #                           class SimpleFileSource
 # ============================================================================
 
-
 class SimpleFileSource(FileSource):
     """Simplified version of FileSource object for testing.
 
@@ -2428,7 +2403,6 @@ class SimpleFileSource(FileSource):
 # ============================================================================
 #                             class SimpleEngine
 # ============================================================================
-
 
 class SimpleEngine(object):
     """Simplified version of a WeeWX engine object.

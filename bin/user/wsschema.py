@@ -59,7 +59,5 @@ ws_supp_schema = [
     ('tempRecordLowYear',   'INTEGER'),
     ('vantageForecastIcon', 'INTEGER'),
     ('vantageForecastRule', 'VARCHAR(256)'),
-    ('stormRain',           'REAL'),
-    ('stormStart',          'INTEGER'),
     ('maxSolarRad',         'REAL')
     ]
