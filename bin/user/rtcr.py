@@ -1361,7 +1361,7 @@ class RealtimeClientrawThread(threading.Thread):
         windchill_tl = convert(windchill_tl_vt, 'degree_C').value
         data[77] = windchill_th if windchill_th is not None else 0.0
         data[78] = windchill_tl if windchill_tl is not None else 0.0
-        # 079 - davis vp UV
+        # 079 - Davis VP UV
         data[79] = packet_wx['UV'] if packet_wx['UV'] is not None else 0
         # 080-089 - hour wind speed 01-10 - will not implement
         for h in range(0, 10):
@@ -1468,7 +1468,7 @@ class RealtimeClientrawThread(threading.Thread):
         else:
             extra_hum8 = None
         data[126] = extra_hum8 if extra_hum8 is not None else -100
-        # 127 - vp solar
+        # 127 - VP solar
         data[127] = packet_wx['radiation'] if packet_wx['radiation'] is not None else 0.0
         # 128 - maximum inTemp (Celsius)
         # 129 - minimum inTemp (Celsius)
