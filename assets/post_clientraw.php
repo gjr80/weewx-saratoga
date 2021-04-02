@@ -50,10 +50,17 @@ if($_SERVER['REQUEST_METHOD'] == 'POST') {
         $param = explode("=", $chunk);
         // we are interested in the 'clientraw' data
         if (urldecode($param[0]) == 'clientraw') {
-            // save the decoded data to file
-            file_put_contents($cr_file, urldecode($param[1]));
-            // we have our data so exit the loop
-            break;
+					  $CRrec = urldecode($param[1]);
+						$CRarray = explode(' ',$CRrec);
+						// make sure it's a clientraw.txt record we've got
+						if(isset($CRarray[0]) and isset($CRarray[177]) and
+						   $CRarray[0] == '12345' and preg_match('/^!!\S+!!/',$CRarray[177]) ) {
+               // save the decoded data to file
+               file_put_contents($cr_file, $CRrec);
+               // we have our data so exit the loop
+
+						   break;
+						}
         }
     }
 }
