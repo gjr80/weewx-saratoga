@@ -90,13 +90,21 @@ Abbreviated instructions for use:
 Web templates add a [[RealtimeClientraw]] stanza under [WeewxSaratoga] in
 weewx.conf as follows:
 
-[WeewSaratoga]
+[WeewxSaratoga]
     ....
     [[RealtimeClientraw]]
         # Path to clientraw.txt. Can be an absolute or relative path. Relative
         # paths are relative to HTML_ROOT. Optional, default setting is to use
         # HTML_ROOT.
         rtcr_path = /home/weewx/public_html
+
+        # Remote URL to which the clientraw.txt data will be posted via HTTP
+        # POST. Optional, omit to disable HTTP POST. Format is
+        # http://remote/address
+        remote_server_url =
+
+        # timeout in seconds for remote URL posts. Optional, default is 2
+        timeout = 2
 
         # Minimum interval (seconds) between file generation. Ideally
         # clientraw.txt would be generated on receipt of every loop packet (there
@@ -188,6 +196,7 @@ import threading
 import time
 
 from operator import itemgetter
+from io import open
 
 # Python 2/3 compatibility shims
 from six import iteritems
@@ -621,16 +630,13 @@ class RealtimeClientrawThread(threading.Thread):
         # get our file paths and names
         _path = rtcr_config_dict.get('rtcr_path', '')
         rtcr_path = os.path.join(html_root, _path)
-        self.rtcr_path_file = os.path.join(rtcr_path,
-                                           rtcr_config_dict.get('rtcr_file_name',
-                                                                'clientraw.txt'))
+        rtcr_filename = rtcr_config_dict.get('rtcr_file_name', 'clientraw.txt')
+        self.rtcr_path_file = os.path.join(rtcr_path, rtcr_filename)
 
         # get the remote server URL if it exists, if it doesn't set it to None
         self.remote_server_url = rtcr_config_dict.get('remote_server_url', None)
         # timeout to be used for remote URL posts
         self.timeout = to_int(rtcr_config_dict.get('timeout', 2))
-        # response text from remote URL if post was successful
-        self.response = rtcr_config_dict.get('response_text', None)
 
         # some field definition settings (mainly time periods for averages etc)
         self.avgspeed_period = to_int(rtcr_config_dict.get('avgspeed_period',
@@ -755,14 +761,19 @@ class RealtimeClientrawThread(threading.Thread):
             raise weewx.ViolatedPrecondition("Atmospheric turbidity (%d) "
                                              "out of range (2-5)" % self.nfac)
 
+        # TODO. Need to be much more informative in logging our config, especially if debug >= 1
+        # inform the user what we are going to do
+        loginf("RealtimeClientraw will generate %s" % self.rtcr_path_file)
         if self.min_interval is None:
-            _msg = "RealtimeClientraw will generate %s. min_interval is None" % self.rtcr_path_file
+            _msg = "min_interval is None"
         elif to_int(self.min_interval) == 1:
-            _msg = "RealtimeClientraw will generate %s. min_interval is 1 second" % self.rtcr_path_file
+            _msg = "min_interval is 1 second"
         else:
-            _msg = "RealtimeClientraw will generate %s. min_interval is %s seconds" % (self.rtcr_path_file,
-                                                                                       self.min_interval)
+            _msg = "min_interval is %s seconds" % self.min_interval
         loginf(_msg)
+        if self.remote_server_url is not None:
+            loginf("%s will be posted to %s by HTTP POST" % (rtcr_filename,
+                                                             self.remote_server_url))
 
     def run(self):
         """Collect packets from the rtcr queue and manage their processing.
@@ -974,25 +985,51 @@ class RealtimeClientrawThread(threading.Thread):
         req.add_header('Content-Type', 'text/plain')
         # POST the data but wrap in a try..except so we can trap any errors
         try:
-            response = urllib.request.urlopen(req, data=data, timeout=self.timeout)
+            response = self.post_request(req, data)
             if 200 <= response.code <= 299:
-                # No exception thrown and we got a good response code, but did
-                # we get self.response back in a return message? Check for
-                # self.response, if its there then we can return. If it's
-                # not there then log it and return.
-                if self.response is not None and self.response not in response:
-                    # didn't get 'success' so log it and continue
-                    if weewx.debug > 0 or self.debug_post:
-                        loginf("Failed to post data: Unexpected response")
+                # no exception thrown and we received a good response code, log
+                # it and return.
+                if weewx.debug > 1 or self.debug_post:
+                    loginf("Received response: '%s'" % response.code)
                 return
             # we received a bad response code, log it and continue
             if weewx.debug > 0 or self.debug_post:
-                loginf("Failed to post data: Code %s" % response.code())
+                loginf("Failed to post data. Received response: '%s'" % response.code)
         except (urllib.error.URLError, socket.error,
                 http_client.BadStatusLine, http_client.IncompleteRead) as e:
             # an exception was thrown, log it and continue
             if weewx.debug > 0 or self.debug_post:
                 loginf("Failed to post data: %s" % e)
+
+    def post_request(self, request, payload):
+        """Post a Request object.
+
+        Inputs:
+            request: urllib2 Request object
+            payload: the data to sent as a unicode string
+
+        Returns:
+            The urllib2.urlopen() response
+        """
+
+        # The POST data needs to be urlencoded, under python2 urlencoding
+        # unicode characters that have no ascii equivalent raises a
+        # UnicodeEncodeError, the solution is to encode the characters before
+        # urlencoding. Under python3 POST data should be bytes or an iterable
+        # of bytes and not of type str so python3 requires the encoding occur
+        # after the data is urlencoded. So assume we are working under python3
+        # and be prepared to catch the errors.
+        try:
+            enc_payload = urllib.parse.urlencode({"clientraw": payload}).encode('utf-8')
+            _response = urllib.request.urlopen(request,
+                                               data=enc_payload,
+                                               timeout=self.timeout)
+        except UnicodeEncodeError:
+            enc_payload = urllib.parse.urlencode({"clientraw": payload.encode('utf-8')})
+            _response = urllib.request.urlopen(request,
+                                               data=enc_payload,
+                                               timeout=self.timeout)
+        return _response
 
     def write_data(self, data):
         """Write the clientraw.txt file.
@@ -1003,9 +1040,9 @@ class RealtimeClientrawThread(threading.Thread):
             data:   clientraw.txt data string
         """
 
-        with open(self.rtcr_path_file, 'w') as f:
+        with open(self.rtcr_path_file, "w", encoding='utf-8') as f:
             f.write(data)
-            f.write('\n')
+            f.write(u'\n')
 
     def calculate(self, packet):
         """Calculate the raw clientraw numeric fields.
