@@ -24,7 +24,7 @@ Revision History
   2 April 2021         v0.1.0
       - initial release
 
-Abbreviated instructions for use:
+Instructions for use:
 
 1.  Copy this file to an appropriate directory in the web server document tree
 
@@ -34,13 +34,27 @@ Abbreviated instructions for use:
     left as clientraw.txt if using the received file with the Saratoga Weather
     Web Site templates or the Alternative dashboard.
 */
+
 // define our destination path and file name
 $cr_file = "./clientraw.txt";
 // we are only interested in HTTP POST
 if($_SERVER['REQUEST_METHOD'] == 'POST') {
     // get the data
     $data = file_get_contents("php://input");
-    // write the data to file
-    file_put_contents($cr_file, $data);
+    // the data should be urlencoded in key=value pairs, we want the pair whose
+    // key=='clientraw'
+
+    // iterate over each of the key=value pairs
+    foreach (explode('&', $data) as $chunk) {
+        // split the pair into key and value
+        $param = explode("=", $chunk);
+        // we are interested in the 'clientraw' data
+        if (urldecode($param[0]) == 'clientraw') {
+            // save the decoded data to file
+            file_put_contents($cr_file, urldecode($param[1]));
+            // we have our data so exit the loop
+            break;
+        }
+    }
 }
 ?>
