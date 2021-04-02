@@ -59,16 +59,6 @@ class WSInstaller(ExtensionInstaller):
                         'skin': 'WEEWXtags',
                         'enable': 'True',
                         'Units': {
-                            'Groups': {
-                                'group_altitude': 'foot',
-                                'group_degree_day': 'degree_C_day',
-                                'group_pressure': 'hPa',
-                                'group_rain': 'mm',
-                                'group_rainrate': 'mm_per_hour',
-                                'group_speed': 'km_per_hour',
-                                'group_speed2': 'km_per_hour2',
-                                'group_temperature': 'degree_C'
-                            },
                             'TimeFormats': {
                                 'date_f': '%d/%m/%Y',
                                 'date_time_f': '%d/%m/%Y %H:%M'
@@ -146,6 +136,7 @@ class WSInstaller(ExtensionInstaller):
                         }
                     },
                     'RealtimeClientraw': {
+                        'min_interval': '10',
 
                     }
                 }
