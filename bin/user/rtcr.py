@@ -1778,8 +1778,31 @@ class RealtimeClientrawThread(threading.Thread):
                                 dist_group)
         windrun = convert(windrun_vt, 'km').value
         data[173] = windrun if windrun is not None else 0.0
-        # 174 - record end (WD Version)
-        data[174] = '!!C10.37S120!!'
+        # 174 - Time of daily max temp
+        if 'outTemp' in self.buffer:
+            t_outtemp_tm_ts = self.buffer['outTemp'].day_maxtime
+            if t_outtemp_tm_ts is not None:
+                t_outtemp_tm = time.localtime(t_outtemp_tm_ts)
+            else:
+                t_outtemp_tm = time.localtime(packet_wx['dateTime'])
+        else:
+            t_outtemp_tm = time.localtime(packet_wx['dateTime'])
+        data[174] = time.strftime('%H:%M', t_outtemp_tm)
+        # 175 - Time of daily min temp
+        if 'outTemp' in self.buffer:
+            t_outtemp_tm_ts = self.buffer['outTemp'].day_mintime
+            if t_outtemp_tm_ts is not None:
+                t_outtemp_tm = time.localtime(t_outtemp_tm_ts)
+            else:
+                t_outtemp_tm = time.localtime(packet_wx['dateTime'])
+        else:
+            t_outtemp_tm = time.localtime(packet_wx['dateTime'])
+        data[175] = time.strftime('%H:%M', t_outtemp_tm)
+        # 176 - 10 minute average wind direction
+        data[176] = '0'
+        # TODO. Need to calculate #177, maybe already be in vector buffer
+        # 177 - record end (WD Version)
+        data[177] = '!!C10.37S120!!'
         return data
 
     def create_clientraw_string(self, data):
@@ -1972,6 +1995,9 @@ class RealtimeClientrawThread(threading.Thread):
         fields.append(self.format(data[172], 1))
         fields.append(self.format(data[173], 1))
         fields.append(data[174])
+        fields.append(data[175])
+        fields.append(self.format(data[176], 0))
+        fields.append(data[177])
         return ' '.join(fields)
 
     @staticmethod
