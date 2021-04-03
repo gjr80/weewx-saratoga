@@ -33,6 +33,7 @@ Instructions for use:
     location of this file. The file name can be changed as well but should be
     left as clientraw.txt if using the received file with the Saratoga Weather
     Web Site templates or the Alternative dashboard.
+#TODO. Note about permissions/ownership.
 */
 
 // define our destination path and file name
@@ -50,17 +51,16 @@ if($_SERVER['REQUEST_METHOD'] == 'POST') {
         $param = explode("=", $chunk);
         // we are interested in the 'clientraw' data
         if (urldecode($param[0]) == 'clientraw') {
-					  $CRrec = urldecode($param[1]);
-						$CRarray = explode(' ',$CRrec);
-						// make sure it's a clientraw.txt record we've got
-						if(isset($CRarray[0]) and isset($CRarray[177]) and
-						   $CRarray[0] == '12345' and preg_match('/^!!\S+!!/',$CRarray[177]) ) {
+            $CRrec = urldecode($param[1]);
+            $CRarray = explode(' ',$CRrec);
+            // make sure it's a clientraw.txt record we've got
+            if(isset($CRarray[0]) and isset($CRarray[177]) and
+               $CRarray[0] == '12345' and preg_match('/^!!\S+!!/',$CRarray[177]) ) {
                // save the decoded data to file
                file_put_contents($cr_file, $CRrec);
                // we have our data so exit the loop
-
-						   break;
-						}
+               break;
+            }
         }
     }
 }
