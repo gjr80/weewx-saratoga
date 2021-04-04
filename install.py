@@ -38,7 +38,7 @@ from setup import ExtensionInstaller
 REQUIRED_VERSION = "4.0.0"
 WS_VERSION = "0.1.0b3"
 
-ws_config = """
+ws_config = u"""
 [StdReport]
     [[WEEWXtagsReport]]
         skin = WEEWXtags
