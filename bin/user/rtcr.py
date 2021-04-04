@@ -268,7 +268,7 @@ except ImportError:
 
 
 # version number of this script
-RTCR_VERSION = '0.3.0b2'
+RTCR_VERSION = '0.3.0b3'
 
 # the obs that we will buffer
 MANIFEST = ['outTemp', 'barometer', 'outHumidity', 'rain', 'rainRate',
@@ -623,7 +623,7 @@ class RealtimeClientrawThread(threading.Thread):
         self.manager_dict = manager_dict
 
         # setup file generation timing
-        self.min_interval = rtcr_config_dict.get('min_interval', None)
+        self.min_interval = to_int(rtcr_config_dict.get('min_interval', None))
         # timestamp of last file generation
         self.last_write = 0
 
@@ -645,14 +645,17 @@ class RealtimeClientrawThread(threading.Thread):
                                                        DEFAULT_GUST_PERIOD))
 
         # set some format strings
-        self.time_format = '%H:%M'
+        self.date_fmt = rtcr_config_dict.get('date_format','%-d/%-m/%Y')
+        self.long_time_fmt = rtcr_config_dict.get('long_time_format','%H:%M:%S')
+        self.short_time_fmt = rtcr_config_dict.get('short_time_format', '%H:%M')
         self.flag_format = '%.0f'
 
-        # get max cache age
+        # get max cache age, used for caching loop data from partial packet
+        # stations
         self.max_cache_age = to_int(rtcr_config_dict.get('max_cache_age',
                                                          DEFAULT_MAX_CACHE_AGE))
 
-        # grace
+        # grace period when looking for archive records
         self.grace = to_int(rtcr_config_dict.get('grace', DEFAULT_GRACE))
 
         # debug settings
@@ -665,7 +668,7 @@ class RealtimeClientrawThread(threading.Thread):
         self.debug_gen = to_bool(rtcr_config_dict.get('debug_gen', False))
         self.debug_post = to_bool(rtcr_config_dict.get('debug_post', False))
 
-        # Are we updating windrun using archive data only or archive and loop
+        # are we updating windrun using archive data only or archive and loop
         # data?
         self.windrun_loop = to_bool(rtcr_config_dict.get('windrun_loop',
                                                          'False'))
@@ -677,39 +680,26 @@ class RealtimeClientrawThread(threading.Thread):
         # check for data existence before using it.
         self.additional_binding = rtcr_config_dict.get('additional_binding', None)
 
-        # initialise a day of the week property so we know when it's a new day
-        self.dow = None
-
-        # initialise some properties used to hold archive period wind data
-        self.min_barometer = None
-        self.max_barometer = None
-
-        # get some station info
-        self.location = location
-        self.latitude = latitude
-        self.longitude = longitude
-        self.altitude_m = altitude
-
         # extra sensors
         extra_sensor_config_dict = rtcr_config_dict.get('ExtraSensors', {})
         # temperature
-        self.extra_temp1 = extra_sensor_config_dict.get('extraTemp1', None)
-        self.extra_temp2 = extra_sensor_config_dict.get('extraTemp2', None)
-        self.extra_temp3 = extra_sensor_config_dict.get('extraTemp3', None)
-        self.extra_temp4 = extra_sensor_config_dict.get('extraTemp4', None)
-        self.extra_temp5 = extra_sensor_config_dict.get('extraTemp5', None)
-        self.extra_temp6 = extra_sensor_config_dict.get('extraTemp6', None)
-        self.extra_temp7 = extra_sensor_config_dict.get('extraTemp7', None)
-        self.extra_temp8 = extra_sensor_config_dict.get('extraTemp8', None)
+        self.extra_temp1 = extra_sensor_config_dict.get('extraTempSensor1', None)
+        self.extra_temp2 = extra_sensor_config_dict.get('extraTempSensor2', None)
+        self.extra_temp3 = extra_sensor_config_dict.get('extraTempSensor3', None)
+        self.extra_temp4 = extra_sensor_config_dict.get('extraTempSensor4', None)
+        self.extra_temp5 = extra_sensor_config_dict.get('extraTempSensor5', None)
+        self.extra_temp6 = extra_sensor_config_dict.get('extraTempSensor6', None)
+        self.extra_temp7 = extra_sensor_config_dict.get('extraTempSensor7', None)
+        self.extra_temp8 = extra_sensor_config_dict.get('extraTempSensor8', None)
         # humidity
-        self.extra_hum1 = extra_sensor_config_dict.get('extraHumidity1', None)
-        self.extra_hum2 = extra_sensor_config_dict.get('extraHumidity2', None)
-        self.extra_hum3 = extra_sensor_config_dict.get('extraHumidity3', None)
-        self.extra_hum4 = extra_sensor_config_dict.get('extraHumidity4', None)
-        self.extra_hum5 = extra_sensor_config_dict.get('extraHumidity5', None)
-        self.extra_hum6 = extra_sensor_config_dict.get('extraHumidity6', None)
-        self.extra_hum7 = extra_sensor_config_dict.get('extraHumidity7', None)
-        self.extra_hum8 = extra_sensor_config_dict.get('extraHumidity8', None)
+        self.extra_hum1 = extra_sensor_config_dict.get('extraHumSensor1', None)
+        self.extra_hum2 = extra_sensor_config_dict.get('extraHumSensor2', None)
+        self.extra_hum3 = extra_sensor_config_dict.get('extraHumSensor3', None)
+        self.extra_hum4 = extra_sensor_config_dict.get('extraHumSensor4', None)
+        self.extra_hum5 = extra_sensor_config_dict.get('extraHumSensor5', None)
+        self.extra_hum6 = extra_sensor_config_dict.get('extraHumSensor6', None)
+        self.extra_hum7 = extra_sensor_config_dict.get('extraHumSensor7', None)
+        self.extra_hum8 = extra_sensor_config_dict.get('extraHumSensor8', None)
         # soil moisture
         self.soil_moist = extra_sensor_config_dict.get('soilMoist', None)
         # soil temp
@@ -729,6 +719,16 @@ class RealtimeClientrawThread(threading.Thread):
 
         # flag to indicate a change of day has occurred
         self.new_day = False
+        # initialise a day of the week property so we know when it's a new day
+        self.dow = None
+        # initialise some properties used to hold archive period wind data
+        self.min_barometer = None
+        self.max_barometer = None
+        # get some station info
+        self.location = location
+        self.latitude = latitude
+        self.longitude = longitude
+        self.altitude_m = altitude
 
         # initialise some properties to be used later
         self.db_manager = None
@@ -738,30 +738,6 @@ class RealtimeClientrawThread(threading.Thread):
         self.buffer = None
         self.packet_cache = None
 
-        # check to see whether module 'ephem' is installed, without it we can't
-        # calculate maxSolarRad
-        self.has_ephem = 'ephem' in sys.modules
-        # setup max solar rad calcs
-        # do we have any?
-        calc_dict = rtcr_config_dict.get('Calculate', {})
-        # algorithm
-        algo_dict = calc_dict.get('Algorithm', {})
-        self.solar_algorithm = algo_dict.get('maxSolarRad', 'RS')
-        # atmospheric transmission coefficient [0.7-0.91]
-        self.atc = float(calc_dict.get('atc', 0.8))
-        # fail hard if atc is out of range:
-        if not 0.7 <= self.atc <= 0.91:
-            raise weewx.ViolatedPrecondition("Atmospheric transmission "
-                                             "coefficient (%f) out of "
-                                             "range [.7-.91]" % self.atc)
-        # atmospheric turbidity (2=clear, 4-5=smoggy)
-        self.nfac = float(calc_dict.get('nfac', 2))
-        # Fail hard if out of range:
-        if not 2 <= self.nfac <= 5:
-            raise weewx.ViolatedPrecondition("Atmospheric turbidity (%d) "
-                                             "out of range (2-5)" % self.nfac)
-
-        # TODO. Need to be much more informative in logging our config, especially if debug >= 1
         # inform the user what we are going to do
         loginf("RealtimeClientraw will generate %s" % self.rtcr_path_file)
         if self.min_interval is None:
@@ -774,6 +750,42 @@ class RealtimeClientrawThread(threading.Thread):
         if self.remote_server_url is not None:
             loginf("%s will be posted to %s by HTTP POST" % (rtcr_filename,
                                                              self.remote_server_url))
+            if self.timeout == 1:
+                _msg = "HTTP POST timeout is 1 second"
+            else:
+                _msg = "HTTP POST timeout is %d seconds" % self.timeout
+            logdbg(_msg)
+        logdbg("Date format: '%s', long time format: '%s', short time format: '%s'" % (self.date_fmt,
+                                                                                       self.long_time_fmt,
+                                                                                       self.short_time_fmt))
+        logdbg("Archive record grace period is %d seconds" % self.grace)
+        logdbg("Maximum cache age is %d seconds" % self.max_cache_age)
+        logdbg("barometer trend period: %d seconds, temperature trend period: %d seconds" % (self.baro_trend_period,
+                                                                                             self.temp_trend_period))
+        logdbg("humidity trend period: %d seconds, humidex trend period: %d seconds" % (self.humidity_trend_period,
+                                                                                        self.humidex_trend_period))
+        if self.windrun_loop:
+            logdbg("windrun will be updated using archive and loop data")
+        else:
+            logdbg("windrun will be updated using archive data")
+        for i in range(8):
+            _prop = "".join(("extra_temp", str(i + 1)))
+            if getattr(self, _prop) is not None:
+                logdbg("WeeWX field '%s' is mapped to clientraw.txt "
+                       "field 'Extra Temp Sensor %d'" % (getattr(self, _prop),
+                                                         i + 1))
+        for i in range(8):
+            _prop = "".join(("extra_hum", str(i + 1)))
+            if getattr(self, _prop) is not None:
+                logdbg("WeeWX field '%s' is mapped to clientraw.txt "
+                       "field 'Extra Hum Sensor %d'" % (getattr(self, _prop),
+                                                        i + 1))
+        if self.soil_temp is not None:
+            logdbg("WeeWX field '%s' is mapped to clientraw.txt field 'Soil Temp'" % self.soil_temp)
+        if self.soil_moist is not None:
+            logdbg("WeeWX field '%s' is mapped to clientraw.txt field 'VP Soil Moisture'" % self.soil_moist)
+        if self.leaf_wet is not None:
+            logdbg("WeeWX field '%s' is mapped to clientraw.txt field 'VP Leaf Wetness'" % self.leaf_wet)
 
     def run(self):
         """Collect packets from the rtcr queue and manage their processing.
@@ -1169,7 +1181,7 @@ class RealtimeClientrawThread(threading.Thread):
         else:
             soil_temp = None
         data[14] = soil_temp if soil_temp is not None else 100.0
-        # FIXME. Need to implement field 15
+        # TODO. Need to implement field 15
         # 015 - Forecast Icon
         data[15] = 0
         # 016 - WMR968 extra temperature (Celsius) - will not implement
@@ -1247,40 +1259,21 @@ class RealtimeClientrawThread(threading.Thread):
         # 031 - seconds
         data[31] = time.strftime('%S', time.localtime(packet_wx['dateTime']))
         # 032 - station name
-        hms_string = time.strftime('%H:%M:%S',
+        hms_string = time.strftime(self.long_time_fmt,
                                    time.localtime(packet_wx['dateTime']))
         data[32] = '-'.join([self.location.replace(' ', ''), hms_string])
         # 033 - dallas lightning count - will not implement
         data[33] = 0
         # 034 - Solar Reading - used as 'solar percent' in Saratoga dashboards
         percent = None
-        if 'radiation' in packet_wx and packet_wx['radiation'] is not None:
-            if 'maxSolarRad' in packet_wx and packet_wx['maxSolarRad'] is not None:
-                try:
-                    percent = 100.0 * packet_wx['radiation'] / packet_wx['maxSolarRad']
-                except ZeroDivisionError:
-                    # perhaps it's night time, ignore and the None will be
-                    # picked up
-                    pass
-            elif self.has_ephem:
-                # pyephem is installed so we can calculate maxSolarRad, how we
-                # do it depends
-                if self.solar_algorithm == 'Bras':
-                    curr_solar_max = weewx.wxformulas.solar_rad_Bras(self.latitude,
-                                                                     self.longitude,
-                                                                     self.altitude_m,
-                                                                     packet_wx['dateTime'],
-                                                                     self.nfac)
-                else:
-                    curr_solar_max = weewx.wxformulas.solar_rad_RS(self.latitude,
-                                                                   self.longitude,
-                                                                   self.altitude_m,
-                                                                   packet_wx['dateTime'],
-                                                                   self.atc)
-                if curr_solar_max is not None:
-                    percent = 100.0 * packet_wx['radiation'] / curr_solar_max
-                else:
-                    percent = None
+        if 'radiation' in packet_wx and 'maxSolarRad' in packet_wx:
+            try:
+                percent = 100.0 * packet_wx['radiation'] / packet_wx['maxSolarRad']
+            except (ZeroDivisionError, TypeError):
+                # Perhaps it's night time, or one or both of radiation and
+                # maxSolarRad are None. We can ignore as percent will
+                # remain None
+                pass
         data[34] = percent if percent is not None else 0.0
         # 035 - Day
         data[35] = time.strftime('%-d', time.localtime(packet_wx['dateTime']))
@@ -1329,10 +1322,10 @@ class RealtimeClientrawThread(threading.Thread):
             temp_tl_vt = ValueTuple(None, temp_unit, temp_group)
         temp_tl = convert(temp_tl_vt, 'degree_C').value
         data[47] = temp_tl if temp_tl is not None else 0.0
-        # FIXME. Need to implement field 48
+        # TODO. Need to implement field 48
         # 048 - icon type
         data[48] = 0
-        # FIXME. Need to implement field 49
+        # TODO. Need to implement field 49
         # 049 - weather description
         data[49] = '---'
         # 050 - barometer trend (hPa)
@@ -1376,7 +1369,7 @@ class RealtimeClientrawThread(threading.Thread):
             cloudbase = None
         data[73] = cloudbase if cloudbase is not None else 0.0
         # 074 -  date
-        data[74] = time.strftime('%-d/%-m/%Y', time.localtime(packet_wx['dateTime']))
+        data[74] = time.strftime(self.date_fmt, time.localtime(packet_wx['dateTime']))
         # 075 - maximum day humidex (Celsius)
         # 076 - minimum day humidex (Celsius)
         if 'humidex' in self.buffer:
@@ -1593,7 +1586,7 @@ class RealtimeClientrawThread(threading.Thread):
             windgust60_ts = buffer_ot.ts
         else:
             windgust60_ts = hour_gust_ts
-        data[134] = time.strftime('%H:%M', time.localtime(windgust60_ts)) if windgust60_ts is not None else '00:00'
+        data[134] = time.strftime(self.short_time_fmt, time.localtime(windgust60_ts)) if windgust60_ts is not None else '00:00'
         # 135 - maximum windGust today time
         if 'windSpeed' in self.buffer:
             t_windgust_tm_ts = self.buffer['windSpeed'].day_maxtime
@@ -1603,7 +1596,7 @@ class RealtimeClientrawThread(threading.Thread):
                 t_windgust_tm = time.localtime(packet_wx['dateTime'])
         else:
             t_windgust_tm = time.localtime(packet_wx['dateTime'])
-        data[135] = time.strftime('%H:%M', t_windgust_tm)
+        data[135] = time.strftime(self.short_time_fmt, t_windgust_tm)
         # 136 - maximum day appTemp (Celsius)
         # 137 - minimum day appTemp (Celsius)
         if 'appTemp' in self.buffer:
@@ -1759,7 +1752,7 @@ class RealtimeClientrawThread(threading.Thread):
                 t_windchill_tm = time.localtime(packet_wx['dateTime'])
         else:
             t_windchill_tm = time.localtime(packet_wx['dateTime'])
-        data[166] = time.strftime('%H:%M', t_windchill_tm)
+        data[166] = time.strftime(self.short_time_fmt, t_windchill_tm)
         # 167 - Current Cost Channel 1 - will not implement
         data[167] = 0.0
         # 168 - Current Cost Channel 2 - will not implement
@@ -1787,7 +1780,7 @@ class RealtimeClientrawThread(threading.Thread):
                 t_outtemp_tm = time.localtime(packet_wx['dateTime'])
         else:
             t_outtemp_tm = time.localtime(packet_wx['dateTime'])
-        data[174] = time.strftime('%H:%M', t_outtemp_tm)
+        data[174] = time.strftime(self.short_time_fmt, t_outtemp_tm)
         # 175 - Time of daily min temp
         if 'outTemp' in self.buffer:
             t_outtemp_tm_ts = self.buffer['outTemp'].day_mintime
@@ -1797,7 +1790,7 @@ class RealtimeClientrawThread(threading.Thread):
                 t_outtemp_tm = time.localtime(packet_wx['dateTime'])
         else:
             t_outtemp_tm = time.localtime(packet_wx['dateTime'])
-        data[175] = time.strftime('%H:%M', t_outtemp_tm)
+        data[175] = time.strftime(self.short_time_fmt, t_outtemp_tm)
         # 176 - 10 minute average wind direction
         data[176] = '0'
         # TODO. Need to calculate #177, maybe already be in vector buffer
@@ -2413,8 +2406,6 @@ class RtcrBuffer(dict):
 
         # the packet is already in our unit system so as long as we have a
         # timestamp add the fields of interest
-        # TODO. Delete the following line before release
-#        packet = weewx.units.to_std_system(packet, self.unit_system)
         if packet['dateTime'] is not None:
             for obs in [f for f in packet if f in MANIFEST]:
                 add_func = add_functions.get(obs, RtcrBuffer.add_value)
