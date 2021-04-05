@@ -739,6 +739,7 @@ class RealtimeClientrawThread(threading.Thread):
         self.packet_cache = None
 
         # inform the user what we are going to do
+        loginf("RealtimeClientraw version %s" % RTCR_VERSION)
         loginf("RealtimeClientraw will generate %s" % self.rtcr_path_file)
         if self.min_interval is None:
             _msg = "min_interval is None"
