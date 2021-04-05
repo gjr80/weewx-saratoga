@@ -47,7 +47,7 @@ ws_config = u"""
         enable = True
         [[[Units]]]
             [[[[TimeFormats]]]]
-                date_f = %d/%m/%Y,
+                date_f = %d/%m/%Y
                 date_time_f = %d/%m/%Y %H:%M
     [[ClientrawReport]]
         skin = Clientraw
