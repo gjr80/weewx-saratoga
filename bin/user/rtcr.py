@@ -394,33 +394,40 @@ class RealtimeClientraw(StdService):
 
     def queue_stats(self, ts):
 
+        # make sure our db_manager is in sync with anything the main WeeWX
+        # db_manager has changed, this is mainly for when an empty database is
+        # first populated but it is good practise anyway
+        self.db_manager._sync()
         # get yesterdays rainfall and put in the queue
         _rain_data = self.get_historical_rain(ts)
-        # package the data in a dict since this is not the only data we send
-        # via the queue
-        _package = {'type': 'stats',
-                    'payload': _rain_data}
-        self.rtcr_queue.put(_package)
-        if self.debug_stats:
-            loginf("queued historical rainfall data: %s" % _package['payload'])
+        # if we have anything to send then package the data in a dict since
+        # this is not the only data we send via the queue
+        if len(_rain_data) > 0:
+            _package = {'type': 'stats',
+                        'payload': _rain_data}
+            self.rtcr_queue.put(_package)
+            if self.debug_stats:
+                loginf("queued historical rainfall data: %s" % _package['payload'])
         # get max gust in the last hour and put in the queue
         _hour_gust = self.get_hour_gust(ts)
-        # package the data in a dict since this is not the only data we send
-        # via the queue
-        _package = {'type': 'stats',
-                    'payload': _hour_gust}
-        self.rtcr_queue.put(_package)
-        if self.debug_stats:
-            loginf("queued last hour gust: %s" % _package['payload'])
+        # if we have anything to send then package the data in a dict since
+        # this is not the only data we send via the queue
+        if len(_hour_gust) > 0:
+            _package = {'type': 'stats',
+                        'payload': _hour_gust}
+            self.rtcr_queue.put(_package)
+            if self.debug_stats:
+                loginf("queued last hour gust: %s" % _package['payload'])
         # get outTemp 1 hour ago and put in the queue
         _hour_temp = self.get_hour_ago_temp(ts)
-        # package the data in a dict since this is not the only data we send
-        # via the queue
-        _package = {'type': 'stats',
-                    'payload': _hour_temp}
-        self.rtcr_queue.put(_package)
-        if self.debug_stats:
-            loginf("queued outTemp hour ago: %s" % _package['payload'])
+        # if we have anything to send then package the data in a dict since
+        # this is not the only data we send via the queue
+        if len(_hour_temp) > 0:
+            _package = {'type': 'stats',
+                        'payload': _hour_temp}
+            self.rtcr_queue.put(_package)
+            if self.debug_stats:
+                loginf("queued outTemp hour ago: %s" % _package['payload'])
 
     def end_archive_period(self, event):
         """Puts END_ARCHIVE_PERIOD event in the rtcr queue."""
@@ -514,9 +521,7 @@ class RealtimeClientraw(StdService):
                "WHERE dateTime > %(start)s AND dateTime <= %(stop)s"
         # execute the query
         _row = self.db_manager.getSql(_sql % inter_dict)
-        if not _row or None in _row:
-            result['yest_rain_vt'] = ValueTuple(0.0, unit, group)
-        else:
+        if _row and None not in _row:
             result['yest_rain_vt'] = ValueTuple(_row[0], unit, group)
 
         # This month's rain
@@ -531,9 +536,7 @@ class RealtimeClientraw(StdService):
                "WHERE dateTime >= %(start)s AND dateTime < %(stop)s"
         # execute the query
         _row = self.db_manager.getSql(_sql % inter_dict)
-        if not _row or None in _row:
-            result['month_rain_vt'] = ValueTuple(0.0, unit, group)
-        else:
+        if _row and None not in _row:
             result['month_rain_vt'] = ValueTuple(_row[0], unit, group)
 
         # This year's rain
@@ -548,9 +551,7 @@ class RealtimeClientraw(StdService):
                "WHERE dateTime >= %(start)s AND dateTime < %(stop)s"
         # execute the query
         _row = self.db_manager.getSql(_sql % inter_dict)
-        if not _row or None in _row:
-            result['year_rain_vt'] = ValueTuple(0.0, unit, group)
-        else:
+        if _row and None not in _row:
             result['year_rain_vt'] = ValueTuple(_row[0], unit, group)
 
         return result
@@ -572,9 +573,7 @@ class RealtimeClientraw(StdService):
                "WHERE dateTime > %(start)s AND dateTime <= %(stop)s"
         # execute the query
         _row = self.db_manager.getSql(_sql % inter_dict)
-        if not _row or None in _row:
-            result['hour_gust_vt'] = ValueTuple(None, None, None)
-        else:
+        if _row and None not in _row:
             result['hour_gust_vt'] = ValueTuple(_row[0], unit, group)
         # now get the time it occurred
         _sql = "SELECT dateTime FROM %(table_name)s "\
@@ -583,9 +582,7 @@ class RealtimeClientraw(StdService):
                "WHERE dateTime > %(start)s and dateTime <= %(stop)s) AND windGust IS NOT NULL"
         # execute the query
         _row = self.db_manager.getSql(_sql % inter_dict)
-        if not _row or None in _row:
-            result['hour_gust_ts'] = None
-        else:
+        if _row and None not in _row:
             result['hour_gust_ts'] = _row[0]
         return result
 
@@ -601,8 +598,6 @@ class RealtimeClientraw(StdService):
         _record = self.db_manager.getRecord(ago_ts, self.grace)
         if _record and 'outTemp' in _record:
             result['hour_ago_outTemp_vt'] = ValueTuple(_record['outTemp'], unit, group)
-        else:
-            result['hour_ago_outTemp_vt'] = ValueTuple(None, None, None)
         return result
 
 
