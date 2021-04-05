@@ -370,11 +370,13 @@ class WsWXCalculate(weewx.engine.StdService):
                                                                        DEFAULT_SUNSHINE_THRESHOLD)
         else:
             self.sunshine_threshold  = DEFAULT_SUNSHINE_THRESHOLD
-        loginf("WsWXCalculate sunshine threshold: %s" % self.sunshine_threshold)
-
         # bind our self to new loop packet and new archive record events
         self.bind(weewx.NEW_LOOP_PACKET, self.new_loop_packet)
         self.bind(weewx.NEW_ARCHIVE_RECORD, self.new_archive_record)
+        # log our version and config
+        loginf("WsWXCalculate version %s" % WS_VERSION)
+        loginf("WsWXCalculate sunshine threshold: %s" % self.sunshine_threshold)
+
 
     @staticmethod
     def new_loop_packet(event):
@@ -408,6 +410,8 @@ class WsArchive(weewx.engine.StdService):
         # initialise our superclass
         super(WsArchive, self).__init__(engine, config_dict)
 
+        # log our version
+        loginf("WsArchive version %s" % WS_VERSION)
         # Extract our binding from the WeeWX-Saratoga section of the config file. If
         # it's missing, fill with a default.
         if 'WeewxSaratoga' in config_dict:
@@ -415,7 +419,6 @@ class WsArchive(weewx.engine.StdService):
                                                                  'ws_binding')
         else:
             self.data_binding = 'ws_binding'
-        loginf("WsArchive will use data binding %s" % self.data_binding)
 
         # extract the WeeWX binding for use when we check the need for backfill
         # from the WeeWX archive
@@ -504,6 +507,8 @@ class WsSuppArchive(weewx.engine.StdService):
         if 'WeewxSaratoga' in config_dict:
             # we have a [WeewxSaratoga] stanza
             if 'Supplementary' in config_dict['WeewxSaratoga']:
+                # log our version
+                loginf("WsSuppArchive version %s" % WS_VERSION)
                 # we have a [[Supplementary]] stanza so we can initialise
                 # wssupp db
                 _supp_dict = config_dict['WeewxSaratoga']['Supplementary']
@@ -512,7 +517,6 @@ class WsSuppArchive(weewx.engine.StdService):
                 # first, get our binding, if it's missing use a default
                 self.binding = _supp_dict.get('data_binding',
                                               'ws_supp_binding')
-                loginf("WsSuppArchive will use data binding '%s'" % self.binding)
                 # how long to keep records in our db (default 8 days)
                 self.max_age = _supp_dict.get('max_age', 691200)
                 self.max_age = toint(self.max_age, 691200)
