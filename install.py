@@ -1,7 +1,7 @@
 """
 install.py
 
-An installer for the WeeWX-Saratoga extension
+An installer for the WeeWX-Saratoga extension.
 
 This program is free software; you can redistribute it and/or modify it under
 the terms of the GNU General Public License as published by the Free Software
@@ -38,6 +38,8 @@ from setup import ExtensionInstaller
 REQUIRED_VERSION = "4.0.0"
 WS_VERSION = "0.1.0b3"
 
+# Multi-line config string, makes it easier to include comments. Needs to be
+# explicitly set as unicode or python2 StringIO complains.
 ws_config = u"""
 [StdReport]
     [[WEEWXtagsReport]]
@@ -109,16 +111,17 @@ ws_config = u"""
             enable = False
             
     [[RealtimeClientraw]]
-        # URL to use if transferring clientraw.txt to web server via HTTP POST 
-        # using post_clientraw.php. Supports both http and https. Must end with 
-        # post_clientraw.php. To enable uncomment line and enter web server 
-        # address to be used.
-        # remote_server_url = http://web.server.address/post_clientraw.php
 
-        # How often to generate clientraw.txt. clientraw.txt is only generated 
-        # on receipt of a loop packet and then only after at least min_interval 
-        # seconds have elapsed since the last generation time. Default is 10, 
-        # use 0 to generate on every loop packet.
+        # If using an external website, configure remote_server_url to point to 
+        # the post_clientraw.php script on your website like:
+        #   remote_server_url = http://your.website.com/post_clientraw.php
+        #
+        # To disable or use the webserver on this system, leave the entry 
+        # commented out or blank.
+        # remote_server_url = http://your.website.com/post_clientraw.php
+
+        # min_interval sets the minimum clientraw.txt generation interval. 
+        # Default is 10 seconds.
         min_interval = 10
         
         # Python date-time format strings. Format string codes as per 
@@ -139,7 +142,7 @@ ws_config = u"""
         #   short_time_format = %H:%M  # recommended for non-USA users
         short_time_format = %H:%M
 """
-
+# obtain
 ws_dict = configobj.ConfigObj(StringIO(ws_config))
 
 
@@ -157,7 +160,7 @@ class WSInstaller(ExtensionInstaller):
         super(WSInstaller, self).__init__(
             version=WS_VERSION,
             name='WeeWX-Saratoga',
-            description='WeeWX support for the Saratoga Weather Website templates.',
+            description='WeeWX support for the Saratoga Weather Website Templates.',
             author="Gary Roderick",
             author_email="gjroderick<@>gmail.com",
             process_services=['user.ws.WsWXCalculate'],
