@@ -11,7 +11,7 @@ The *WeeWX-Saratoga extension* consists of a number of *WeeWX* services, Search 
 -   daywindrose.png
 -   WEEWXtags.php
 
-The above files are produced during each *WeeWX* report cycle with the exception of clientraw.txt which is generated upon receipt of loop packets.
+The above files are produced during each *WeeWX* report cycle with the exception of *clientraw.txt* which is generated upon receipt of loop packets.
 
 The *WeeWX-Saratoga extension* is based on the *WeeWD-WD* extension. (https://bitbucket.org/ozgreg/weewx-wd and https://github.com/gjr80/weewx-weewx-wd).
 
@@ -25,9 +25,9 @@ Pyephem is required to support advanced ephemeris tags.
 
 ## Installation Instructions ##
 
-The preferred method of installing or upgrading the *WeeWX-Saratoga extension* is using the *WeeWX* *wee_extension* utility. The *WeeWX-Saratoga extension* can also be installed manually.
+The preferred method of installing or upgrading the *WeeWX-Saratoga extension* is using the *WeeWX* [*wee_extension* utility](http://weewx.com/docs/utilities.htm#wee_extension_utility). The *WeeWX-Saratoga extension* can also be installed manually.
 
-**Note**: If installing *WeeWX-Saratoga* in place of a previous *WeeWX-WD* installation you should uninstall *WeeWX-WD* before installing the *WeeWX-Saratoga extension*. You may wish to make a backup copy of *weewx.conf* before uninstalling *WeeWX-WD* to aid in configuring the subsequent *WeeWX-Saratoga* installation.
+**Note**: If installing *WeeWX-Saratoga* in place of a previous *WeeWX-WD* installation you should uninstall *WeeWX-WD* before installing the *WeeWX-Saratoga extension*. You may wish to make a backup copy of *weewx.conf* before uninstalling *WeeWX-WD* to aid in configuring the subsequent *WeeWX-Saratoga* installation. The *WeeWX-Saratoga extension* uses the same databases as used by *WeeWX-WD* so these databases should be retained when uninstalling *WeeWX-WD*. 
 
 **Note**: Symbolic names are used below to refer to file locations on the *WeeWX* system. Symbolic names allow a common name to be used to refer to a directory that may be different from system to system. The following symbolic names are used below:
 
@@ -67,7 +67,9 @@ Refer to [where to find things](http://weewx.com/docs/usersguide.htm#Where_to_fi
 
     **Note:** Depending on your system/installation the above command may need to be prefixed with *sudo*.
 
-    **Note:** Depending on your *WeeWX* installation the path to *wee_extension* may need to be provided, eg: `$ /home/weewx/bin/wee_extension --install...`.
+    **Note:** Depending on your *WeeWX* installation the path to *wee_extension* may need to be provided, eg:
+        
+        $ /home/weewx/bin/wee_extension --install....
     
     This will result in output similar to the following:
 
@@ -112,11 +114,11 @@ Refer to [where to find things](http://weewx.com/docs/usersguide.htm#Where_to_fi
 
 	replacing the symbolic names *BIN_ROOT* and *SKIN_ROOT* with the nominal locations for your installation.
 
-1.  Edit weewx.conf:
+1.  Edit *weewx.conf*:
 
         $ vi weewx.conf
 
-1.  In weewx.conf, modify the *[StdReport]* section by adding the following sub-sections:
+1.  In *weewx.conf*, modify the *[StdReport]* section by adding the following sub-sections:
 
         [[WEEWXtagsReport]]
             skin = WEEWXtags
@@ -142,7 +144,7 @@ Refer to [where to find things](http://weewx.com/docs/usersguide.htm#Where_to_fi
                     watt_per_meter_squared = %.0f
                     NONE = --          
 
-1.  In weewx.conf, add the following section:
+1.  In *weewx.conf*, add the following section:
 
         [WeewxSaratoga]
             # WeewxSaratoga database binding
@@ -166,16 +168,17 @@ Refer to [where to find things](http://weewx.com/docs/usersguide.htm#Where_to_fi
                     enable = False
                     
             [[RealtimeClientraw]]
-                # URL to use if transferring clientraw.txt to web server via HTTP POST 
-                # using post_clientraw.php. Supports both http and https. Must end with 
-                # post_clientraw.php. To enable uncomment line and enter web server 
-                # address to be used.
-                # remote_server_url = http://web.server.address/post_clientraw.php
+
+                # If using an external website, configure remote_server_url to point to 
+                # the post_clientraw.php script on your website like:
+                #   remote_server_url = http://your.website.com/post_clientraw.php
+                #
+                # To disable or use the webserver on this system, leave the entry 
+                # commented out or blank.
+                # remote_server_url = http://your.website.com/post_clientraw.php
         
-                # How often to generate clientraw.txt. clientraw.txt is only generated 
-                # on receipt of a loop packet and then only after at least min_interval 
-                # seconds have elapsed since the last generation time. Default is 10, 
-                # use 0 to generate on every loop packet.
+                # min_interval sets the minimum clientraw.txt generation interval. 
+                # Default is 10 seconds.
                 min_interval = 10
                 
                 # Python date-time format strings. Format string codes as per 
@@ -196,7 +199,7 @@ Refer to [where to find things](http://weewx.com/docs/usersguide.htm#Where_to_fi
                 #   short_time_format = %H:%M  # recommended for non-USA users
                 short_time_format = %H:%M
 
-1.  In weewx.conf, add the following sub-section to *[Databases]*:
+1.  In *weewx.conf*, add the following sub-section to *[Databases]*:
 
         [[ws_sqlite]]
             database_type = SQLite
@@ -214,7 +217,7 @@ Refer to [where to find things](http://weewx.com/docs/usersguide.htm#Where_to_fi
             database_type = MySQL
             database_name = wdsupp
 
-1.  In weewx.conf, add the following sub-section to the *[DataBindings]* section:
+1.  In *weewx.conf*, add the following sub-section to the *[DataBindings]* section:
 
         [[ws_binding]]
             database = ws_sqlite
@@ -242,7 +245,7 @@ Refer to [where to find things](http://weewx.com/docs/usersguide.htm#Where_to_fi
             manager = weewx.manager.Manager
             schema = user.wdschema.wdsupp_schema
 
-1.  In weewx.conf, modify the services lists in *[Engine]* as indicated:
+1.  In *weewx.conf*, modify the services lists in *[Engine]* as indicated:
 
 	*   process_services. Add user.ws.WsWXCalculate eg:
 
