@@ -889,9 +889,18 @@ class RealtimeClientrawThread(threading.Thread):
         # get time for debug timing
         t1 = time.time()
 
-        # make sure the packet is in our buffer unit system
-        conv_packet = weewx.units.to_std_system(packet,
-                                                self.buffer.unit_system)
+        # If the buffer unit system is None adopt the unit system of the
+        # incoming loop packet, this shul donly ever happen if we were started
+        # with an empty database
+        if self.buffer.unit_system is not None:
+            # make sure the packet is in our buffer unit system
+            conv_packet = weewx.units.to_std_system(packet,
+                                                    self.buffer.unit_system)
+        else:
+            # have the buffer adopt the unit system of the packet
+            self.buffer.unit_system = packet['usUnits']
+            # there is no need ot convert the packet
+            conv_packet = packet
 
         # update the packet cache with this packet
         self.packet_cache.update(conv_packet, conv_packet['dateTime'])
@@ -2392,11 +2401,15 @@ class RtcrBuffer(dict):
                                                             'windSpeed')
             # now express wsum as a 'group_speed' ValueTuple
             _wr_vt = ValueTuple(day_stats['windSpeed'].wsum, unit, group)
-            # convert it to a 'km_per_hour' based value
-            _wr_km = convert(_wr_vt, 'km_per_hour').value
-            # but _wr_km was based on wsum which was based on seconds not hours
-            # so we need to divide by 3600 to get our real windrun in km
-            windrun = _wr_km/3600.0
+            # convert it to a 'km_per_hour' based value, but we can only do
+            # that if our ValueTuple is all non-None
+            if _wr_vt.value is not None and _wr_vt.unit is not None and _wr_vt.group is not None:
+                _wr_km = convert(_wr_vt, 'km_per_hour').value
+                # but _wr_km was based on wsum which was based on seconds not hours
+                # so we need to divide by 3600 to get our real windrun in km
+                windrun = _wr_km/3600.0
+            else:
+                windrun = 0.0
         else:
             windrun = 0.0
         return windrun
