@@ -941,7 +941,7 @@ class AvgWindTags(weewx.cheetahgenerator.SearchList):
             avdir10 = 90.0 - math.degrees(math.atan2(_dir10_vt.value[0].imag,
                                                      _dir10_vt.value[0].real))
             avdir10 = round(avdir10 % 360, 0)
-        except (AttributeError, TypeError):
+        except (AttributeError, TypeError, IndexError):
             avdir10 = None
         # put our results into ValueHelpers
         avdir10_vt = ValueTuple(avdir10, d_unit, d_group)
