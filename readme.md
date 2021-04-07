@@ -18,9 +18,11 @@ The *WeeWX-Saratoga extension* is based on the *WeeWD-WD* extension. (https://bi
 
 ## Pre-Requisites ##
 
-The *WeeWX-Saratoga extension* requires *WeeWX* v4.0.0 or later and operates under both Python 2 and Python 3.
+The *WeeWX-Saratoga extension* requires:
 
-Pyephem is required to support advanced ephemeris tags. 
+- *WeeWX* v4.2.0 or later (both Python 2 and Python 3 are supported), and
+
+- *Pyephem* for extended almanac information. Refer to [WeeWX: Installation using setup.py](http://weewx.com/docs/setup.htm) for the commands to install *python3-ephem* or *pyephem* for your system. 
 
 
 ## Installation Instructions ##

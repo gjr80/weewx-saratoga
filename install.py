@@ -35,7 +35,7 @@ import weewx
 
 from setup import ExtensionInstaller
 
-REQUIRED_VERSION = "4.0.0"
+REQUIRED_VERSION = "4.2.0"
 WS_VERSION = "0.1.0b3"
 
 # Multi-line config string, makes it easier to include comments. Needs to be
