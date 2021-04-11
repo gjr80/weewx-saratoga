@@ -199,6 +199,7 @@ from operator import itemgetter
 from io import open
 
 # Python 2/3 compatibility shims
+import six
 from six import iteritems
 from six.moves import http_client
 from six.moves import queue
@@ -607,6 +608,189 @@ class RealtimeClientraw(StdService):
 
 class RealtimeClientrawThread(threading.Thread):
     """Thread that generates clientraw.txt in near realtime."""
+
+    # Format dict for clientraw.txt fields. None = no change, 0 = integer (no
+    # decimal places), numeric = format to this many decimal places.
+    field_formats = {
+        0: None,  # start of
+        1: 1,  # - avg speed
+        2: 1,  # - gust
+        3: 0,  # - windDir
+        4: 1,  # - outTemp
+        5: 0,  # - outHumidity
+        6: 1,  # - barometer
+        7: 1,  # - daily rain
+        8: 1,  # - monthly rain
+        9: 1,  # - yearly rain
+        10: 1,  # - rain rate
+        11: 1,  # - max daily rainRate
+        12: 1,  # - inTemp
+        13: 0,  # - inHumidity
+        14: 1,  # - soil temperature
+        15: 0,  # - forecast Icon
+        16: 1,  # - WMR968 extra temperature - will not implement
+        17: 1,  # - WMR968 extra humidity - will not implement
+        18: 1,  # - WMR968 extra sensor - will not implement
+        19: 1,  # - yesterday rain
+        20: 1,  # - extra temperature sensor 1
+        21: 1,  # - extra temperature sensor 2
+        22: 1,  # - extra temperature sensor 3
+        23: 1,  # - extra temperature sensor 4
+        24: 1,  # - extra temperature sensor 5
+        25: 1,  # - extra temperature sensor 6
+        26: 1,  # - extra humidity sensor 1
+        27: 1,  # - extra humidity sensor 2
+        28: 1,  # - extra humidity sensor 3
+        29: None,  # - hour
+        30: None,  # - minute
+        31: None,  # - seconds
+        32: None,  # - station name
+        33: 0,  # - dallas lightning count - will not implement
+        34: 0,  # - Solar Reading - used as 'solar percent' in Saratoga dashboards
+        35: None,  # - day
+        36: None,  # - month
+        37: 0,  # - WMR968/200 battery 1 - will not implement
+        38: 0,  # - WMR968/200 battery 2 - will not implement
+        39: 0,  # - WMR968/200 battery 3 - will not implement
+        40: 0,  # - WMR968/200 battery 4 - will not implement
+        41: 0,  # - WMR968/200 battery 5 - will not implement
+        42: 0,  # - WMR968/200 battery 6 - will not implement
+        43: 0,  # - WMR968/200 battery 7 - will not implement
+        44: 1,  # - windchill
+        45: 1,  # - humidex
+        46: 1,  # - maximum day temperature
+        47: 1,  # - minimum day temperature
+        48: 0,  # - icon type
+        49: None,  # - weather description
+        50: 1,  # - barometer trend
+        51: 1,  # - windspeed hour 1 - will not implement
+        52: 1,  # - windspeed hour 2 - will not implement
+        53: 1,  # - windspeed hour 3 - will not implement
+        54: 1,  # - windspeed hour 4 - will not implement
+        55: 1,  # - windspeed hour 5 - will not implement
+        56: 1,  # - windspeed hour 6 - will not implement
+        57: 1,  # - windspeed hour 7 - will not implement
+        58: 1,  # - windspeed hour 8 - will not implement
+        59: 1,  # - windspeed hour 9 - will not implement
+        60: 1,  # - windspeed hour 10 - will not implement
+        61: 1,  # - windspeed hour 11 - will not implement
+        62: 1,  # - windspeed hour 12 - will not implement
+        63: 1,  # - windspeed hour 13 - will not implement
+        64: 1,  # - windspeed hour 14 - will not implement
+        65: 1,  # - windspeed hour 15 - will not implement
+        66: 1,  # - windspeed hour 16 - will not implement
+        67: 1,  # - windspeed hour 17 - will not implement
+        68: 1,  # - windspeed hour 18 - will not implement
+        69: 1,  # - windspeed hour 19 - will not implement
+        70: 1,  # - windspeed hour 20 - will not implement
+        71: 1,  # - maximum wind gust today
+        72: 1,  # - dewpoint
+        73: 1,  # - cloud height
+        74: None,  # - date
+        75: 1,  # - maximum day humidex
+        76: 1,  # - minimum day humidex
+        77: 1,  # - maximum day windchill
+        78: 1,  # - minimum day windchill
+        79: 1,  # - Davis VP UV
+        80: 1,  # - hour wind speed 1 - will not implement
+        81: 1,  # - hour wind speed 2 - will not implement
+        82: 1,  # - hour wind speed 3 - will not implement
+        83: 1,  # - hour wind speed 4 - will not implement
+        84: 1,  # - hour wind speed 5 - will not implement
+        85: 1,  # - hour wind speed 6 - will not implement
+        86: 1,  # - hour wind speed 7 - will not implement
+        87: 1,  # - hour wind speed 8 - will not implement
+        88: 1,  # - hour wind speed 9 - will not implement
+        89: 1,  # - hour wind speed 10 - will not implement
+        90: 1,  # - hour temperature 1
+        91: 1,  # - hour temperature 2 - will not implement
+        92: 1,  # - hour temperature 3 - will not implement
+        93: 1,  # - hour temperature 4 - will not implement
+        94: 1,  # - hour temperature 5 - will not implement
+        95: 1,  # - hour temperature 6 - will not implement
+        96: 1,  # - hour temperature 7 - will not implement
+        97: 1,  # - hour temperature 8 - will not implement
+        98: 1,  # - hour temperature 9 - will not implement
+        99: 1,  # - hour temperature 10 - will not implement
+        100: 1,  # - hour rain 1 - will not implement
+        101: 1,  # - hour rain 2 - will not implement
+        102: 1,  # - hour rain 3 - will not implement
+        103: 1,  # - hour rain 4 - will not implement
+        104: 1,  # - hour rain 5 - will not implement
+        105: 1,  # - hour rain 6 - will not implement
+        106: 1,  # - hour rain 7 - will not implement
+        107: 1,  # - hour rain 8 - will not implement
+        108: 1,  # - hour rain 9 - will not implement
+        109: 1,  # - hour rain 10 - will not implement
+        110: 1,  # - maximum day heatindex
+        111: 1,  # - minimum day heatindex
+        112: 1,  # - heatindex
+        113: 1,  # - maximum average speed
+        114: 0,  # - lightning count in last minute - will not implement
+        115: None,  # - time of last lightning strike - will not implement
+        116: None,  # - date of last lightning strike - will not implement
+        117: 1,  # - wind average direction
+        118: 1,  # - nexstorm distance - will not implement
+        119: 1,  # - nexstorm bearing - will not implement
+        120: 1,  # - extra temperature sensor 7
+        121: 1,  # - extra temperature sensor 8
+        122: 0,  # - extra humidity sensor 4
+        123: 0,  # - extra humidity sensor 5
+        124: 0,  # - extra humidity sensor 6
+        125: 0,  # - extra humidity sensor 7
+        126: 0,  # - extra humidity sensor 8
+        127: 1,  # - VP solar
+        128: 1,  # - maximum inTemp
+        129: 1,  # - minimum inTemp
+        130: 1,  # - appTemp
+        131: 1,  # - maximum barometer
+        132: 1,  # - minimum barometer
+        133: 1,  # - maximum windGust last hour
+        134: None,  # - maximum windGust in last hour time
+        135: None,  # - maximum windGust today time
+        136: 1,  # - maximum day appTemp
+        137: 1,  # - minimum day appTemp
+        138: 1,  # - maximum day dewpoint
+        139: 1,  # - minimum day dewpoint
+        140: 1,  # - maximum windGust in last minute
+        141: None,  # - current year
+        142: 1,  # - THSWS - will not implement
+        143: None,  # - outTemp trend
+        144: None,  # - outHumidity trend
+        145: None,  # - humidex trend
+        146: 1,  # - hour wind direction 1 - will not implement
+        147: 1,  # - hour wind direction 2 - will not implement
+        148: 1,  # - hour wind direction 3 - will not implement
+        149: 1,  # - hour wind direction 4 - will not implement
+        150: 1,  # - hour wind direction 5 - will not implement
+        151: 1,  # - hour wind direction 6 - will not implement
+        152: 1,  # - hour wind direction 7 - will not implement
+        153: 1,  # - hour wind direction 8 - will not implement
+        154: 1,  # - hour wind direction 9 - will not implement
+        155: 1,  # - hour wind direction 10 - will not implement
+        156: 1,  # - leaf wetness
+        157: 1,  # - soil moisture
+        158: 1,  # - 10 minute average wind speed
+        159: 1,  # - wet bulb temperature
+        160: None,  # - latitude
+        161: None,  # - longitude
+        162: 1,  # - 9am reset rainfall total
+        163: 0,  # - high day outHumidity
+        164: 0,  # - low day outHumidity
+        165: 1,  # - midnight rain reset total
+        166: None,  # - low day windchill time
+        167: 1,  # - current Cost Channel 1 - will not implement
+        168: 1,  # - current Cost Channel 2 - will not implement
+        169: 1,  # - current Cost Channel 3 - will not implement
+        170: 1,  # - current Cost Channel 4 - will not implement
+        171: 1,  # - current Cost Channel 5 - will not implement
+        172: 1,  # - current Cost Channel 6 - will not implement
+        173: 1,  # - day windrun
+        174: None,  # - time of daily max temp
+        175: None,  # - time of daily min temp
+        176: 0,  # - 10 minute average wind direction
+        177: None,  # - record end
+    }
 
     def __init__(self, rtcr_queue, manager_dict, rtcr_config_dict, html_root,
                  location, latitude, longitude, altitude):
@@ -1807,196 +1991,27 @@ class RealtimeClientrawThread(threading.Thread):
         """Create the clientraw string from the clientraw data.
 
         The raw clientraw data is a dict of numbers and strings. This method
-        formats each field appropriately and generates the string that
+        formats each field appropriately and generates the unicode string that
         comprises the clientraw.txt file contents.
 
         Input:
             data: a dict containing the raw clientraw data
 
         Returns:
-            A string containing the formatted clientraw.txt contents.
+            A unicode string containing the formatted clientraw.txt contents.
         """
 
+        # initialise a list to hold our fields in order
         fields = list()
-        fields.append(data[0])
-        fields.append(self.format(data[1], 1))
-        fields.append(self.format(data[2], 1))
-        fields.append(self.format(data[3], 0))
-        fields.append(self.format(data[4], 1))
-        fields.append(self.format(data[5], 0))
-        fields.append(self.format(data[6], 1))
-        fields.append(self.format(data[7], 1))
-        fields.append(self.format(data[8], 1))
-        fields.append(self.format(data[9], 1))
-        fields.append(self.format(data[10], 1))
-        fields.append(self.format(data[11], 1))
-        fields.append(self.format(data[12], 1))
-        fields.append(self.format(data[13], 0))
-        fields.append(self.format(data[14], 1))
-        fields.append(self.format(data[15], 0))
-        fields.append(self.format(data[16], 1))
-        fields.append(self.format(data[17], 1))
-        fields.append(self.format(data[18], 1))
-        fields.append(self.format(data[19], 1))
-        fields.append(self.format(data[20], 1))
-        fields.append(self.format(data[21], 1))
-        fields.append(self.format(data[22], 1))
-        fields.append(self.format(data[23], 1))
-        fields.append(self.format(data[24], 1))
-        fields.append(self.format(data[25], 1))
-        fields.append(self.format(data[26], 1))
-        fields.append(self.format(data[27], 1))
-        fields.append(self.format(data[28], 1))
-        fields.append(data[29])
-        fields.append(data[30])
-        fields.append(data[31])
-        fields.append(data[32])
-        fields.append(self.format(data[33], 0))
-        fields.append(self.format(data[34], 0))
-        fields.append(data[35])
-        fields.append(data[36])
-        fields.append(self.format(data[37], 0))
-        fields.append(self.format(data[38], 0))
-        fields.append(self.format(data[39], 0))
-        fields.append(self.format(data[40], 0))
-        fields.append(self.format(data[41], 0))
-        fields.append(self.format(data[42], 0))
-        fields.append(self.format(data[43], 0))
-        fields.append(self.format(data[44], 1))
-        fields.append(self.format(data[45], 1))
-        fields.append(self.format(data[46], 1))
-        fields.append(self.format(data[47], 1))
-        fields.append(self.format(data[48], 0))
-        fields.append(data[49])
-        fields.append(self.format(data[50], 1))
-        fields.append(self.format(data[51], 1))
-        fields.append(self.format(data[52], 1))
-        fields.append(self.format(data[53], 1))
-        fields.append(self.format(data[54], 1))
-        fields.append(self.format(data[55], 1))
-        fields.append(self.format(data[56], 1))
-        fields.append(self.format(data[57], 1))
-        fields.append(self.format(data[58], 1))
-        fields.append(self.format(data[59], 1))
-        fields.append(self.format(data[60], 1))
-        fields.append(self.format(data[61], 1))
-        fields.append(self.format(data[62], 1))
-        fields.append(self.format(data[63], 1))
-        fields.append(self.format(data[64], 1))
-        fields.append(self.format(data[65], 1))
-        fields.append(self.format(data[66], 1))
-        fields.append(self.format(data[67], 1))
-        fields.append(self.format(data[68], 1))
-        fields.append(self.format(data[69], 1))
-        fields.append(self.format(data[70], 1))
-        fields.append(self.format(data[71], 1))
-        fields.append(self.format(data[72], 1))
-        fields.append(self.format(data[73], 1))
-        fields.append(data[74])
-        fields.append(self.format(data[75], 1))
-        fields.append(self.format(data[76], 1))
-        fields.append(self.format(data[77], 1))
-        fields.append(self.format(data[78], 1))
-        fields.append(self.format(data[79], 1))
-        fields.append(self.format(data[80], 1))
-        fields.append(self.format(data[81], 1))
-        fields.append(self.format(data[81], 1))
-        fields.append(self.format(data[81], 1))
-        fields.append(self.format(data[81], 1))
-        fields.append(self.format(data[81], 1))
-        fields.append(self.format(data[81], 1))
-        fields.append(self.format(data[81], 1))
-        fields.append(self.format(data[81], 1))
-        fields.append(self.format(data[81], 1))
-        fields.append(self.format(data[91], 1))
-        fields.append(self.format(data[91], 1))
-        fields.append(self.format(data[91], 1))
-        fields.append(self.format(data[91], 1))
-        fields.append(self.format(data[91], 1))
-        fields.append(self.format(data[91], 1))
-        fields.append(self.format(data[91], 1))
-        fields.append(self.format(data[91], 1))
-        fields.append(self.format(data[91], 1))
-        fields.append(self.format(data[91], 1))
-        fields.append(self.format(data[100], 1))
-        fields.append(self.format(data[101], 1))
-        fields.append(self.format(data[102], 1))
-        fields.append(self.format(data[103], 1))
-        fields.append(self.format(data[104], 1))
-        fields.append(self.format(data[105], 1))
-        fields.append(self.format(data[106], 1))
-        fields.append(self.format(data[107], 1))
-        fields.append(self.format(data[108], 1))
-        fields.append(self.format(data[109], 1))
-        fields.append(self.format(data[110], 1))
-        fields.append(self.format(data[111], 1))
-        fields.append(self.format(data[112], 1))
-        fields.append(self.format(data[113], 1))
-        fields.append(self.format(data[114], 0))
-        fields.append(data[115])
-        fields.append(data[116])
-        fields.append(self.format(data[117], 1))
-        fields.append(self.format(data[118], 1))
-        fields.append(self.format(data[119], 1))
-        fields.append(self.format(data[120], 1))
-        fields.append(self.format(data[121], 1))
-        fields.append(self.format(data[122], 0))
-        fields.append(self.format(data[123], 0))
-        fields.append(self.format(data[124], 0))
-        fields.append(self.format(data[125], 0))
-        fields.append(self.format(data[126], 0))
-        fields.append(self.format(data[127], 1))
-        fields.append(self.format(data[128], 1))
-        fields.append(self.format(data[129], 1))
-        fields.append(self.format(data[130], 1))
-        fields.append(self.format(data[131], 1))
-        fields.append(self.format(data[132], 1))
-        fields.append(self.format(data[133], 1))
-        fields.append(data[134])
-        fields.append(data[135])
-        fields.append(self.format(data[136], 1))
-        fields.append(self.format(data[137], 1))
-        fields.append(self.format(data[138], 1))
-        fields.append(self.format(data[139], 1))
-        fields.append(self.format(data[140], 1))
-        fields.append(data[141])
-        fields.append(self.format(data[142], 1))
-        fields.append(self.format(data[143]))
-        fields.append(self.format(data[144]))
-        fields.append(self.format(data[145]))
-        fields.append(self.format(data[146], 1))
-        fields.append(self.format(data[147], 1))
-        fields.append(self.format(data[148], 1))
-        fields.append(self.format(data[149], 1))
-        fields.append(self.format(data[150], 1))
-        fields.append(self.format(data[151], 1))
-        fields.append(self.format(data[152], 1))
-        fields.append(self.format(data[153], 1))
-        fields.append(self.format(data[154], 1))
-        fields.append(self.format(data[155], 1))
-        fields.append(self.format(data[156], 1))
-        fields.append(self.format(data[157], 1))
-        fields.append(self.format(data[158], 1))
-        fields.append(self.format(data[159], 1))
-        fields.append(self.format(data[160]))
-        fields.append(self.format(data[161]))
-        fields.append(self.format(data[162], 1))
-        fields.append(self.format(data[163], 0))
-        fields.append(self.format(data[164], 0))
-        fields.append(self.format(data[165], 1))
-        fields.append(data[166])
-        fields.append(self.format(data[167], 1))
-        fields.append(self.format(data[168], 1))
-        fields.append(self.format(data[169], 1))
-        fields.append(self.format(data[170], 1))
-        fields.append(self.format(data[171], 1))
-        fields.append(self.format(data[172], 1))
-        fields.append(self.format(data[173], 1))
-        fields.append(data[174])
-        fields.append(data[175])
-        fields.append(self.format(data[176], 0))
-        fields.append(data[177])
-        return ' '.join(fields)
+        # iterate over the number of fileds we know how to format
+        for field_num in range(len(self.field_formats) - 1):
+            # format the field using the lookup result from the fields_format
+            # dict and append it to the field list
+            fields.append(self.format(data[field_num],
+                                      self.field_formats[field_num]))
+        # join the fields with a space between fields and force the result to
+        # be a unicode string
+        return six.ensure_text(' '.join(fields))
 
     @staticmethod
     def format(data, places=None):
@@ -2025,6 +2040,7 @@ class RealtimeClientrawThread(threading.Thread):
                 result = _format % _v
             except ValueError:
                 pass
+        # TODO. Is this str() call needed, esp given six.ensure_text()
         return str(result)
 
 
