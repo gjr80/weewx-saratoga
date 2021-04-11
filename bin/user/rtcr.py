@@ -629,7 +629,7 @@ class RealtimeClientrawThread(threading.Thread):
         14: 1,  # - soil temperature
         15: 0,  # - forecast Icon
         16: 1,  # - WMR968 extra temperature - will not implement
-        17: 1,  # - WMR968 extra humidity - will not implement
+        17: 0,  # - WMR968 extra humidity - will not implement
         18: 1,  # - WMR968 extra sensor - will not implement
         19: 1,  # - yesterday rain
         20: 1,  # - extra temperature sensor 1
@@ -638,9 +638,9 @@ class RealtimeClientrawThread(threading.Thread):
         23: 1,  # - extra temperature sensor 4
         24: 1,  # - extra temperature sensor 5
         25: 1,  # - extra temperature sensor 6
-        26: 1,  # - extra humidity sensor 1
-        27: 1,  # - extra humidity sensor 2
-        28: 1,  # - extra humidity sensor 3
+        26: 0,  # - extra humidity sensor 1
+        27: 0,  # - extra humidity sensor 2
+        28: 0,  # - extra humidity sensor 3
         29: None,  # - hour
         30: None,  # - minute
         31: None,  # - seconds
@@ -1450,7 +1450,11 @@ class RealtimeClientrawThread(threading.Thread):
         # 032 - station name
         hms_string = time.strftime(self.long_time_fmt,
                                    time.localtime(packet_wx['dateTime']))
-        data[32] = '-'.join([self.location.replace(' ', ''), hms_string])
+        # to maintain fidelity of station names that include dashes and spaces
+        # replace any dashes with en dashes and replace any spaces with
+        # underscores
+        loc_string = self.location.replace('-', '&ndash;')
+        data[32] = '-'.join([loc_string.replace(' ', '_'), hms_string])
         # 033 - dallas lightning count - will not implement
         data[33] = 0
         # 034 - Solar Reading - used as 'solar percent' in Saratoga dashboards
@@ -2004,7 +2008,7 @@ class RealtimeClientrawThread(threading.Thread):
         # initialise a list to hold our fields in order
         fields = list()
         # iterate over the number of fileds we know how to format
-        for field_num in range(len(self.field_formats) - 1):
+        for field_num in range(len(self.field_formats)):
             # format the field using the lookup result from the fields_format
             # dict and append it to the field list
             fields.append(self.format(data[field_num],
