@@ -158,7 +158,7 @@ $outHumidityMonthdailyArray[$i].format($format_string="%.0f", $add_label=False, 
 #*233*##*Previous 7 days of 6 hourly Temperature Readings. Day 1 #1=7 days ago, Day 7 #4=now*##slurp
 #for $i in range(28)
 #try
-$outTempSixhourArray[$i].format($format_string="%.1f", $add_label=False, $localize=False) #slurp
+$outTempSixhourArray[$i].degree_C.format($format_string="%.1f", $add_label=False, $localize=False) #slurp
 #except
 0 #slurp
 #end try
@@ -166,7 +166,7 @@ $outTempSixhourArray[$i].format($format_string="%.1f", $add_label=False, $locali
 #*261*##*Previous 7 days of 6 hourly Barometer Readings. Day 1 #1=7 days ago, Day 7 #4=now*##slurp
 #for $i in range(28)
 #try
-$barometerSixhourArray[$i].format($format_string="%.1f", $add_label=False, $localize=False) #slurp
+$barometerSixhourArray[$i].hPa.format($format_string="%.1f", $add_label=False, $localize=False) #slurp
 #except
 0 #slurp
 #end try
@@ -190,7 +190,7 @@ $windSixhourVecdirArray[$i].format($format_string="%.0f", $add_label=False, $loc
 #*345*##*Previous 7 days of 6 hourly Wind Speed Readings. Day 1 #1=7 days ago, Day 7 #4=now*##slurp
 #for $i in range(28)
 #try
-$windSpeedSixhourArray[$i].format($format_string="%.1f", $add_label=False, $localize=False) #slurp
+$windSpeedSixhourArray[$i].knot.format($format_string="%.1f", $add_label=False, $localize=False) #slurp
 #except
 0 #slurp
 #end try
@@ -242,7 +242,7 @@ $UVSixhourArray[$i].format($format_string="%.1f", $add_label=False, $localize=Fa
 #*442*##*Previous 7 days of 6 hourly Indoor Temperature Readings. Day 1 #1=7 days ago, Day 7 #4=now*##slurp
 #for $i in range(28)
 #try
-$inTempSixhourArray[$i].format($format_string="%.1f", $add_label=False, $localize=False) #slurp
+$inTempSixhourArray[$i].degree_C.format($format_string="%.1f", $add_label=False, $localize=False) #slurp
 #except
 0 #slurp
 #end try
