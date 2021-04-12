@@ -1169,12 +1169,12 @@ class RealtimeClientrawThread(threading.Thread):
     def post_data(self, data):
         """Post data to a remote URL via HTTP POST.
 
-        This code is modelled on the WeeWX restFUL API, but rather then
+        This code is modelled on the WeeWX RESTful API, but rather then
         retrying a failed post the failure is logged and then ignored. If
         remote posts are not working then the user should set debug=1 and
         restart WeeWX to see what the log says.
 
-        The data to be posted is sent as an ascii text string.
+        The data to be posted is sent as a utf-8 text string.
 
         Inputs:
             data: clientraw data string
@@ -1191,26 +1191,28 @@ class RealtimeClientrawThread(threading.Thread):
                 # no exception thrown and we received a good response code, log
                 # it and return.
                 if weewx.debug > 1 or self.debug_post:
-                    loginf("Received response: '%s'" % response.code)
+                    loginf("Data successfully posted. Received response: '%s %s'" % (response.getcode(),
+                                                                                     response.msg))
                 return
             # we received a bad response code, log it and continue
             if weewx.debug > 0 or self.debug_post:
-                loginf("Failed to post data. Received response: '%s'" % response.code)
+                loginf("Failed to post data. Received response: '%s %s'" % (response.getcode(),
+                                                                            response.msg))
         except (urllib.error.URLError, socket.error,
                 http_client.BadStatusLine, http_client.IncompleteRead) as e:
             # an exception was thrown, log it and continue
             if weewx.debug > 0 or self.debug_post:
-                loginf("Failed to post data: %s" % e)
+                loginf("Failed to post data. Exception error message: '%s'" % e)
 
     def post_request(self, request, payload):
         """Post a Request object.
 
         Inputs:
-            request: urllib2 Request object
+            request: Request object
             payload: the data to sent as a unicode string
 
         Returns:
-            The urllib2.urlopen() response
+            The urlopen() response
         """
 
         # The POST data needs to be urlencoded, under python2 urlencoding
