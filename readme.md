@@ -1,6 +1,6 @@
 # WeeWX-Saratoga #
 
-A *WeeWX* extension to support the *Saratoga Weather Website Templates*.
+A *WeeWX* extension to support the [*Saratoga Weather Website Templates*](https://saratoga-weather.org/wxtemplates/index.php) with the *WEEWX-plugin* installed. You can also install scripts that rely on the [Weather-Display](https://www.weather-display.com/files.php) _clientraw*.txt_ files for operation (such as the [alternative dashboard](https://saratoga-weather.org/scripts-legacy.php#scott), or the [clientraw parser](https://saratoga-weather.org/scripts-legacy.php#relayweather)) since this extension generates the needed files.
 
 The *WeeWX-Saratoga extension* consists of a number of *WeeWX* services, Search List Extensions (SLE) and skins that produce the following data files:
 
@@ -11,7 +11,7 @@ The *WeeWX-Saratoga extension* consists of a number of *WeeWX* services, Search 
 -   daywindrose.png
 -   WEEWXtags.php
 
-The above files are produced during each *WeeWX* report cycle with the exception of *clientraw.txt* which is generated upon receipt of loop packets.
+The above files are produced during each *WeeWX* report cycle with the exception of *clientraw.txt* which is generated upon receipt of loop packets and (by default) updated at 10 second intervals.
 
 The *WeeWX-Saratoga extension* is based on the *WeeWD-WD* extension. (https://bitbucket.org/ozgreg/weewx-wd and https://github.com/gjr80/weewx-weewx-wd).
 
@@ -22,21 +22,21 @@ The *WeeWX-Saratoga extension* requires:
 
 - *WeeWX* v4.2.0 or later (both Python 2 and Python 3 are supported), and
 
-- *Pyephem* for extended almanac information. Refer to [WeeWX: Installation using setup.py](http://weewx.com/docs/setup.htm) for the commands to install *python3-ephem* or *pyephem* for your system. 
+- *Pyephem* for extended almanac information. Refer to [WeeWX: Installation using setup.py](http://weewx.com/docs/setup.htm) for the commands to install *python3-ephem* or *pyephem* for your system.
 
 
 ## Installation Instructions ##
 
 The preferred method of installing or upgrading the *WeeWX-Saratoga extension* is using the *WeeWX* [*wee_extension* utility](http://weewx.com/docs/utilities.htm#wee_extension_utility). The *WeeWX-Saratoga extension* can also be installed manually.
 
-**Note**: If installing *WeeWX-Saratoga* in place of a previous *WeeWX-WD* installation you should uninstall *WeeWX-WD* before installing the *WeeWX-Saratoga extension*. You may wish to make a backup copy of *weewx.conf* before uninstalling *WeeWX-WD* to aid in configuring the subsequent *WeeWX-Saratoga* installation. The *WeeWX-Saratoga extension* uses the same databases as used by *WeeWX-WD* so these databases should be retained when uninstalling *WeeWX-WD*. 
+**Note**: If installing *WeeWX-Saratoga* in place of a previous *WeeWX-WD* installation you should uninstall *WeeWX-WD* before installing the *WeeWX-Saratoga extension*. You may wish to make a backup copy of *weewx.conf* before uninstalling *WeeWX-WD* to aid in configuring the subsequent *WeeWX-Saratoga* installation. The *WeeWX-Saratoga extension* uses the same databases as used by *WeeWX-WD* so these databases should be retained when uninstalling *WeeWX-WD*.
 
 **Note**: Symbolic names are used below to refer to file locations on the *WeeWX* system. Symbolic names allow a common name to be used to refer to a directory that may be different from system to system. The following symbolic names are used below:
 
-- *BIN_ROOT*. The path to the directory where WeeWX executables are located. This directory varies depending on *WeeWX* installation method. 
+- *BIN_ROOT*. The path to the directory where WeeWX executables are located. This directory varies depending on *WeeWX* installation method.
 
 - *SKIN_ROOT*. The path to the directory where WeeWX skin directories are located. This directory varies depending on *WeeWX* installation method.
-  
+
 - *HTML_ROOT*. The path to the directory where WeeWX generated reports and images are located. This directory varies depending on *WeeWX* installation method and system or web server configuration.
 
 Refer to [where to find things](http://weewx.com/docs/usersguide.htm#Where_to_find_things) in the *WeeWX User's Guide* for further information.
@@ -44,7 +44,7 @@ Refer to [where to find things](http://weewx.com/docs/usersguide.htm#Where_to_fi
 
 ### Installation using the *wee_extension* utility ###
 
-1.  Download the *WeeWX-Saratoga extension* from the *WeeWX-Saratoga extension* [releases page](https://github.com/gjr80/weewx-saratoga/releases) into a directory accessible from the *WeeWX* machine: 
+1.  Download the *WeeWX-Saratoga extension* from the *WeeWX-Saratoga extension* [releases page](https://github.com/gjr80/weewx-saratoga/releases) into a directory accessible from the *WeeWX* machine:
 
         $ wget -P /var/tmp https://github.com/gjr80/weewx-saratoga/releases/download/v0.1.0/ws-0.1.0.tar.gz
 
@@ -70,9 +70,9 @@ Refer to [where to find things](http://weewx.com/docs/usersguide.htm#Where_to_fi
     **Note:** Depending on your system/installation the above command may need to be prefixed with *sudo*.
 
     **Note:** Depending on your *WeeWX* installation the path to *wee_extension* may need to be provided, eg:
-        
+
         $ /home/weewx/bin/wee_extension --install....
-    
+
     This will result in output similar to the following:
 
 		Request to install '/var/tmp/ws-0.1.0.tar.gz'
@@ -93,8 +93,8 @@ Refer to [where to find things](http://weewx.com/docs/usersguide.htm#Where_to_fi
 
         $ sudo systemctl start weewx
 
-1.  This will result in the WeeWX-Saratoga data files being generated as outlined above. The generated files should be located in the *HTML_ROOT* directory. 
-    
+1.  This will result in the WeeWX-Saratoga data files being generated as outlined above. The generated files should be located in the *HTML_ROOT* directory.
+
 1. The *WeeWX-Saratoga extension* installation can be further customized (eg remote file transfer, units of measure etc) by referring to the [WeeWX-Saratoga wiki](https://github.com/gjr80/weewx-saratoga/wiki).
 
 ### Manual installation ###
@@ -151,11 +151,11 @@ Refer to [where to find things](http://weewx.com/docs/usersguide.htm#Where_to_fi
         [WeewxSaratoga]
             # WeewxSaratoga database binding
             data_binding = ws_binding
-            
-            # radiation (solar insolation) level above which the sun is considered 
+
+            # radiation (solar insolation) level above which the sun is considered
             # shining
             sunshine_threshold = 120
-            
+
             [[Supplementary]]
                 # WeewxSaratoga supplementary database binding
                 data_binding = ws_supp_binding
@@ -168,34 +168,34 @@ Refer to [where to find things](http://weewx.com/docs/usersguide.htm#Where_to_fi
                 [[[File]]]
                     file = /path/and/filename
                     enable = False
-                    
+
             [[RealtimeClientraw]]
 
-                # If using an external website, configure remote_server_url to point to 
+                # If using an external website, configure remote_server_url to point to
                 # the post_clientraw.php script on your website like:
                 #   remote_server_url = http://your.website.com/post_clientraw.php
                 #
-                # To disable or use the webserver on this system, leave the entry 
+                # To disable or use the webserver on this system, leave the entry
                 # commented out or blank.
                 # remote_server_url = http://your.website.com/post_clientraw.php
-        
-                # min_interval sets the minimum clientraw.txt generation interval. 
+
+                # min_interval sets the minimum clientraw.txt generation interval.
                 # Default is 10 seconds.
                 min_interval = 10
-                
-                # Python date-time format strings. Format string codes as per 
+
+                # Python date-time format strings. Format string codes as per
                 # https://docs.python.org/3/library/datetime.html#strftime-and-strptime-format-codes
-                 
+
                 # Date format. Recommended entries are:
                 #   date_format = %-m/%-d/%Y  # recommended for USA users
                 #   date_format = %-d/%-m/%Y  # recommended for non-USA users
                 date_format = %-d/%-m/%Y
-        
+
                 # Long format times (HMS). Recommended entries are:
                 #   long_time_format = %-I:%M:%S_%p  # recommended for USA users
-                #   long_time_format = %H:%M:%S  # recommended for non-USA users 
+                #   long_time_format = %H:%M:%S  # recommended for non-USA users
                 long_time_format = %H:%M:%S
-                
+
                 # Short format times (HM). Recommended entries are:
                 #   short_time_format = %-I:%M_%p  # recommended for USA users
                 #   short_time_format = %H:%M  # recommended for non-USA users
@@ -240,7 +240,7 @@ Refer to [where to find things](http://weewx.com/docs/usersguide.htm#Where_to_fi
             table_name = archive
             manager = weewx.manager.DaySummaryManager
             schema = user.wdschema.weewxwd_schema
-    
+
         [[wdsupp_binding]]
             database = wd_supp_mysql
             table_name = supp
@@ -269,14 +269,14 @@ Refer to [where to find things](http://weewx.com/docs/usersguide.htm#Where_to_fi
 
         $ sudo systemctl start weewx
 
-1.  This will result in the WeeWX-Saratoga data files being generated as outlined above. The generated files should be located in the *HTML_ROOT* directory. 
-    
+1.  This will result in the WeeWX-Saratoga data files being generated as outlined above. The generated files should be located in the *HTML_ROOT* directory.
+
 1. The *WeeWX-Saratoga extension* installation can be further customized (eg remote file transfer, units of measure etc) by referring to the [WeeWX-Saratoga wiki](https://github.com/gjr80/weewx-saratoga/wiki).
 
 
 ## Support ##
 
-General support issues may be raised in the Google Groups [weewx-user forum](https://groups.google.com/group/weewx-user "Google Groups weewx-user forum"). Specific bugs in the *WeeWX-Saratoga extension* code should be the subject of a new issue raised via the [Issues Page](https://github.com/gjr80/weewx-weewx-wd/issues "WeeWX-Saratoga extension Issues").
+General support issues may be raised in the Google Groups [weewx-user forum](https://groups.google.com/group/weewx-user "Google Groups weewx-user forum"). Specific bugs in the *WeeWX-Saratoga extension* code should be the subject of a new issue raised here via the [Issues Page](https://github.com/gjr80/weewx-weewx-wd/issues "WeeWX-Saratoga extension Issues").  Support for the [_WEEWX-plugin_](https://saratoga-weather.org/wxtemplates/install.php) for the Saratoga website template should be via posts on [WXForum.net, Custom Templates/Scripts board](https://www.wxforum.net/index.php?board=102.0).
 
 ## Licensing ##
 
