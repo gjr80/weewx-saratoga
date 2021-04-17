@@ -105,3 +105,63 @@ class StdOutTempDayNight(weewx.engine.StdService):
 
     def shutDown(self):
         weewx.xtypes.xtypes.remove(self.day_night_temp)
+
+
+class WetBulb(weewx.xtypes.XType):
+
+    def __init__(self):
+        self.converter = weewx.units.StdUnitConverters[weewx.METRIC]
+
+    def get_scalar(self, obs_type, record, db_manager):
+        # We only know how to calculate 'wetBulb'. For everything else, raise
+        # an exception UnknownType
+        if obs_type not in ['wetBulb', ]:
+            raise weewx.UnknownType(obs_type)
+
+        # we need outTemp, pressure and outHumidity in order to do the
+        # calculation
+        if 'outTemp' not in record and 'pressure' not in record and 'outHumidity' not in record:
+            raise weewx.CannotCalculate(obs_type)
+
+        # calculate if all of our pre-requisites are non-None
+        if record['outTemp'] is not None and record['pressure'] is not None and record['outHumidity'] is not None:
+            # we need outTemp in degree_C, first get outTemp from the record as
+            # a ValueTuple
+            t_vt = weewx.units.as_value_tuple(record, 'outTemp')
+            # now convert to degree_C
+            tc = self.converter.convert(t_vt)
+            # we need pressure in hPa, first get pressure from the record as a
+            # ValueTuple
+            p_vt = weewx.units.as_value_tuple(record, 'pressure')
+            # now convert to hPa
+            p = self.converter.convert(p_vt)
+            # outHumidity is already in percent so no need to convert
+            rh = record['outHumidity']
+            # do the calculations
+            tdc = ((tc - (14.55 + 0.114 * tc) * (1 - (0.01 * rh)) -
+                   ((2.5 + 0.007 * tc) * (1 - (0.01 * rh))) ** 3 -
+                   (15.9 + 0.117 * tc) * (1 - (0.01 * rh)) ** 14))
+            e = (6.11 * 10 ** (7.5 * tdc / (237.7 + tdc)))
+            wb = ((((0.00066 * p) * tc) + ((4098 * e) / ((tdc + 237.7) ** 2) * tdc)) /
+                  ((0.00066 * p) + (4098 * e) / ((tdc + 237.7) ** 2)))
+            # our result is in degree_C, put it in a ValueTuple so we can
+            # convert it if needed
+            wb_vt = weewx.units.ValueTuple(wb, 'degree_C', 'group_temperature')
+        else:
+            # we could not calculate so save our result as a 'None' ValueTuple
+            wb_vt = weewx.units.ValueTuple(None, 'degree_C', 'group_temperature')
+        # finally convert to our 'record' units and return the result
+        return weewx.units.as_value_tuple(wb_vt, record['usUnits']).value
+
+
+class StdWetBulb(weewx.engine.StdService):
+    """Instantiate and register the XTypes extension WetBulb."""
+
+    def __init__(self, engine, config_dict):
+        super(StdWetBulb, self).__init__(engine, config_dict)
+
+        self.wet_bulb = WetBulb()
+        weewx.xtypes.xtypes.append(self.wet_bulb)
+
+    def shutDown(self):
+        weewx.xtypes.xtypes.remove(self.wet_bulb)
