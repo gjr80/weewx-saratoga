@@ -33,6 +33,8 @@ Revision History
           class RtcrBuffer add_packet() method
         - added support for various debug_xxx settings in [RealtimeClientraw]
         - default location for generated clientraw.txt is now HTML_ROOT
+        - windrun is now derived from loop/archive field windrun only (was
+          previously calculated from windSpeed)
     9 March 2020        v0.2.3
         - fixed missing conversion to integer on some numeric config items
         - added try..except around the main thread code so that thread
@@ -274,7 +276,7 @@ RTCR_VERSION = '0.3.0b3'
 # the obs that we will buffer
 MANIFEST = ['outTemp', 'barometer', 'outHumidity', 'rain', 'rainRate',
             'humidex', 'windchill', 'heatindex', 'windSpeed', 'inTemp',
-            'appTemp', 'dewpoint', 'windDir', 'wind']
+            'appTemp', 'dewpoint', 'windDir', 'wind', 'windrun']
 # obs for which we need hi/lo data
 HILO_MANIFEST = ['outTemp', 'barometer', 'outHumidity',
                  'humidex', 'windchill', 'heatindex', 'windSpeed', 'inTemp',
@@ -282,7 +284,7 @@ HILO_MANIFEST = ['outTemp', 'barometer', 'outHumidity',
 # obs for which we need a history
 HIST_MANIFEST = ['windSpeed', 'windDir']
 # obs for which we need a running sum
-SUM_MANIFEST = ['rain']
+SUM_MANIFEST = ['rain', 'windrun']
 MAX_AGE = 600
 DEFAULT_MAX_CACHE_AGE = 600
 DEFAULT_AV_SPEED_PERIOD = 300
@@ -409,6 +411,16 @@ class RealtimeClientraw(StdService):
             self.rtcr_queue.put(_package)
             if self.debug_stats:
                 loginf("queued historical rainfall data: %s" % _package['payload'])
+        # get yesterdays windrun and put in the queue
+        _windrun_data = self.get_historical_windrun(ts)
+        # if we have anything to send then package the data in a dict since
+        # this is not the only data we send via the queue
+        if len(_windrun_data) > 0:
+            _package = {'type': 'stats',
+                        'payload': _windrun_data}
+            self.rtcr_queue.put(_package)
+            if self.debug_stats:
+                loginf("queued historical windrun data: %s" % _package['payload'])
         # get max gust in the last hour and put in the queue
         _hour_gust = self.get_hour_gust(ts)
         # if we have anything to send then package the data in a dict since
@@ -554,6 +566,60 @@ class RealtimeClientraw(StdService):
         _row = self.db_manager.getSql(_sql % inter_dict)
         if _row and None not in _row:
             result['year_rain_vt'] = ValueTuple(_row[0], unit, group)
+
+        return result
+
+    def get_historical_windrun(self, ts):
+        """Obtain yesterdays total windrun and return as a ValueTuple."""
+
+        result = {}
+        (unit, group) = weewx.units.getStandardUnitType(self.db_manager.std_unit_system,
+                                                        'windrun',
+                                                        agg_type='sum')
+        # Yesterday's windrun
+        # get a TimeSpan object for yesterdays archive day
+        yest_tspan = weeutil.weeutil.archiveDaysAgoSpan(ts, days_ago=1)
+        # create an interpolation dict
+        inter_dict = {'table_name': self.db_manager.table_name,
+                      'start': yest_tspan.start,
+                      'stop': yest_tspan.stop}
+        # the query to be used
+        _sql = "SELECT SUM(windrun) FROM %(table_name)s "\
+               "WHERE dateTime > %(start)s AND dateTime <= %(stop)s"
+        # execute the query
+        _row = self.db_manager.getSql(_sql % inter_dict)
+        if _row and None not in _row:
+            result['yest_windrun_vt'] = ValueTuple(_row[0], unit, group)
+
+        # This month's windrun
+        # get a TimeSpan object for this month
+        month_tspan = weeutil.weeutil.archiveMonthSpan(ts)
+        # create an interpolation dict
+        inter_dict = {'table_name': self.db_manager.table_name,
+                      'start': month_tspan.start,
+                      'stop': month_tspan.stop}
+        # the query to be used
+        _sql = "SELECT SUM(sum) FROM %(table_name)s_day_windrun "\
+               "WHERE dateTime >= %(start)s AND dateTime < %(stop)s"
+        # execute the query
+        _row = self.db_manager.getSql(_sql % inter_dict)
+        if _row and None not in _row:
+            result['month_windrun_vt'] = ValueTuple(_row[0], unit, group)
+
+        # This year's windrun
+        # get a TimeSpan object for this year
+        year_tspan = weeutil.weeutil.archiveYearSpan(ts)
+        # create an interpolation dict
+        inter_dict = {'table_name': self.db_manager.table_name,
+                      'start': year_tspan.start,
+                      'stop': year_tspan.stop}
+        # the query to be used
+        _sql = "SELECT SUM(sum) FROM %(table_name)s_day_windrun "\
+               "WHERE dateTime >= %(start)s AND dateTime < %(stop)s"
+        # execute the query
+        _row = self.db_manager.getSql(_sql % inter_dict)
+        if _row and None not in _row:
+            result['year_windrun_vt'] = ValueTuple(_row[0], unit, group)
 
         return result
 
@@ -824,8 +890,8 @@ class RealtimeClientrawThread(threading.Thread):
                                                        DEFAULT_GUST_PERIOD))
 
         # set some format strings
-        self.date_fmt = rtcr_config_dict.get('date_format','%-d/%-m/%Y')
-        self.long_time_fmt = rtcr_config_dict.get('long_time_format','%H:%M:%S')
+        self.date_fmt = rtcr_config_dict.get('date_format', '%-d/%-m/%Y')
+        self.long_time_fmt = rtcr_config_dict.get('long_time_format', '%H:%M:%S')
         self.short_time_fmt = rtcr_config_dict.get('short_time_format', '%H:%M')
         self.flag_format = '%.0f'
 
@@ -1781,7 +1847,8 @@ class RealtimeClientrawThread(threading.Thread):
             windgust60_ts = buffer_ot.ts
         else:
             windgust60_ts = hour_gust_ts
-        data[134] = time.strftime(self.short_time_fmt, time.localtime(windgust60_ts)) if windgust60_ts is not None else '00:00'
+        data[134] = time.strftime(self.short_time_fmt, time.localtime(windgust60_ts)) if \
+            windgust60_ts is not None else '00:00'
         # 135 - maximum windGust today time
         if 'windSpeed' in self.buffer:
             t_windgust_tm_ts = self.buffer['windSpeed'].day_maxtime
@@ -1961,11 +2028,14 @@ class RealtimeClientrawThread(threading.Thread):
         # 172 - Current Cost Channel 6 - will not implement
         data[172] = 0.0
         # 173 - day windrun
-        windrun_vt = ValueTuple(self.buffer.windrun,
-                                dist_unit,
-                                dist_group)
-        windrun = convert(windrun_vt, 'km').value
-        data[173] = windrun if windrun is not None else 0.0
+        if 'windrun' in self.buffer:
+            day_windrun_vt = ValueTuple(self.buffer['windrun'].day_sum,
+                                        dist_unit,
+                                        dist_group)
+        else:
+            day_windrun_vt = ValueTuple(None, 'km', 'group_distance')
+        day_windrun = convert(day_windrun_vt, 'km').value
+        data[173] = day_windrun if day_windrun is not None else 0.0
         # 174 - Time of daily max temp
         if 'outTemp' in self.buffer:
             t_outtemp_tm_ts = self.buffer['outTemp'].day_maxtime
@@ -1986,9 +2056,11 @@ class RealtimeClientrawThread(threading.Thread):
         else:
             t_outtemp_tm = time.localtime(packet_wx['dateTime'])
         data[175] = time.strftime(self.short_time_fmt, t_outtemp_tm)
+        # TODO. Need to verify #176 calculation
         # 176 - 10 minute average wind direction
-        data[176] = '0'
-        # TODO. Need to calculate #177, maybe already be in vector buffer
+        _mag, _dir = self.buffer['wind'].history_vec_avg(packet_wx['dateTime'],
+                                                         age=600)
+        data[176] = _dir if _dir is not None else 0
         # 177 - record end (WD Version)
         data[177] = '!!C10.37S120!!'
         return data
@@ -2009,7 +2081,7 @@ class RealtimeClientrawThread(threading.Thread):
 
         # initialise a list to hold our fields in order
         fields = list()
-        # iterate over the number of fileds we know how to format
+        # iterate over the number of fields we know how to format
         for field_num in range(len(self.field_formats)):
             # format the field using the lookup result from the fields_format
             # dict and append it to the field list
@@ -2170,17 +2242,15 @@ class VectorBuffer(object):
     def history_avg(self, ts, age=MAX_AGE):
         """Return the average value in my history.
 
-        Search the last age seconds of my history for the max value and the
-        corresponding timestamp.
+        Search the last 'age' seconds of my history and calculate the simple
+        average of my values.
 
         Inputs:
             ts:  the timestamp to start searching back from
             age: the max age of the records being searched
 
         Returns:
-            An object of type ObsTuple where value is a 3 way tuple of
-            (value, x component, y component) and ts is the timestamp when
-            it occurred.
+            The average value or None if there were no values to average.
         """
 
         born = ts - age
@@ -2191,7 +2261,19 @@ class VectorBuffer(object):
             return None
 
     def history_vec_avg(self, ts, age=MAX_AGE):
-        """Return the my history vector average."""
+        """Return the my history vector average.
+
+        Search the last 'age' seconds of my history and calculate the vector
+        average of my values.
+
+        Inputs:
+            ts:  the timestamp to start searching back from
+            age: the max age of the records being searched
+
+        Returns:
+            The vector average value in polar (magnitude, angle) format. If the
+            vector average value cannot be calculated None is returned.
+        """
 
         born = ts - age
         rec = [a.value for a in self.history if a.ts >= born]
@@ -2207,7 +2289,7 @@ class VectorBuffer(object):
             _value = math.sqrt(pow(x, 2) + pow(y, 2))
             return _value, _dir
         else:
-            return None
+            return None, None
 
     @property
     def vec_dir(self):
@@ -2385,7 +2467,7 @@ class RtcrBuffer(dict):
                               obs_type in HIST_MANIFEST,
                               obs_type in SUM_MANIFEST)
         self.last_windSpeed_ts = None
-        self.windrun = self.seed_windrun(day_stats)
+#        self.windrun = self.seed_windrun(day_stats)
 
     def seed_scalar(self, stats, obs_type, hist, sum):
         """Seed a scalar buffer."""
@@ -2401,36 +2483,36 @@ class RtcrBuffer(dict):
                                                                history=True,
                                                                sum=True)
 
-    @staticmethod
-    def seed_windrun(day_stats):
-        """Seed day windrun."""
-
-        if 'windSpeed' in day_stats:
-            # The wsum field hold the sum of (windSpeed * interval in seconds)
-            # for today so we can calculate windrun from wsum - just need to
-            # do a little unit conversion and scaling
-
-            # The day_stats units may be different to our buffer unit system so
-            # first convert the wsum value to a km_per_hour based value (the
-            # wsum 'units' are a distance but we can use the group_speed
-            # conversion to convert to a km_per_hour based value)
-            # first get the day_stats windSpeed unit and unit group
-            (unit, group) = weewx.units.getStandardUnitType(day_stats.unit_system,
-                                                            'windSpeed')
-            # now express wsum as a 'group_speed' ValueTuple
-            _wr_vt = ValueTuple(day_stats['windSpeed'].wsum, unit, group)
-            # convert it to a 'km_per_hour' based value, but we can only do
-            # that if our ValueTuple is all non-None
-            if _wr_vt.value is not None and _wr_vt.unit is not None and _wr_vt.group is not None:
-                _wr_km = convert(_wr_vt, 'km_per_hour').value
-                # but _wr_km was based on wsum which was based on seconds not hours
-                # so we need to divide by 3600 to get our real windrun in km
-                windrun = _wr_km/3600.0
-            else:
-                windrun = 0.0
-        else:
-            windrun = 0.0
-        return windrun
+    # @staticmethod
+    # def seed_windrun(day_stats):
+    #     """Seed day windrun."""
+    #
+    #     if 'windSpeed' in day_stats:
+    #         # The wsum field hold the sum of (windSpeed * interval in seconds)
+    #         # for today so we can calculate windrun from wsum - just need to
+    #         # do a little unit conversion and scaling
+    #
+    #         # The day_stats units may be different to our buffer unit system so
+    #         # first convert the wsum value to a km_per_hour based value (the
+    #         # wsum 'units' are a distance but we can use the group_speed
+    #         # conversion to convert to a km_per_hour based value)
+    #         # first get the day_stats windSpeed unit and unit group
+    #         (unit, group) = weewx.units.getStandardUnitType(day_stats.unit_system,
+    #                                                         'windSpeed')
+    #         # now express wsum as a 'group_speed' ValueTuple
+    #         _wr_vt = ValueTuple(day_stats['windSpeed'].wsum, unit, group)
+    #         # convert it to a 'km_per_hour' based value, but we can only do
+    #         # that if our ValueTuple is all non-None
+    #         if _wr_vt.value is not None and _wr_vt.unit is not None and _wr_vt.group is not None:
+    #             _wr_km = convert(_wr_vt, 'km_per_hour').value
+    #             # but _wr_km was based on wsum which was based on seconds not hours
+    #             # so we need to divide by 3600 to get our real windrun in km
+    #             windrun = _wr_km/3600.0
+    #         else:
+    #             windrun = 0.0
+    #     else:
+    #         windrun = 0.0
+    #     return windrun
 
     def add_packet(self, packet):
         """Add a packet to the buffer."""
