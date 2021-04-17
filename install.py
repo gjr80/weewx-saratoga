@@ -45,6 +45,7 @@ ws_config = u"""
     [[WEEWXtagsReport]]
         skin = WEEWXtags
         enable = True
+        HTML_ROOT = ws
         [[[Units]]]
             [[[[TimeFormats]]]]
                 date_f = %d/%m/%Y
@@ -52,6 +53,7 @@ ws_config = u"""
     [[ClientrawReport]]
         skin = Clientraw
         enable = True
+        HTML_ROOT = ws
         [[[Units]]]
             [[[[StringFormats]]]]
                 degree_C = %.1f
@@ -65,6 +67,10 @@ ws_config = u"""
                 uv_index = %.1f
                 watt_per_meter_squared = %.0f
                 NONE = --
+[StdWXCalculate]
+    [[Calculations]]
+        outTempDay = software
+        outTempNight = software
 [DataBindings]
     [[ws_binding]]
         database = ws_sqlite
@@ -164,6 +170,7 @@ class WSInstaller(ExtensionInstaller):
             author="Gary Roderick",
             author_email="gjroderick<@>gmail.com",
             process_services=['user.ws.WsWXCalculate'],
+            xtype_services = ['user.wsxtypes.OutTempDayNight'],
             archive_services=['user.ws.WsArchive',
                               'user.ws.WsSuppArchive'],
             report_services=['user.rtcr.RealtimeClientraw'],

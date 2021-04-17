@@ -543,10 +543,11 @@ if ( isset($_REQUEST['sce']) && strtolower($_REQUEST['sce']) == 'view' ) {
 #raw $dirlabel = #end raw '$current.windDir.ordinal_compass';   // wind direction (NNE etc)
 #raw $maxgustlastimediatehourtime =  #end raw '$span($hour_delta=1).windGust.maxtime.format($timeFormat)';  //   time that the max gust last prior 1 hour occurred
 #raw $avwindlastimediate10 = #end raw '$span($time_delta=600).windSpeed.avg.format($add_label=False, $localize=False)';  // Average wind for the last immediate 10 minute period
-#raw $avdir10minute =  #end raw '$avdir10.format($add_label=False, $localize=False)';    // average ten minute wind direction (degrees)
+#set $avdir = int(round($span($time_delta=600).windvec.last.polar.raw[1], 0))
+#raw $avdir10minute =  #end raw '$avdir';    // average ten minute wind direction
 
-#raw $beaufortnum = #end raw '$beaufort'; //Beaufort wind force number
-#raw $currbftspeed = #end raw '$beaufort bft'; //Current Beaufort wind speed
+#raw $beaufortnum = #end raw '$current.windSpeed.beaufort'; //Beaufort wind force number
+#raw $currbftspeed = #end raw '$current.windSpeed.beaufort bft'; //Current Beaufort wind speed
 #raw $bftspeedtext = #end raw '$beaufortDesc'; //Beaufort scale in text (i.e Fresh Breeze)
 //
 // Barometer
@@ -953,9 +954,9 @@ if ( isset($_REQUEST['sce']) && strtolower($_REQUEST['sce']) == 'view' ) {
 #raw $raintodatemonthago = #end raw '$rainthisday.lastmonth.format($add_label=False, $localize=False)';
 #raw $raintodateyearago = #end raw '$rainthisday.lastyear.format($add_label=False, $localize=False)';
 #raw $timeoflastrainalways = #end raw '$last_rain.format($timeFormat)';
-#raw $windruntodatethismonth = #end raw '$month_windrun';
-#raw $windruntodatethisyear = #end raw '$year_windrun';
-#raw $windruntoday = #end raw '$day_windrun';
+#raw $windruntodatethismonth = #end raw '$month.windrun.sum($add_label=False, $localize=False)';
+#raw $windruntodatethisyear = #end raw '$year.windrun.sum($add_label=False, $localize=False)';
+#raw $windruntoday = #end raw '$day.windrun.sum($add_label=False, $localize=False)';
 #raw $yesterdaydaviset = #end raw '$yesterday.ET.sum.format($add_label=False, $localize=False)';
 #raw $yrecordhighavwindday = #end raw '$year.windSpeed.maxtime.format($dayFormat)';
 #raw $yrecordhighavwindmonth = #end raw '$year.windSpeed.maxtime.format($monthFormat)';
@@ -1082,8 +1083,8 @@ $current_summary = preg_replace('|/|',", ",$current_summary);
 //
 #end raw
 
-#raw $cloudheightfeet = #end raw '$cloudbase.foot.format($add_label=False, $localize=False)'; // Estimated cloud base height, feet, (based on dew point, and you height above sea  level...enter
-#raw $cloudheightmeters = #end raw '$cloudbase.meter.format($add_label=False, $localize=False)';   // Estimated cloud base height, metres, (based on dew point, and you height above sea
+#raw $cloudheightfeet = #end raw '$current.cloudbase.foot.format($add_label=False, $localize=False)'; // Estimated cloud base height, feet, (based on dew point, and you height above sea  level...enter
+#raw $cloudheightmeters = #end raw '$current.cloudbase.meter.format($add_label=False, $localize=False)';   // Estimated cloud base height, metres, (based on dew point, and you height above sea
 #raw
 //
 // End of stock testtags.txt
@@ -1592,7 +1593,7 @@ $lighteningcountlast30minutesnextstorm = '0';
 #raw $yesterdayavtemp = #end raw '$yesterday.outTemp.avg.format($add_label=False, $localize=False)';
 #raw $avgspeedsincereset = #end raw '$day.outTemp.avg.format($add_label=False, $localize=False)';
 #raw $maxheatyestt = #end raw '$yesterday.heatindex.maxtime.format($timeFormat)';
-#raw $windrunyesterday = #end raw '$yest_windrun';
+#raw $windrunyesterday = #end raw '$yesterday.windrun.sum($add_label=False, $localize=False)';
 ### FIXME
 #raw $currentwdet = #end raw '0';
 ### FIXME

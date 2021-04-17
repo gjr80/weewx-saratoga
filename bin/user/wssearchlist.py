@@ -854,31 +854,6 @@ class TimeSpanTags(weewx.cheetahgenerator.SearchList):
                                       formatter=self.formatter,
                                       converter=self.converter)
 
-            def since(self, data_binding=None, hour=0, minute=0, second=0):
-                """Return a TimeSpanBinder since the a given time."""
-
-                # obtain the report time as a datetime object
-                stop_dt = datetime.datetime.fromtimestamp(timespan.stop)
-                # assume the 'since' time is today so obtain it as a datetime
-                # object
-                since_dt = stop_dt.replace(hour=hour, minute=minute, second=second)
-                # but 'since' must be before the report time so check if the
-                # assumption is correct, if not then 'since' must be yesterday
-                # so subtract 1 day
-                if since_dt > stop_dt:
-                    since_dt -= datetime.timedelta(days=1)
-                # now convert it to unix epoch time:
-                since_ts = time.mktime(since_dt.timetuple())
-                # get our timespan
-                since_tspan = TimeSpan(since_ts, timespan.stop)
-                # now return a TimespanBinder object, using the timespan we just
-                # calculated
-                return TimespanBinder(since_tspan,
-                                      self.db_lookup, context='current',
-                                      data_binding=data_binding,
-                                      formatter=self.formatter,
-                                      converter=self.converter)
-
         time_binder = WsBinder(db_lookup,
                                timespan.stop,
                                self.generator.formatter,
@@ -889,74 +864,6 @@ class TimeSpanTags(weewx.cheetahgenerator.SearchList):
             logdbg("TimeSpanTags SLE executed in %0.3f seconds" % (t2-t1))
 
         return [time_binder]
-
-
-# ==============================================================================
-#                              class AvgWindTags
-# ==============================================================================
-
-class AvgWindTags(weewx.cheetahgenerator.SearchList):
-    """SLE to return various average wind speed stats."""
-
-    def __init__(self, generator):
-        # call our parent's initialisation
-        super(AvgWindTags, self).__init__(generator)
-
-    def get_extension_list(self, timespan, db_lookup):
-        """Returns a search list with various average wind speed stats.
-
-        Parameters:
-            timespan: An instance of weeutil.weeutil.TimeSpan. This will hold
-                      the start and stop times of the domain of valid times.
-
-            db_lookup: This is a function that, given a data binding as its
-                       only parameter, will return a database manager object.
-
-        Returns:
-            avdir10: Average wind direction over the last 10 minutes.
-        """
-
-        t1 = time.time()
-
-        # get units for use later with ValueHelpers
-        # first, get current record from the archive
-        if not self.generator.gen_ts:
-            self.generator.gen_ts = db_lookup().lastGoodStamp()
-        current_rec = db_lookup().getRecord(self.generator.gen_ts)
-        # get the unit in use for each group
-        (d_unit, d_group) = getStandardUnitType(current_rec['usUnits'],
-                                                'windDir')
-
-        # get a TimeSpan object for the last 10 minutes
-        tspan = TimeSpan(timespan.stop-600, timespan.stop)
-        # obtain 10 minute average wind direction data
-        (_vt1, _vt2, _dir10_vt) = db_lookup().getSqlVectors(tspan,
-                                                            'windvec',
-                                                            'avg',
-                                                            600)
-        # Our _vt holds x and an y component of wind direction, need to use
-        # some trigonometry to get the angle. Wrap in try..except in case we
-        # get a None in there somewhere
-        try:
-            avdir10 = 90.0 - math.degrees(math.atan2(_dir10_vt.value[0].imag,
-                                                     _dir10_vt.value[0].real))
-            avdir10 = round(avdir10 % 360, 0)
-        except (AttributeError, TypeError, IndexError):
-            avdir10 = None
-        # put our results into ValueHelpers
-        avdir10_vt = ValueTuple(avdir10, d_unit, d_group)
-        avdir10_vh = ValueHelper(avdir10_vt,
-                                 formatter=self.generator.formatter,
-                                 converter=self.generator.converter)
-
-        # create a dictionary with the tag names (keys) we want to use
-        search_list = {'avdir10': avdir10_vh}
-
-        t2 = time.time()
-        if weewx.debug >= 2:
-            logdbg("AvgWindTags SLE executed in %0.3f seconds" % (t2-t1))
-
-        return [search_list]
 
 
 # ==============================================================================
@@ -989,14 +896,12 @@ class SundryTags(weewx.cheetahgenerator.SearchList):
             feelsLike: A ValueHelper representing the perceived temperature.
                        Based on outTemp, windchill and humidex.
             density: A number representing the current air density in kg/m3.
-            beaufort: The windSpeed as an integer on the Beaufort scale.
             beaufortDesc: The textual description/name of the current beaufort
                           wind speed.
             wetBulb: A ValueHelper containing the current wetbulb temperature.
             cbi: A ValueHelper containing the current Chandler Burning Index.
             cbitext: A string containing the current Chandler Burning Index
                      descriptive text.
-            cloudbase: A ValueHelper containing the current cloudbase.
             Easter: A ValueHelper containing the date of the next Easter
                     Sunday. The time represented is midnight at the start of
                     Easter Sunday.
@@ -1036,7 +941,6 @@ class SundryTags(weewx.cheetahgenerator.SearchList):
                             'Cool', 'Cold', 'Uncomfortably Cold', 'Very Cold',
                             'Extreme Cold']
         curr_rec_metric = weewx.units.to_METRIC(curr_rec)
-        curr_ws_rec_metric = weewx.units.to_METRIC(curr_ws_rec)
         temperature = curr_rec_metric.get('outTemp')
         windchill = curr_rec_metric.get('windchill')
         humidex = curr_rec_metric.get('humidex')
@@ -1119,49 +1023,34 @@ class SundryTags(weewx.cheetahgenerator.SearchList):
             if curr_rec_metric['windSpeed'] is not None:
                 w_s = curr_rec_metric['windSpeed']
                 if w_s >= 117.4:
-                    beaufort = 12
                     beaufort_desc = "Hurricane"
                 elif w_s >= 102.4:
-                    beaufort = 11
                     beaufort_desc = "Violent Storm"
                 elif w_s >= 88.1:
-                    beaufort = 10
                     beaufort_desc = "Storm"
                 elif w_s >= 74.6:
-                    beaufort = 9
                     beaufort_desc = "Strong Gale"
                 elif w_s >= 61.8:
-                    beaufort = 8
                     beaufort_desc = "Gale"
                 elif w_s >= 49.9:
-                    beaufort = 7
                     beaufort_desc = "Moderate Gale"
                 elif w_s >= 38.8:
-                    beaufort = 6
                     beaufort_desc = "Strong Breeze"
                 elif w_s >= 28.7:
-                    beaufort = 5
                     beaufort_desc = "Fresh Breeze"
                 elif w_s >= 19.7:
-                    beaufort = 4
                     beaufort_desc = "Moderate Breeze"
                 elif w_s >= 11.9:
-                    beaufort = 3
                     beaufort_desc = "Gentle Breeze"
                 elif w_s >= 5.5:
-                    beaufort = 2
                     beaufort_desc = "Light Breeze"
                 elif w_s >= 1.1:
-                    beaufort = 1
                     beaufort_desc = "Light Air"
                 else:
-                    beaufort = 0
                     beaufort_desc = "Calm"
             else:
-                beaufort = 0
                 beaufort_desc = "Calm"
         else:
-            beaufort = None
             beaufort_desc = "N/A"
 
         # wet bulb
@@ -1203,20 +1092,6 @@ class SundryTags(weewx.cheetahgenerator.SearchList):
             cbi_text = "MODERATE"
         else:
             cbi_text = "LOW"
-
-        # cloud base
-        alt_vt = weewx.units.convert(self.generator.stn_info.altitude_vt, 'meter')
-        try:
-            cloudbase = weewx.wxformulas.cloudbase_Metric(temperature,
-                                                          humidity,
-                                                          alt_vt.value)
-        except TypeError:
-            # we likely have a None value for temperature or humidity
-            cloudbase = None
-        cloudbase_vt = ValueTuple(cloudbase, 'meter', 'group_altitude')
-        cloudbase_vh = ValueHelper(cloudbase_vt,
-                                   formatter=self.generator.formatter,
-                                   converter=self.generator.converter)
 
         # Easter. Calculate date for Easter Sunday this year
         def calc_easter(year):
@@ -1359,12 +1234,10 @@ class SundryTags(weewx.cheetahgenerator.SearchList):
                        'heatColorWord':  heat_color_word,
                        'feelsLike':      feels_like_vh,
                        'density':        density,
-                       'beaufort':       beaufort,
                        'beaufortDesc':   beaufort_desc,
                        'wetBulb':        wb_vh,
                        'cbi':            cbi_vh,
                        'cbitext':        cbi_text,
-                       'cloudbase':      cloudbase_vh,
                        'Easter':         easter_vh,
                        'trend_60_baro':  trend_60,
                        'trend_180_baro': trend_180,
@@ -1727,14 +1600,6 @@ class WindRunTags(weewx.cheetahgenerator.SearchList):
                        only parameter, will return a database manager object.
 
             Returns:
-            day_windrun       : windrun from midnight to current time
-            yest_windrun      : yesterdays windrun
-            week_windrun      : windrun so far this weeke. Start of week as per
-                                weewx.conf week_start setting
-            seven_days_windrun: windrun over the last 7 days (today is included)
-            month_windrun     : this months windrun to date
-            year_windrun      : this years windrun to date
-            alltime_windrun   : alltime windrun
             max_windrun         : max daily windrun seen
             max_windrun_ts      : timestamp (midnight) of max daily windrun
             max_year_windrun    : max daily windrun this year
@@ -1819,175 +1684,6 @@ class WindRunTags(weewx.cheetahgenerator.SearchList):
         else:
             # No avg wind speed so set to None
             _day_run = None
-        # Get our results as a ValueTuple
-        day_run_vt = ValueTuple(_day_run, windrun_type, windrun_group)
-        # Get our results as a ValueHelper
-        day_run_vh = ValueHelper(day_run_vt,
-                                 formatter=self.generator.formatter,
-                                 converter=self.generator.converter)
-
-        # Yesterdays windrun
-        # First get yesterdays elapsed hours
-        if _first_ts <= _mn_yest_ts:
-            # We have data for a full day
-            _yest_hours = 24.0
-        else:
-            # Our data starts some time after midnight
-            _yest_hours = (_mn_ts - _first_ts)/3600.0
-        # Get yesterdays average wind speed
-        wind_speed_avg_vt = db_lookup().getAggregate(TimeSpan(_mn_yest_ts, _mn_ts),
-                                                     'windSpeed', 'avg')
-        if wind_speed_avg_vt.value is not None:
-            if _usUnits == weewx.METRICWX:
-                # METRICWX so wind speed is m/s, div by 1000 for km
-                _yest_run = wind_speed_avg_vt.value * _yest_hours / 1000.0
-            else:
-                # METRIC or US so its just a straight multiply
-                _yest_run = wind_speed_avg_vt.value * _yest_hours
-        else:
-            # No avg wind speed so set to None
-            _yest_run = None
-        # Get our results as a ValueTuple
-        yest_run_vt = ValueTuple(_yest_run, windrun_type, windrun_group)
-        # Get our results as a ValueHelper
-        yest_run_vh = ValueHelper(yest_run_vt,
-                                  formatter=self.generator.formatter,
-                                  converter=self.generator.converter)
-
-        # Week windrun
-        # First get week elapsed hours
-        if _first_ts <= _mn_week_ts:
-            # We have data from midnight at start of week to now
-            _week_hours = (_last_ts - _mn_week_ts)/3600.0
-        else:
-            # Our data starts some time after midnight on start of week
-            _week_hours = (_last_ts - _first_ts)/3600.0
-        # Get week average wind speed
-        wind_speed_avg_vt = db_lookup().getAggregate(TimeSpan(_mn_week_ts, _last_ts),
-                                                     'windSpeed', 'avg')
-        if wind_speed_avg_vt.value is not None:
-            if _usUnits == weewx.METRICWX:
-                # METRICWX so wind speed is m/s, div by 1000 for km
-                _week_run = wind_speed_avg_vt.value * _week_hours / 1000.0
-            else:
-                # METRIC or US so its just a straight multiply
-                _week_run = wind_speed_avg_vt.value * _week_hours
-        else:
-            # No avg wind speed so set to None
-            _week_run = None
-        # Get our results as a ValueTuple
-        week_run_vt = ValueTuple(_week_run, windrun_type, windrun_group)
-        # Get our results as a ValueHelper
-        week_run_vh = ValueHelper(week_run_vt,
-                                  formatter=self.generator.formatter,
-                                  converter=self.generator.converter)
-
-        # Seven days windrun
-        # First get seven days elapsed hours
-        if _first_ts <= _mn_seven_days_ts:
-            # We have a data since midnight 7 days ago
-            _seven_days_hours = 168.0
-        else:
-            # Our data starts some time after midnight
-            _seven_days_hours = (_last_ts - _first_ts)/3600.0
-        # Get 'seven days' average wind speed
-        wind_speed_avg_vt = db_lookup().getAggregate(TimeSpan(_mn_seven_days_ts, _last_ts),
-                                                     'windSpeed', 'avg')
-        if wind_speed_avg_vt.value is not None:
-            if _usUnits == weewx.METRICWX:
-                # METRICWX so wind speed is m/s, div by 1000 for km
-                _seven_days_run = wind_speed_avg_vt.value * _seven_days_hours / 1000.0
-            else:
-                # METRIC or US so its just a straight multiply
-                _seven_days_run = wind_speed_avg_vt.value * _seven_days_hours
-        else:
-            # No avg wind speed so set to None
-            _seven_days_hours = None
-        # Get our results as a ValueTuple
-        seven_days_run_vt = ValueTuple(_seven_days_hours, windrun_type, windrun_group)
-        # Get our results as a ValueHelper
-        seven_days_run_vh = ValueHelper(seven_days_run_vt,
-                                        formatter=self.generator.formatter,
-                                        converter=self.generator.converter)
-
-        # Month windrun
-        # First get month elapsed hours
-        if _first_ts <= _mn_first_of_month_ts:
-            # We have a data since midnight on 1st of month
-            _month_hours = (_last_ts - _mn_first_of_month_ts)/3600.0
-        else:
-            # Our data starts some time after midnight on 1st of month
-            _month_hours = (_last_ts - _first_ts)/3600.0
-        # Get month average wind speed
-        wind_speed_avg_vt = db_lookup().getAggregate(TimeSpan(_mn_first_of_month_ts, _last_ts),
-                                                     'windSpeed', 'avg')
-        if wind_speed_avg_vt.value is not None:
-            if _usUnits == weewx.METRICWX:
-                # METRICWX so wind speed is m/s, div by 1000 for km
-                _month_run = wind_speed_avg_vt.value * _month_hours / 1000.0
-            else:
-                # METRIC or US so its just a straight multiply
-                _month_run = wind_speed_avg_vt.value * _month_hours
-        else:
-            # No avg wind speed so set to None
-            _month_run = None
-        # Get our results as a ValueTuple
-        month_run_vt = ValueTuple(_month_run, windrun_type, windrun_group)
-        # Get our results as a ValueHelper
-        month_run_vh = ValueHelper(month_run_vt,
-                                   formatter=self.generator.formatter,
-                                   converter=self.generator.converter)
-
-        # Year windrun
-        # First get year elapsed hours
-        if _first_ts <= _mn_first_of_year_ts:
-            # We have a data since midnight on 1 Jan
-            _year_hours = (_last_ts - _mn_first_of_year_ts)/3600.0
-        else:
-            # Our data starts some time after midnight on 1 Jan
-            _year_hours = (_last_ts - _first_ts)/3600.0
-        # Get year average wind speed
-        wind_speed_avg_vt = db_lookup().getAggregate(TimeSpan(_mn_first_of_year_ts, _last_ts),
-                                                     'windSpeed', 'avg')
-        if wind_speed_avg_vt.value is not None:
-            if _usUnits == weewx.METRICWX:
-                # METRICWX so wind speed is m/s, div by 1000 for km
-                _year_run = wind_speed_avg_vt.value * _year_hours / 1000.0
-            else:
-                # METRIC or US so its just a straight multiply
-                _year_run = wind_speed_avg_vt.value * _year_hours
-        else:
-            # No avg wind speed so set to None
-            _year_run = None
-        # Get our results as a ValueTuple
-        year_run_vt = ValueTuple(_year_run, windrun_type, windrun_group)
-        # Get our results as a ValueHelper
-        year_run_vh = ValueHelper(year_run_vt,
-                                  formatter=self.generator.formatter,
-                                  converter=self.generator.converter)
-
-        # Alltime windrun
-        # First get alltime elapsed hours
-        _alltime_hours = (_last_ts - _first_ts)/3600.0
-        # Get alltime average wind speed
-        wind_speed_avg_vt = db_lookup().getAggregate(TimeSpan(_first_ts, _last_ts),
-                                                     'windSpeed', 'avg')
-        if wind_speed_avg_vt.value is not None:
-            if _usUnits == weewx.METRICWX:
-                # METRICWX so wind speed is m/s, div by 1000 for km
-                _alltime_run = wind_speed_avg_vt.value * _alltime_hours / 1000.0
-            else:
-                # METRIC or US so its just a straight multiply
-                _alltime_run = wind_speed_avg_vt.value * _alltime_hours
-        else:
-            # No avg wind speed so set to None
-            _alltime_run = None
-        # Get our results as a ValueTuple
-        alltime_run_vt = ValueTuple(_alltime_run, windrun_type, windrun_group)
-        # Get our results as a ValueHelper
-        alltime_run_vh = ValueHelper(alltime_run_vt,
-                                     formatter=self.generator.formatter,
-                                     converter=self.generator.converter)
 
         #
         # Max day windrun over various periods (timespans)
@@ -2318,14 +2014,7 @@ class WindRunTags(weewx.cheetahgenerator.SearchList):
                                               converter=self.generator.converter)
 
         # create a small dictionary with the tag names (keys) we want to use
-        search_list = {'day_windrun':            day_run_vh,
-                       'yest_windrun':           yest_run_vh,
-                       'week_windrun':           week_run_vh,
-                       'seven_days_windrun':     seven_days_run_vh,
-                       'month_windrun':          month_run_vh,
-                       'year_windrun':           year_run_vh,
-                       'alltime_windrun':        alltime_run_vh,
-                       'month_max_windrun':      max_month_windrun_vh,
+        search_list = {'month_max_windrun':      max_month_windrun_vh,
                        'month_max_windrun_ts':   max_month_windrun_ts_vh,
                        'year_max_windrun':       max_year_windrun_vh,
                        'year_max_windrun_ts':    max_year_windrun_ts_vh,
