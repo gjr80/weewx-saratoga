@@ -65,6 +65,9 @@ ws_config = u"""
                 uv_index = %.1f
                 watt_per_meter_squared = %.0f
                 NONE = --
+[StdWXCalculate]
+    [[Calculations]]
+        wetBulb = software
 [DataBindings]
     [[ws_binding]]
         database = ws_sqlite
@@ -164,17 +167,19 @@ class WSInstaller(ExtensionInstaller):
             author="Gary Roderick",
             author_email="gjroderick<@>gmail.com",
             process_services=['user.ws.WsWXCalculate'],
+            xtype_services=['user.wsxtypes.StdWSXTypes'],
             archive_services=['user.ws.WsArchive',
                               'user.ws.WsSuppArchive'],
             report_services=['user.rtcr.RealtimeClientraw'],
             config=ws_dict,
             files=[('bin/user', ['bin/user/rtcr.py',
                                  'bin/user/stackedwindrose.py',
+                                 'bin/user/ws.py',
                                  'bin/user/wsastro.py',
                                  'bin/user/wsschema.py',
                                  'bin/user/wssearchlist.py',
                                  'bin/user/wstaggedstats.py',
-                                 'bin/user/ws.py']),
+                                 'bin/user/wsxtypes.py']),
                    ('skins/Clientraw', ['skins/Clientraw/clientrawdaily.txt.tmpl',
                                         'skins/Clientraw/clientrawextra.txt.tmpl',
                                         'skins/Clientraw/clientrawhour.txt.tmpl',

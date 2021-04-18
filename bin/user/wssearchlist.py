@@ -988,18 +988,9 @@ class SundryTags(weewx.cheetahgenerator.SearchList):
                            humidex.
             feelsLike: A ValueHelper representing the perceived temperature.
                        Based on outTemp, windchill and humidex.
-            density: A number representing the current air density in kg/m3.
             beaufort: The windSpeed as an integer on the Beaufort scale.
             beaufortDesc: The textual description/name of the current beaufort
                           wind speed.
-            wetBulb: A ValueHelper containing the current wetbulb temperature.
-            cbi: A ValueHelper containing the current Chandler Burning Index.
-            cbitext: A string containing the current Chandler Burning Index
-                     descriptive text.
-            cloudbase: A ValueHelper containing the current cloudbase.
-            Easter: A ValueHelper containing the date of the next Easter
-                    Sunday. The time represented is midnight at the start of
-                    Easter Sunday.
             trend_60_baro: A string representing the 1 hour barometer trend.
             trend_180_baro: A string representing the 3 hour barometer trend.
         """
@@ -1098,22 +1089,6 @@ class SundryTags(weewx.cheetahgenerator.SearchList):
                                     formatter=self.generator.formatter,
                                     converter=self.generator.converter)
 
-        # air density
-        dp = curr_rec_metric.get('dewpoint')
-        p = curr_rec_metric.get('pressure')
-        if dp is not None and temperature is not None and p is not None:
-            kelvin = temperature + 273.15
-            p = (0.99999683 + dp * (-0.90826951E-2 + dp * (0.78736169E-4 +
-                 dp * (-0.61117958E-6 + dp * (0.43884187E-8 +
-                       dp * (-0.29883885E-10 + dp * (0.21874425E-12 +
-                             dp * (-0.17892321E-14 + dp * (0.11112018E-16 +
-                                   dp * (-0.30994571E-19))))))))))
-            pv = 100 * 6.1078 / (p**8)
-            pd = p * 100 - pv
-            density = round((pd/(287.05 * kelvin)) + (pv/(461.495 * kelvin)), 3)
-        else:
-            density = 0
-
         # Beaufort wind
         if 'windSpeed' in curr_rec_metric:
             if curr_rec_metric['windSpeed'] is not None:
@@ -1163,97 +1138,6 @@ class SundryTags(weewx.cheetahgenerator.SearchList):
         else:
             beaufort = None
             beaufort_desc = "N/A"
-
-        # wet bulb
-        humidity = curr_rec_metric.get('outHumidity')
-        if temperature is not None and humidity is not None and p is not None:
-            tc = temperature
-            rh = humidity
-            tdc = ((tc - (14.55 + 0.114 * tc) * (1 - (0.01 * rh)) -
-                   ((2.5 + 0.007 * tc) * (1 - (0.01 * rh))) ** 3 -
-                   (15.9 + 0.117 * tc) * (1 - (0.01 * rh)) ** 14))
-            e = (6.11 * 10 ** (7.5 * tdc / (237.7 + tdc)))
-            wb = ((((0.00066 * p) * tc) + ((4098 * e) / ((tdc + 237.7) ** 2) * tdc)) /
-                  ((0.00066 * p) + (4098 * e) / ((tdc + 237.7) ** 2)))
-            wb_vt = ValueTuple(wb, 'degree_C', 'group_temperature')
-        else:
-            wb_vt = ValueTuple(None, 'degree_C', 'group_temperature')
-        wb_vh = ValueHelper(wb_vt,
-                            formatter=self.generator.formatter,
-                            converter=self.generator.converter)
-
-        # chandler burning index
-        if humidity is not None and temperature is not None:
-            cbi = max(0.0, round((((110 - 1.373 * humidity) - 0.54 *
-                      (10.20 - temperature)) *
-                      (124 * 10 ** (-0.0142 * humidity)))/60, 1))
-        else:
-            cbi = 0.0
-        cbi_vt = ValueTuple(cbi, 'count', 'group_count')
-        cbi_vh = ValueHelper(cbi_vt,
-                             formatter=self.generator.formatter,
-                             converter=self.generator.converter)
-        if cbi_vh.raw > 97.5:
-            cbi_text = "EXTREME"
-        elif cbi_vh.raw >= 90:
-            cbi_text = "VERY HIGH"
-        elif cbi_vh.raw >= 75:
-            cbi_text = "HIGH"
-        elif cbi_vh.raw >= 50:
-            cbi_text = "MODERATE"
-        else:
-            cbi_text = "LOW"
-
-        # cloud base
-        alt_vt = weewx.units.convert(self.generator.stn_info.altitude_vt, 'meter')
-        try:
-            cloudbase = weewx.wxformulas.cloudbase_Metric(temperature,
-                                                          humidity,
-                                                          alt_vt.value)
-        except TypeError:
-            # we likely have a None value for temperature or humidity
-            cloudbase = None
-        cloudbase_vt = ValueTuple(cloudbase, 'meter', 'group_altitude')
-        cloudbase_vh = ValueHelper(cloudbase_vt,
-                                   formatter=self.generator.formatter,
-                                   converter=self.generator.converter)
-
-        # Easter. Calculate date for Easter Sunday this year
-        def calc_easter(year):
-            """Calculate Easter date.
-
-            Uses a modified version of Butcher's Algorithm.
-            Refer New Scientist, 30 March 1961 pp 828-829
-            https://books.google.co.uk/books?id=zfzhCoOHurwC&printsec=frontcover&source=gbs_ge_summary_r&cad=0#v=onepage&q&f=false
-            """
-
-            a = year % 19
-            b = year // 100
-            c = year % 100
-            d = b // 4
-            e = b % 4
-            g = (8 * b + 13) // 25
-            h = (19 * a + b - d - g + 15) % 30
-            i = c // 4
-            k = c % 4
-            l = (2 * e + 2 * i - h - k + 32) % 7
-            m = (a + 11 * h + 19 * l) // 433
-            n = (h + l - 7 * m + 90) // 25
-            p = (h + l - 7 * m + 33 * n + 19) % 32
-            _dt = datetime.datetime(year=year, month=n, day=p)
-            _ts = time.mktime(_dt.timetuple())
-            return _ts
-
-        _year = date.fromtimestamp(timespan.stop).year
-        easter_ts = calc_easter(_year)
-        # check to see if we have past this calculated date, if so we want next
-        # years date so increment year and recalculate
-        if date.fromtimestamp(easter_ts) < date.fromtimestamp(timespan.stop):
-            easter_ts = calc_easter(_year + 1)
-        easter_vt = ValueTuple(easter_ts, 'unix_epoch', 'group_time')
-        easter_vh = ValueHelper(easter_vt,
-                                formatter=self.generator.formatter,
-                                converter=self.generator.converter)
 
         #
         # Barometer trend
@@ -1358,14 +1242,8 @@ class SundryTags(weewx.cheetahgenerator.SearchList):
         search_list = {'launchtime':     launchtime_vh,
                        'heatColorWord':  heat_color_word,
                        'feelsLike':      feels_like_vh,
-                       'density':        density,
                        'beaufort':       beaufort,
                        'beaufortDesc':   beaufort_desc,
-                       'wetBulb':        wb_vh,
-                       'cbi':            cbi_vh,
-                       'cbitext':        cbi_text,
-                       'cloudbase':      cloudbase_vh,
-                       'Easter':         easter_vh,
                        'trend_60_baro':  trend_60,
                        'trend_180_baro': trend_180,
                        'freeMemory':     freemem,

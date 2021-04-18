@@ -1971,9 +1971,10 @@ class RealtimeClientrawThread(threading.Thread):
             av_speed10 = None
         data[158] = av_speed10 if av_speed10 is not None else 0.0
         # 159 - wet bulb temperature (Celsius)
-        wb = calc_wetbulb(packet_wx['outTemp'],
-                          packet_wx['outHumidity'],
-                          packet_wx['barometer'])
+        # wb = calc_wetbulb(packet_wx['outTemp'],
+        #                   packet_wx['outHumidity'],
+        #                   packet_wx['barometer'])
+        wb = packet_wx.get('wetBulb')
         data[159] = wb if wb is not None else 0.0
         # 160 - latitude (-ve for south)
         data[160] = self.latitude
@@ -2541,14 +2542,15 @@ class RtcrBuffer(dict):
         # first add it as 'windSpeed' the scalar
         self.add_value(packet, obs_type, hilo, hist, sum)
 
-        # update today's windrun
-        if 'windSpeed' in packet:
-            try:
-                self.windrun += packet['windSpeed'] * (packet['dateTime'] - self.last_windSpeed_ts)/1000.0
-            except TypeError:
-                pass
-            self.last_windSpeed_ts = packet['dateTime']
+        # # update today's windrun
+        # if 'windSpeed' in packet:
+        #     try:
+        #         self.windrun += packet['windSpeed'] * (packet['dateTime'] - self.last_windSpeed_ts)/1000.0
+        #     except TypeError:
+        #         pass
+        #     self.last_windSpeed_ts = packet['dateTime']
 
+        # TODO. Comment this code
         if 'wind' not in self:
             self['wind'] = VectorBuffer(stats=None, history=True)
         self['wind']._add_value((packet.get('windSpeed'), packet.get('windDir')),

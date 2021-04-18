@@ -436,7 +436,7 @@ if ( isset($_REQUEST['sce']) && strtolower($_REQUEST['sce']) == 'view' ) {
 #raw $moonapogee = #end raw '$nextApogee';// Next moon apogee date
 #raw $suneclipse = #end raw '$nextSolarEclipse';// Next sun eclipse
 #raw $mooneclipse = #end raw '$nextLunarEclipse';// Next moon eclipse date
-#raw $easterdate = #end raw '$Easter.format($recordFormat)';// Next Easter date
+#raw $easterdate = #end raw '$current.Easter.format($recordFormat)';// Next Easter date
 #raw $chinesenewyear = #end raw '$next_cny_date';// Chinese new year
 #raw $hoursofpossibledaylight = #end raw '$time.strftime($timeLongFormat, $dayLength)';// Total hours/minutes of possible daylight for today
 #raw $stationaltitude = #end raw '$station.altitude.foot.format($add_label=False, $localize=False)';   // Station altitude, feet, as set in the units setup
@@ -1082,8 +1082,8 @@ $current_summary = preg_replace('|/|',", ",$current_summary);
 //
 #end raw
 
-#raw $cloudheightfeet = #end raw '$cloudbase.foot.format($add_label=False, $localize=False)'; // Estimated cloud base height, feet, (based on dew point, and you height above sea  level...enter
-#raw $cloudheightmeters = #end raw '$cloudbase.meter.format($add_label=False, $localize=False)';   // Estimated cloud base height, metres, (based on dew point, and you height above sea
+#raw $cloudheightfeet = #end raw '$current.cloudbase.foot.format($add_label=False, $localize=False)'; // Estimated cloud base height, feet, (based on dew point, and you height above sea  level...enter
+#raw $cloudheightmeters = #end raw '$current.cloudbase.meter.format($add_label=False, $localize=False)';   // Estimated cloud base height, metres, (based on dew point, and you height above sea
 #raw
 //
 // End of stock testtags.txt
@@ -1526,7 +1526,7 @@ $lighteningcountlast30minutesnextstorm = '0';
 #raw $cddyear = #end raw '$year.cooldeg.sum.format($add_label=False, $localize=False)';    // Cooling Degree for year to date
 #raw $minchillweek = #end raw '$seven_day.windchill.min.format($add_label=False, $localize=False)';  // Minimum Wind Chill over past 7 days
 #raw $maxheatweek = #end raw '$seven_day.heatindex.max.format($add_label=False, $localize=False)';  // Maximum Heat Index over past 7 days *** NEW IN V2.00
-#raw $airdensity = #end raw '$density';  //air density
+#raw $airdensity = #end raw '$current.air_density.format($add_label=False, $localize=False)';  //air density
 #if $almanac.hasExtras
 #raw $solarnoon = #end raw '$almanac.sun.transit'; // Solar noon
 #raw $changeinday = #end raw '$cidSign$time.strftime($hourFormat+":"+$minuteFormat+":"+$secondFormat, $changeInDay)';  // change in day length since yesterday
@@ -1542,7 +1542,7 @@ $lighteningcountlast30minutesnextstorm = '0';
 #else
 #raw $maxsolarfortime = #end raw '0';
 #end if
-#raw $wetbulb = #end raw '$wetBulb';
+#raw $wetbulb = #end raw '$current.wet_bulb';
 #raw $lighteningcountlasthour = #end raw '0';
 #raw $lighteningcountlastminute = #end raw '0';
 #raw $lighteningcountlast5minutes = #end raw '0';
@@ -1551,7 +1551,7 @@ $lighteningcountlast30minutesnextstorm = '0';
 #raw $lighteningcountlasttime = #end raw '0';
 #raw $lighteningcountmonth = #end raw '0';
 #raw $lighteningcountyear = #end raw '0';
-#raw $chandler = #end raw '$cbi.format(format_string="%.1f")';
+#raw $chandler = #end raw '$current.cbi.format(format_string="%.1f")';
 #raw $maxdew = #end raw '$day.dewpoint.max';
 #raw $maxdewt = #end raw '$day.dewpoint.maxtime.format($timeFormat)';
 #raw $mindew = #end raw '$day.dewpoint.min';
