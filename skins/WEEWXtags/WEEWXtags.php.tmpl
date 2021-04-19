@@ -953,9 +953,9 @@ if ( isset($_REQUEST['sce']) && strtolower($_REQUEST['sce']) == 'view' ) {
 #raw $raintodatemonthago = #end raw '$rainthisday.lastmonth.format($add_label=False, $localize=False)';
 #raw $raintodateyearago = #end raw '$rainthisday.lastyear.format($add_label=False, $localize=False)';
 #raw $timeoflastrainalways = #end raw '$last_rain.format($timeFormat)';
-#raw $windruntodatethismonth = #end raw '$month_windrun';
-#raw $windruntodatethisyear = #end raw '$year_windrun';
-#raw $windruntoday = #end raw '$day_windrun';
+#raw $windruntodatethismonth = #end raw '$month.windrun.sum($add_label=False, $localize=False)';
+#raw $windruntodatethisyear = #end raw '$year.windrun.sum($add_label=False, $localize=False)';
+#raw $windruntoday = #end raw '$day.windrun.sum($add_label=False, $localize=False)';
 #raw $yesterdaydaviset = #end raw '$yesterday.ET.sum.format($add_label=False, $localize=False)';
 #raw $yrecordhighavwindday = #end raw '$year.windSpeed.maxtime.format($dayFormat)';
 #raw $yrecordhighavwindmonth = #end raw '$year.windSpeed.maxtime.format($monthFormat)';
@@ -1592,7 +1592,7 @@ $lighteningcountlast30minutesnextstorm = '0';
 #raw $yesterdayavtemp = #end raw '$yesterday.outTemp.avg.format($add_label=False, $localize=False)';
 #raw $avgspeedsincereset = #end raw '$day.outTemp.avg.format($add_label=False, $localize=False)';
 #raw $maxheatyestt = #end raw '$yesterday.heatindex.maxtime.format($timeFormat)';
-#raw $windrunyesterday = #end raw '$yest_windrun';
+#raw $windrunyesterday = #end raw '$yesterday.windrun.sum($add_label=False, $localize=False)';
 ### FIXME
 #raw $currentwdet = #end raw '0';
 ### FIXME
