@@ -249,6 +249,6 @@ weewx.units.default_unit_label_dict['kg_per_meter_cubed'] = u' kg/m³'
 
 # tell the unit system what group observation types 'wetBulb' and 'air_density'
 # belong to
-weewx.units.obs_group_dict['wetBulb'] = "group_temperature"
+weewx.units.obs_group_dict['wet_bulb'] = "group_temperature"
 weewx.units.obs_group_dict['air_density'] = "group_density"
 
