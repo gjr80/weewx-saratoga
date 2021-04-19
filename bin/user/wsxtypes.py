@@ -232,11 +232,11 @@ class StdWSXTypes(weewx.engine.StdService):
     def __init__(self, engine, config_dict):
         super(StdWSXTypes, self).__init__(engine, config_dict)
 
-        self.wet_bulb = WSXTypes()
-        weewx.xtypes.xtypes.append(self.wet_bulb)
+        self.wsxtypes = WSXTypes()
+        weewx.xtypes.xtypes.append(self.wsxtypes)
 
     def shutDown(self):
-        weewx.xtypes.xtypes.remove(self.wet_bulb)
+        weewx.xtypes.xtypes.remove(self.wsxtypes)
 
 
 # define unit group 'group_density' with units 'kg_per_meter_cubed'
