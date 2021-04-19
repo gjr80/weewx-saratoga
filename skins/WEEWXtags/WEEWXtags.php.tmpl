@@ -274,29 +274,6 @@ template
     #set $next_cny_date = $naString
 #end if
 ##
-## humidex calculation
-#set $humidexF = $current($max_delta=60).humidex.degree_F.raw
-#set $humidexC = $current($max_delta=60).humidex.degree_C.raw
-##
-## BoM Apparent Temperature Solar calculations
-## Uses Australian Bureau of Meteorology formula
-#try
-    #if $current.radiation.has_data and $current.radiation.raw is not None
-        #set $apptempRadiationC = $current.outTemp.degree_C.raw+(0.348*($current.outHumidity.raw/100*6.105*math.exp(17.27*$current.outTemp.degree_C.raw/(237.7+$current.outTemp.degree_C.raw))))-(0.7*$current.windSpeed.meter_per_second.raw)+(0.70*$current.radiation.raw/($current.windSpeed.meter_per_second.raw+10))-4.25
-    #else
-        #set $apptempRadiationC = 0
-    #end if
-#except
-    #set $apptempRadiationC = 0
-#end try
-#set $apptempRadiationF = round($apptempRadiationC * 1.8 + 32, 1)
-#if $unit.unit_type_dict.group_temperature == "degree_F"
-    #set $apptempRadiation = $apptempRadiationF
-#else
-    #set $apptempRadiation = round($apptempRadiationC,1)
-#end if
-#set $apptempRadiationC = round($apptempRadiationC,1)
-##
 ## hot and cold days calculations
 #set $monthDaysHot35 = $month.outTemp.max_ge((35.0,"degree_C")).format($format_string="%6d", $add_label=False, $None_string="   N/A", $localize=False).strip
 #set $monthDaysHot30 = $month.outTemp.max_ge((30.0,"degree_C")).format($format_string="%6d", $add_label=False, $None_string="   N/A", $localize=False).strip
@@ -388,7 +365,7 @@ if ( isset($_REQUEST['sce']) && strtolower($_REQUEST['sce']) == 'view' ) {
 #raw $uomwind = #end raw '$unit.label.windSpeed.strip(' ')'; //  = 'kts','mph','kmh','km/h','m/s','Bft'
 #raw $uomrain = #end raw '$unit.label.rain.strip(' ')'; //  = 'mm', 'in'
 #raw $datefmt = #end raw '$dmYFormat.strip(' ')'; //  =  'd/m/y', 'm/d/y'
-#raw $uomdistance = #end raw '$unit.label.distance.strip(' ')'; // = 'mi','km'  (for windrun variables)
+#raw $uomdistance = #end raw '$unit.label.windrun.strip(' ')'; // = 'mi','km'  (for windrun variables)
 //
 // General or Non-Weather Specific Sun/Moon
 // ----------------------------------------
@@ -472,16 +449,12 @@ if ( isset($_REQUEST['sce']) && strtolower($_REQUEST['sce']) == 'view' ) {
 #raw $windchnodp = #end raw '$current.windchill.format($format_string="%.0f", $add_label=False, $None_string=$naString, $localize=False)';    // current wind-chill, no decimal place
 #raw $humidexfaren = #end raw '$current($max_delta=60).humidex.degree_F.format($format_string="%.0f", $add_label=False, $None_string=$naString, $localize=False)';  // Humidex value in oF
 #raw $humidexcelsius = #end raw '$current($max_delta=60).humidex.degree_C.format($format_string=$degree_C_Format, $add_label=False, $None_string=$naString, $localize=False)';    // Humidex value in oC
-#if $unit.unit_type_dict.group_temperature == "degree_F"
-#raw $apparenttemp = #end raw '$current($max_delta=60).appTemp.degree_F.format($format_string=$degree_F_Format, $add_label=False, $None_string=$naString, $localize=False)'; // Apparent temperature
-#else
-#raw $apparenttemp = #end raw '$current($max_delta=60).appTemp.degree_C.format($format_string=$degree_C_Format, $add_label=False, $None_string=$naString, $localize=False)'; // Apparent temperature
-#end if
-#raw $apparenttempc = #end raw '$current($max_delta=60).appTemp.degree_C.format($format_string=$degree_C_Format, $add_label=False, $None_string=$naString, $localize=False)';   // Apparent temperature, oC
-#raw $apparenttempf = #end raw '$current($max_delta=60).appTemp.degree_F.format($format_string=$degree_F_Format, $add_label=False, $None_string=$naString, $localize=False)';   // Apparent temperature, oF
-#raw $apparentsolartemp = #end raw '$apptempRadiation'; // Apparent temperature in the sun (you need a solar sensor)
-#raw $apparentsolartempc = #end raw '$apptempRadiation';    // Apparent temperature in the sun, oC (you need a solar sensor)
-#raw $apparentsolartempf = #end raw '$apptempRadiationF';   // Apparent temperature in the sun, oF (you need a solar sensor)
+#raw $apparenttemp = #end raw '$current($max_delta=60).appTemp.format($add_label=False, $None_string=$naString, $localize=False)'; // Apparent temperature
+#raw $apparenttempc = #end raw '$current($max_delta=60).appTemp.degree_C.format($add_label=False, $None_string=$naString, $localize=False)';   // Apparent temperature, oC
+#raw $apparenttempf = #end raw '$current($max_delta=60).appTemp.degree_F.format($add_label=False, $None_string=$naString, $localize=False)';   // Apparent temperature, oF
+#raw $apparentsolartemp = #end raw '0.0'; // Apparent temperature in the sun (you need a solar sensor)
+#raw $apparentsolartempc = #end raw '0.0';    // Apparent temperature in the sun, oC (you need a solar sensor)
+#raw $apparentsolartempf = #end raw '0.0';   // Apparent temperature in the sun, oF (you need a solar sensor)
 //
 #if $current($data_binding='ws_supp_binding', $max_delta=60).tempNormalHigh.exists
 #raw $WUmaxtemp = #end raw '$current($data_binding='ws_supp_binding', $max_delta=60).tempNormalHigh.format($format_string="%.0f", $add_label=False, $None_string=$naString, $localize=False)'; // Todays average max temperature from the selected Wunderground almanac station
