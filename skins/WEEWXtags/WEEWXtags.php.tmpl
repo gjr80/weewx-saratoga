@@ -1282,7 +1282,7 @@ $lighteningcountlast30minutesnextstorm = '0';
 #end if
 #raw $recordwindgust = #end raw '$alltime.wind.max.format($add_label=False, $localize=False)'; // All Time Record wind gust
 #raw $recordwindspeed = #end raw '$alltime.windSpeed.max.format($add_label=False, $localize=False)'; // All Time Record Avg Wind Speed
-#raw $recordhighwindrun = #end raw '$alltime_max_windrun.format($add_label=False, $localize=False)';
+#raw $recordhighwindrun = #end raw '$alltime.windrun.maxsum.format($add_label=False, $localize=False)';
 #raw $recorddailyrain = #end raw '$alltime.rain.maxsum.format($add_label=False, $localize=False)'; // Record Daily Rain
 #raw $recordhighrainmth = #end raw '$currentmonthrecordrain.format($add_label=False, $localize=False)';
 #raw $recordrainrate = #end raw '$alltime.rainRate.max.format($add_label=False, $localize=False)';
@@ -1313,9 +1313,9 @@ $lighteningcountlast30minutesnextstorm = '0';
 #raw $recordhighavwindmonth = #end raw '$alltime.windSpeed.maxtime.format($monthFormat)';
 #raw $recordhighavwindday = #end raw '$alltime.windSpeed.maxtime.format($dayFormat)';
 #raw $recordhighavwindyear = #end raw '$alltime.windSpeed.maxtime.format($yearFormat)';
-#raw $recordhighwindrunmth = #end raw '$alltime_max_windrun_ts.format($monthFormat)';
-#raw $recordhighwindrunday = #end raw '$alltime_max_windrun_ts.format($dayFormat)';
-#raw $recordhighwindrunyr = #end raw '$alltime_max_windrun_ts.format($yearFormat)';
+#raw $recordhighwindrunmth = #end raw '$alltime.windrun.maxsumtime.format($monthFormat)';
+#raw $recordhighwindrunday = #end raw '$alltime.windrun.maxsumtime.format($dayFormat)';
+#raw $recordhighwindrunyr = #end raw '$alltime.windrun.maxsumtime.format($yearFormat)';
 #raw $recorddailyrainmonth = #end raw '$alltime.rain.maxsumtime.format($monthFormat)';   // Record daily rain month
 #raw $recorddailyrainday = #end raw '$alltime.rain.maxsumtime.format($dayFormat)';   // Record daily rain day
 #raw $recorddailyrainyear = #end raw '$alltime.rain.maxsumtime.format($yearFormat)';   // Record daily rain year
@@ -1419,10 +1419,10 @@ $lighteningcountlast30minutesnextstorm = '0';
 #raw $ywarmestnightonrecord = #end raw 'NA  on: --'; //Warmest Night this month
 #raw $ycoldestnightonrecord = #end raw 'NA  on: --'; //Coldest Night this month
 #end if
-#raw $yrecordhighwindrun = #end raw '$year_max_windrun.format($add_label=False, $localize=False)';
-#raw $yrecordhighwindrunmth = #end raw '$year_max_windrun_ts.format($monthFormat)';
-#raw $yrecordhighwindrunday = #end raw '$year_max_windrun_ts.format($dayFormat)';
-#raw $yrecordhighwindrunyr = #end raw '$year_max_windrun_ts.format($yearFormat)';
+#raw $yrecordhighwindrun = #end raw '$year.windrun.maxsum.format($add_label=False, $localize=False)';
+#raw $yrecordhighwindrunmth = #end raw '$year.windrun.maxsumtime.format($monthFormat)';
+#raw $yrecordhighwindrunday = #end raw '$year.windrun.maxsumtime.format($dayFormat)';
+#raw $yrecordhighwindrunyr = #end raw '$year.windrun.maxsumtime.format($yearFormat)';
 #raw $yrecorddailyrain = #end raw '$year.rain.maxsum.format($add_label=False, $localize=False)';
 #raw $yrecordhighrainmth = #end raw '$yearmaxmonthrain.format($add_label=False, $localize=False)';
 #raw $yrecordrainrate = #end raw '$year.rainRate.max.format($add_label=False, $localize=False)';
@@ -1460,10 +1460,10 @@ $lighteningcountlast30minutesnextstorm = '0';
 #raw $mrecordhighheatindexmonth = #end raw '$month.heatindex.maxtime.format($monthFormat)';
 #raw $mrecordhighheatindexday = #end raw '$month.heatindex.maxtime.format($dayFormat)';
 #raw $mrecordhighheatindexyear = #end raw '$month.heatindex.maxtime.format($yearFormat)';
-#raw $mrecordhighwindrun = #end raw '$year_max_windrun.format($add_label=False, $localize=False)';
-#raw $mrecordhighwindrunday = #end raw '$month_max_windrun_ts.format($dayFormat)';
-#raw $mrecordhighwindrunmth = #end raw '$month_max_windrun_ts.format($monthFormat)';
-#raw $mrecordhighwindrunyr = #end raw '$month_max_windrun_ts.format($yearFormat)';
+#raw $mrecordhighwindrun = #end raw '$month.windrun.maxsum.format($add_label=False, $localize=False)';
+#raw $mrecordhighwindrunday = #end raw '$month.windrun.maxsumtime.format($dayFormat)';
+#raw $mrecordhighwindrunmth = #end raw '$month.windrun.maxsumtime.format($monthFormat)';
+#raw $mrecordhighwindrunyr = #end raw '$month.windrun.maxsumtime.format($yearFormat)';
 #raw $mrecorddailyrain = #end raw '$month.rain.maxsum.format($add_label=False, $localize=False)';
 #raw $mrecordhighrainmth = #end raw '$month.rain.sum.format($add_label=False, $localize=False)';
 #raw $mrecordrainrate = #end raw '$month.rainRate.max.format($add_label=False, $localize=False)';
