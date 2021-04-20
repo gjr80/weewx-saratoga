@@ -456,38 +456,6 @@ if ( isset($_REQUEST['sce']) && strtolower($_REQUEST['sce']) == 'view' ) {
 #raw $apparentsolartempc = #end raw '0.0';    // Apparent temperature in the sun, oC (you need a solar sensor)
 #raw $apparentsolartempf = #end raw '0.0';   // Apparent temperature in the sun, oF (you need a solar sensor)
 //
-#if $current($data_binding='ws_supp_binding', $max_delta=60).tempNormalHigh.exists
-#raw $WUmaxtemp = #end raw '$current($data_binding='ws_supp_binding', $max_delta=60).tempNormalHigh.format($format_string="%.0f", $add_label=False, $None_string=$naString, $localize=False)'; // Todays average max temperature from the selected Wunderground almanac station
-#else
-#raw $WUmaxtemp = #end raw '0'; // Todays average max temperature from the selected Wunderground almanac station
-#end if
-#if $current($data_binding='ws_supp_binding', $max_delta=60).tempNormalLow.exists
-#raw $WUmintemp = #end raw '$current($data_binding='ws_supp_binding', $max_delta=60).tempNormalLow.format($format_string="%.0f", $add_label=False, $None_string=$naString, $localize=False)'; // Todays average min temperature from the selected Wunderground almanac station
-#else
-#raw $WUmintemp = #end raw '0'; // Todays average min temperature from the selected Wunderground almanac station
-#end if
-//
-#if $current($data_binding='ws_supp_binding', $max_delta=60).tempRecordHigh.exists
-#raw $WUmaxtempr = #end raw '$current($data_binding='ws_supp_binding', $max_delta=60).tempRecordHigh.format($format_string="%.0f", $add_label=False, $None_string=$naString, $localize=False)';    // Todays record max temperature from the selected Wunderground almanac station
-#else
-#raw $WUmaxtempr = #end raw '0';    // Todays record max temperature from the selected Wunderground almanac station
-#end if
-#if $current($data_binding='ws_supp_binding', $max_delta=60).tempRecordLow.exists
-#raw $WUmintempr = #end raw '$current($data_binding='ws_supp_binding', $max_delta=60).tempRecordLow.format($format_string="%.0f", $add_label=False, $None_string=$naString, $localize=False)';    // Todays record min temperature from the selected Wunderground almanac station
-#else
-#raw $WUmintempr = #end raw '0';    // Todays record min temperature from the selected Wunderground almanac station
-#end if
-#if $current($data_binding='ws_supp_binding', $max_delta=60).tempRecordHighYear.exists
-#raw $WUmaxtempryr = #end raw '$current($data_binding='ws_supp_binding', $max_delta=60).tempRecordHighYear.format($format_string="%d", $add_label=False, $None_string=$naString, $localize=False)';  // Year that it occured
-#else
-#raw $WUmaxtempryr = #end raw '$naString';  // Year that it occured
-#end if
-#if $current($data_binding='ws_supp_binding', $max_delta=60).tempRecordLowYear.exists
-#raw $WUmintempryr = #end raw '$current($data_binding='ws_supp_binding', $max_delta=60).tempRecordLowYear.format($format_string="%d", $add_label=False, $None_string=$naString, $localize=False)';  // Year that it occured
-#else
-#raw $WUmintempryr = #end raw '$naString';  // Year that it occured
-#end if
-//
 // Yesterday:
 // ----------
 #raw $tempchangehour = #end raw '$trend($time_delta=3600).outTemp.format($add_label=False, $localize=False)';   // Temperature change in the last hour
