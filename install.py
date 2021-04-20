@@ -67,7 +67,7 @@ ws_config = u"""
                 NONE = --
 [StdWXCalculate]
     [[Calculations]]
-        wetBulb = prefer_hardware
+        wet_bulb = prefer_hardware
 [DataBindings]
     [[ws_binding]]
         database = ws_sqlite
