@@ -577,16 +577,12 @@ if ( isset($_REQUEST['sce']) && strtolower($_REQUEST['sce']) == 'view' ) {
 #if $day.radiation.has_data
 #raw $VPsolar = #end raw '$current.radiation.format($add_label=False, $localize=False)';//  Solar energy number (W/M2)
 #raw $highsolar = #end raw '$day.radiation.max.format($add_label=False, $localize=False)';// Daily high solar (for Davis VP and Grow stations)
-#if $current($data_binding='ws_supp_binding', $max_delta=600).maxSolarRad.exists and $current($data_binding='ws_supp_binding', $max_delta=600).maxSolarRad.raw is not None
-#if $current($data_binding='ws_supp_binding', $max_delta=600).maxSolarRad.raw > 0 and $current.radiation.raw is not None
-#set $percent = int(round(100.0 * $current.radiation.raw / $current($data_binding='ws_supp_binding', $max_delta=600).maxSolarRad.raw))
-#else
+#try
+#set $percent = int(round(100.0 * $current.radiation.raw / $current.maxSolarRad.raw))
+#except TypeError
 #set $percent = 0
-#end if
+#end try
 #raw $currentsolarpercent = #end raw '$percent %';// Current solar percent for stations with a temperature solar sensor (like the dallas 1 wire)
-#else
-#raw $currentsolarpercent = #end raw '$naString';// Current solar percent for stations with a temperature solar sensor (like the dallas 1 wire)
-#end if
 #raw $highsolartime = #end raw '$day.radiation.maxtime.format($timeFormat)';// Time that the daily high solar occurred
 #raw $lowsolartime = #end raw '$day.radiation.mintime.format($timeFormat)';// Time that the daily low solar occurred
 #else
@@ -1510,12 +1506,8 @@ $lighteningcountlast30minutesnextstorm = '0';
 #raw $etcurrentweek = #end raw '$seven_day.ET.sum.format($add_label=False, $localize=False)'; // ET total for the last 7 days
 #raw $sunshinehourstodateday = #end raw '$today_sunshine_hours';
 #raw $sunshinehourstodatemonth = #end raw '$month_sunshine_hours';
-#if $current($data_binding='ws_supp_binding', $max_delta=600).maxSolarRad.exists
-#raw $maxsolarfortime = #end raw '$current($data_binding='ws_supp_binding', $max_delta=600).maxSolarRad.format($add_label=False, $localize=False)';
-#else
-#raw $maxsolarfortime = #end raw '0';
-#end if
-#raw $wetbulb = #end raw '$current.wet_bulb';
+#raw $maxsolarfortime = #end raw '$current.maxSolarRad.format($add_label=False, $None_string='0', $localize=False)';
+#raw $wetbulb = #end raw '$current.wet_bulb.format($add_label=False, $localize=False)';
 #raw $lighteningcountlasthour = #end raw '0';
 #raw $lighteningcountlastminute = #end raw '0';
 #raw $lighteningcountlast5minutes = #end raw '0';
