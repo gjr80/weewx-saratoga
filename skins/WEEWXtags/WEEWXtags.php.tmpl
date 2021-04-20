@@ -579,7 +579,7 @@ if ( isset($_REQUEST['sce']) && strtolower($_REQUEST['sce']) == 'view' ) {
 #raw $highsolar = #end raw '$day.radiation.max.format($add_label=False, $localize=False)';// Daily high solar (for Davis VP and Grow stations)
 #try
 #set $percent = int(round(100.0 * $current.radiation.raw / $current.maxSolarRad.raw))
-#except TypeError
+#except (TypeError, ZeroDivisionError)
 #set $percent = 0
 #end try
 #raw $currentsolarpercent = #end raw '$percent %';// Current solar percent for stations with a temperature solar sensor (like the dallas 1 wire)
