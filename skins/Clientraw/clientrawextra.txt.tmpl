@@ -62,11 +62,6 @@ template
 #set $rainWeekdailyArray = $weekdaily.rain.sumQuery
 #set $dateTimeHourArray = $onehour.dateTime.datetimeQuery
 ##
-## set forecast text
-#set $f_text = $current($data_binding='ws_supp_binding', $max_delta=1800).forecastText.raw
-#set $forecast_underscore_text = $f_text.replace(' ', '_') if $f_text is not None else '--'
-#set $forecast_underscore_text = "fred"
-##
 ## set day/night flag
 #set $timereport = $current.dateTime.raw
 #if $almanac.hasExtras
@@ -721,7 +716,7 @@ $UVHourArray[$i].format($format_string="%.1f", $add_label=False, $localize=False
 0 #slurp
 #end try
 #end for
-#*531*#$forecast_underscore_text #slurp
+#*531*#-- #slurp
 #*532*#$day.ET.sum.format($format_string="%.1f", $add_label=False, $localize=False) #slurp
 #*533*#0 #slurp
 #*534*#$yesterday.rain.sum.mm.format($format_string="%.1f", $add_label=False, $localize=False) #slurp

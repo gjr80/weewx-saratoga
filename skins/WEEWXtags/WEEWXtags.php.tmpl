@@ -971,54 +971,6 @@ $icon_array[34] =  'day_partly_cloudy.gif';   // stopped raining
 $icon_array[35] =  'windyrain.gif';           // Wind+rain
 
 #end raw
-#if $varExists('current_icon')
-  #if $current_icon != None
-    #raw $iconnumber = #end raw '$current_icon';
-    #raw $current_icon = $icon_array#end raw[$current_icon]; // name of our condition icon
-  #elif $current($data_binding='ws_supp_binding', $max_delta=600).currentIcon.exists
-    #raw $iconnumber = #end raw '$current($data_binding='ws_supp_binding', $max_delta=600).currentIcon.format($format_string="%d", $add_label=False, $None_string="0", $localize=False)';
-    #raw $current_icon = $icon_array#end raw[$current($data_binding='ws_supp_binding', $max_delta=600).currentIcon.format($format_string="%d", $add_label=False, $None_string="0", $localize=False)]; // name of our condition icon
-  #else
-    #raw $iconnumber = #end raw '0';
-    #raw $current_icon = $icon_array#end raw[0]; // name of our condition icon
-  #end if
-#elif $current($data_binding='ws_supp_binding', $max_delta=600).currentIcon.exists
-  #raw $iconnumber = #end raw '$current($data_binding='ws_supp_binding', $max_delta=600).currentIcon.format($format_string="%d", $add_label=False, $None_string="0", $localize=False)';
-  #raw $current_icon = $icon_array#end raw[$current($data_binding='ws_supp_binding', $max_delta=600).currentIcon.format($format_string="%d", $add_label=False, $None_string="0", $localize=False)]; // name of our condition icon
-#else
-  #raw $iconnumber = '0'; #end raw         // icon number
-  #raw $current_icon = $icon_array[0]; #end raw // name of our condition icon
-#end if
-#raw
-// ----------------------------------------------------------------------------------
-//   $current_summary = 'Dry' . "<br />" . 'Mainly cloudy/Dry ';
-#end raw
-### FIXME
-#raw
-$weathercond = 'Dry';
-#end raw
-#if $varExists('current_text')
-#if $current_text != ""
-#raw $Currentsolardescription = #end raw '$current_text';
-#elif $current($data_binding='ws_supp_binding', $max_delta=600).currentText.exists
-#raw $Currentsolardescription = #end raw '$current($data_binding='ws_supp_binding', $max_delta=600).currentText.raw';
-#else
-#raw $Currentsolardescription = #end raw 'Not Available';
-#end if
-#elif $current($data_binding='ws_supp_binding', $max_delta=600).currentText.exists
-#raw $Currentsolardescription = #end raw '$current($data_binding='ws_supp_binding', $max_delta=600).currentText.raw';
-#else
-#raw $Currentsolardescription = #end raw 'Not Available';
-#end if
-#raw
-$current_summary = $Currentsolardescription;
-$current_summary = preg_replace('|^/[^/]+/|','',$current_summary);
-$current_summary = preg_replace('|\\\\|',", ",$current_summary);
-$current_summary = preg_replace('|/|',", ",$current_summary);
-//
-//
-#end raw
-
 #raw $cloudheightfeet = #end raw '$current.cloudbase.foot.format($add_label=False, $localize=False)'; // Estimated cloud base height, feet, (based on dew point, and you height above sea  level...enter
 #raw $cloudheightmeters = #end raw '$current.cloudbase.meter.format($add_label=False, $localize=False)';   // Estimated cloud base height, metres, (based on dew point, and you height above sea
 #raw
