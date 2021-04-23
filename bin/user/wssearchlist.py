@@ -33,6 +33,7 @@ import math
 import time
 
 from datetime import date
+from operator import itemgetter
 
 # WeeWX imports
 import user.wstaggedstats
@@ -1425,63 +1426,136 @@ class TaggedArchiveStats(weewx.cheetahgenerator.SearchList):
 
 
 # ==============================================================================
-#                              class YestAlmanac
+#                              class Almanac
 # ==============================================================================
 
-class YestAlmanac(weewx.cheetahgenerator.SearchList):
-    """SLE to return an Almanac object for yesterday."""
+class Almanac(weewx.cheetahgenerator.SearchList):
+    """SLE to return various Almanac data."""
 
     def __init__(self, generator):
         # call our parent's initialisation
-        super(YestAlmanac, self).__init__(generator)
+        super(Almanac, self).__init__(generator)
 
+    def get_extension_list(self, timespan, db_lookup):
+        """Returns a search list various Almanac data.
+
+        Obtains an Almanac object for yesterday and returns this object as
+        'yestAlmanac' allowing use in WeeWX tags to obtain ephemeris data for
+        yesterday, eg: $yestAlmanac.sun.set for yesterdays sun set time.
+
+
+
+        Parameters:
+            timespan: An instance of weeutil.weeutil.TimeSpan. This will hold
+                      the start and stop times of the domain of valid times.
+
+            db_lookup: This is a function that, given a data binding as its
+                       only parameter, will return a database manager object.
+
+        Returns:
+            yestAlmanac: An Almanac object for yesterday
+            moonPhases: a list of dicts
+          """
         t1 = time.time()
 
-        celestial_ts = generator.gen_ts
-
-        # For better accuracy, the almanac requires the current temperature
-        # and barometric pressure, so retrieve them from the default archive,
-        # using celestial_ts as the time
-
-        temperature_c = pressure_mbar = None
-
-        db = generator.db_binder.get_manager()
-        if not celestial_ts:
-            celestial_ts = db.lastGoodStamp() - 86400
+        # obtain the report time, we consider this the current time
+        gen_ts = self.generator.gen_ts
+        # gen_ts could be None, in which case we will use the last know good
+        # timestamp in our db as the current time
+        db = self.generator.db_binder.get_manager()
+        if gen_ts is not None:
+            celestial_ts = gen_ts - 86400
         else:
-            celestial_ts -= 86400
+            celestial_ts = db.lastGoodStamp() - 86400
+        # for better accuracy, the almanac requires the current temperature in
+        # Celsius and barometric pressure in millibar/hPa, so retrieve them
+        # from the archive using celestial_ts as the time
         rec = db.getRecord(celestial_ts, max_delta=3600)
-
+        # initialise our temperature and pressure
+        temp_c = baro_mbar = None
+        # if we have an archive record get outTemp and barometer and convert to
+        # the required units
         if rec is not None:
-            out_temp_vt = weewx.units.as_value_tuple(rec, 'outTemp')
-            pressure_vt = weewx.units.as_value_tuple(rec, 'barometer')
+            temp_vt = weewx.units.as_value_tuple(rec, 'outTemp')
+            baro_vt = weewx.units.as_value_tuple(rec, 'barometer')
 
-            if not isinstance(out_temp_vt, weewx.units.UnknownType):
-                temperature_c = weewx.units.convert(out_temp_vt, 'degree_C')[0]
-            if not isinstance(pressure_vt, weewx.units.UnknownType):
-                pressure_mbar = weewx.units.convert(pressure_vt, 'mbar')[0]
-        if temperature_c is None:
-            temperature_c = 15.0
-        if pressure_mbar is None:
-            pressure_mbar = 1010.0
-
-        _almanac_skin_dict = generator.skin_dict.get('Almanac', {})
-        self.moonphases = _almanac_skin_dict.get('moon_phases',
-                                                 weeutil.Moon.moon_phases)
-        altitude_vt = weewx.units.convert(generator.stn_info.altitude_vt,
+            if not isinstance(temp_vt, weewx.units.UnknownType):
+                temp_c = weewx.units.convert(temp_vt, 'degree_C').value
+            if not isinstance(baro_vt, weewx.units.UnknownType):
+                baro_mbar = weewx.units.convert(baro_vt, 'mbar').value
+        # if we didn't get temperature or barometer data then use sensible
+        # defaults
+        if temp_c is None:
+            temp_c = 15.0
+        if baro_mbar is None:
+            baro_mbar = 1010.0
+        # obtain the Moon phase names we are to use
+        _almanac_skin_dict = self.generator.skin_dict.get('Almanac', {})
+        moonphases = _almanac_skin_dict.get('moon_phases',
+                                            weeutil.Moon.moon_phases)
+        # get our station altitude in metres
+        altitude_vt = weewx.units.convert(self.generator.stn_info.altitude_vt,
                                           "meter")
-        self.yestAlmanac = weewx.almanac.Almanac(celestial_ts,
-                                                 generator.stn_info.latitude_f,
-                                                 generator.stn_info.longitude_f,
-                                                 altitude=altitude_vt.value,
-                                                 temperature=temperature_c,
-                                                 pressure=pressure_mbar,
-                                                 moon_phases=self.moonphases,
-                                                 formatter=generator.formatter)
+        yestAlmanac = weewx.almanac.Almanac(celestial_ts,
+                                            self.generator.stn_info.latitude_f,
+                                            self.generator.stn_info.longitude_f,
+                                            altitude=altitude_vt.value,
+                                            temperature=temp_c,
+                                            pressure=baro_mbar,
+                                            moon_phases=moonphases,
+                                            formatter=self.generator.formatter)
 
+        # Moon phases
+        # we can use gen_ts as the current time but it could be None, in which
+        # case we will use the last know good timestamp in our db as the
+        # current time
+        db = self.generator.db_binder.get_manager()
+        if gen_ts is None:
+            celestial_ts = db.lastGoodStamp()
+        # for better accuracy, the almanac requires the current temperature in
+        # Celsius and barometric pressure in millibar/hPa, so retrieve them
+        # from the archive using celestial_ts as the time
+        rec = db.getRecord(celestial_ts, max_delta=3600)
+        # initialise our temperature and pressure
+        temp_c = baro_mbar = None
+        # if we have an archive record get outTemp and barometer and convert to
+        # the required units
+        if rec is not None:
+            temp_vt = weewx.units.as_value_tuple(rec, 'outTemp')
+            baro_vt = weewx.units.as_value_tuple(rec, 'barometer')
+
+            if not isinstance(temp_vt, weewx.units.UnknownType):
+                temp_c = weewx.units.convert(temp_vt, 'degree_C').value
+            if not isinstance(baro_vt, weewx.units.UnknownType):
+                baro_mbar = weewx.units.convert(baro_vt, 'mbar').value
+        # if we didn't get temperature or barometer data then use sensible
+        # defaults
+        if temp_c is None:
+            temp_c = 15.0
+        if baro_mbar is None:
+            baro_mbar = 1010.0
+        nowAlmanac = weewx.almanac.Almanac(celestial_ts,
+                                           self.generator.stn_info.latitude_f,
+                                           self.generator.stn_info.longitude_f,
+                                           altitude=altitude_vt.value,
+                                           temperature=temp_c,
+                                           pressure=baro_mbar,
+                                           moon_phases=moonphases,
+                                           formatter=self.generator.formatter)
+        _phases = []
+        for ph in ['previous_new_moon', 'next_new_moon',
+                   'previous_first_quarter_moon', 'next_first_quarter_moon',
+                   'previous_full_moon', 'next_full_moon',
+                   'previous_last_quarter_moon', 'next_last_quarter_moon']:
+            _phases.append({'name': ph,
+                            'ts': getattr(nowAlmanac, ph).raw})
+        # now sort the list in order of ts from earliest to latest
+        sorted_phases = sorted(_phases, key=itemgetter('ts'))
         t2 = time.time()
         if weewx.debug >= 2:
-            logdbg("YestAlmanac SLE executed in %0.3f seconds" % (t2-t1))
+            logdbg("Almanac SLE executed in %0.3f seconds" % (t2-t1))
+        return [{'yestAlmanac': yestAlmanac},
+                {'moonPhases': sorted_phases}]
 
 
 # ================================================================================
