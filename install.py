@@ -35,7 +35,7 @@ import weewx
 
 from setup import ExtensionInstaller
 
-REQUIRED_VERSION = "4.2.0"
+REQUIRED_VERSION = "4.5.0"
 WS_VERSION = "0.1.0b4"
 
 # Multi-line config string, makes it easier to include comments. Needs to be
@@ -103,15 +103,6 @@ ws_config = u"""
     [[Supplementary]]
         # WeewxSaratoga supplementary database binding
         data_binding = ws_supp_binding
-        [[[WU]]]
-            api_key = replace_me
-            enable = False
-        [[[DS]]]
-            api_key = replace_me
-            enable = False
-        [[[File]]]
-            file = /path/and/filename
-            enable = False
             
     [[RealtimeClientraw]]
 
