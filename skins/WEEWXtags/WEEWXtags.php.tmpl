@@ -192,7 +192,7 @@ template
     #set $nextAutumnalEquinox = $time.gmtime($almanac.next_autumnal_equinox.raw)
     #set $nextWinterSolstice = $time.gmtime($almanac.next_winter_solstice.raw)
     #set $moonAge = $time.gmtime($current.dateTime.raw - $almanac.previous_new_moon.raw)
-    #set $moonDays = int(round(($current.dateTime.raw - $almanac.previous_new_moon.raw)/86400,0))
+    #set $moonDays = int(($current.dateTime.raw - $almanac.previous_new_moon.raw)/86400)
 #else
     #set $changeInDay = $time.gmtime(($almanac.sunset.raw - $almanac.sunrise.raw) - ($yestAlmanac.sunset.raw - $yestAlmanac.sunrise.raw))
     #if int(($almanac.sunset.raw - $almanac.sunrise.raw) - ($yestAlmanac.sunset.raw - $yestAlmanac.sunrise.raw)) < 0
