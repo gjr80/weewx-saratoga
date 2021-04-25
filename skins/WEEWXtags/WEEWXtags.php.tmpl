@@ -28,7 +28,7 @@ Pre-Requisites
 - PyEphem for inclusion of ephemeris and insolation data
 
 Version: 0.1.0                                      Date: xx xxxxx 2021
-
+# TODO. What is the appropriate output when no data is available
 *#
 #*
 Inline python code to setup/initialise a number of variables for use in the
@@ -38,136 +38,37 @@ template
 #import datetime
 #import time
 #import math
-##
-## setup date time format strings
-#try
-    #set $dmYFormat = $skin_dict.Units.TimeFormats.date_f.translate(None, "%-").lower()
-#except
-    #set $dateTimeFormatErrorFlag = True
-    #set $dmYFormat = ""
-#end try
-#set $dateTimeFormatErrorFlag = False
-#try
-    #set $timeFormat = $skin_dict.Units.TimeFormats.time_f
-#except
-    #set $timeFormat = "%H:%M"
-    #set $dateTimeFormatErrorFlag = True
-#end try
-#try
-    #set $secondFormat = $skin_dict.Units.TimeFormats.second_f
-#except
-    #set $secondFormat = "%S"
-    #set $dateTimeFormatErrorFlag = True
-#end try
-#try
-    #set $timeLongFormat = $timeFormat + ":" + $secondFormat
-#except
-    #set $timeLongFormat = "%H:%M:%S"
-    #set $dateTimeFormatErrorFlag = True
-#end try
-#try
-    #set $minuteFormat = $skin_dict.Units.TimeFormats.minute_f
-#except
-    #set $minuteFormat = "%M"
-    #set $dateTimeFormatErrorFlag = True
-#end try
-#try
-    #set $hourFormat = $skin_dict.Units.TimeFormats.hour_f
-#except
-    #set $hourFormat = "%H"
-    #set $dateTimeFormatErrorFlag = True
-#end try
-#try
-    #set $dateFormat = $skin_dict.Units.TimeFormats.date_f
-#except
-    #set $dateFormat = "%-d/%-m/%Y"
-    #set $dateTimeFormatErrorFlag = True
-#end try
-#try
-    #set $dayFormat = $skin_dict.Units.TimeFormats.day_f
-#except
-    #set $dayFormat = "%-d"
-    #set $dateTimeFormatErrorFlag = True
-#end try
-#try
-    #set $dayNameFormat = $skin_dict.Units.TimeFormats.day_name_f
-#except
-    #set $dayNameFormat = "%A"
-    #set $dateTimeFormatErrorFlag = True
-#end try
-#try
-    #set $dayOfWeekFormat = $skin_dict.Units.TimeFormats.day_of_week_f
-#except
-    #set $dayOfWeekFormat = "%w"
-    #set $dateTimeFormatErrorFlag = True
-#end try
-#try
-    #set $dayOfYearFormat = $skin_dict.Units.TimeFormats.day_of_year_f
-#except
-    #set $dayOfYearFormat = "%j"
-    #set $dateTimeFormatErrorFlag = True
-#end try
-#try
-    #set $monthFormat = $skin_dict.Units.TimeFormats.month_f
-#except
-    #set $monthFormat = "%-m"
-    #set $dateTimeFormatErrorFlag = True
-#end try
-#try
-    #set $monthNameFormat = $skin_dict.Units.TimeFormats.month_name_f
-#except
-    #set $monthNameFormat = "%B"
-    #set $dateTimeFormatErrorFlag = True
-#end try
-#try
-    #set $yearFormat = $skin_dict.Units.TimeFormats.year_f
-#except
-    #set $yearFormat = "%Y"
-    #set $dateTimeFormatErrorFlag = True
-#end try
-#try
-    #set $dateTimeFormat = $skin_dict.Units.TimeFormats.date_time_f
-#except
-    #set $dateTimeFormat = "%-d/%-m/%Y %H:%M"
-    #set $dateTimeFormatErrorFlag = True
-#end try
-#try
-    #set $ephemFormat = $skin_dict.Units.TimeFormats.ephem_f
-#except
-    #set $ephemFormat = "%H:%M UTC %-d %B %Y"
-    #set $dateTimeFormatErrorFlag = True
-#end try
-#try
-    #set $recordFormat = $skin_dict.Units.TimeFormats.record_f
-#except
-    #set $recordFormat = "%-d %b %Y"
-    #set $dateTimeFormatErrorFlag = True
-#end try
-##
-## setup a few things we need later
-#try
-    #set $naString=$skin_dict.Units.StringFormats.NONE
-#except
-    #set $naString="N/A"
-#end try
-#try
-    #set $degree_C_Format=$skin_dict.Units.StringFormats.degree_C
-#except
-    #set $degree_C_Format="%.1f"
-#end try
-#try
-    #set $degree_F_Format=$skin_dict.Units.StringFormats.degree_F
-#except
-    #set $degree_F_Format="%.1f"
-#end try
-#set $now=$current.dateTime.raw
-##
-## cache tagged stats
-#set $rainHourArray = $onehour.rain.sumQuery
-#set $windGustMinuteArray = $minute.windGust.maxQuery
-##
-## day astronomical tags/calculations
-#set $timenow =$time.time()
+#*
+Setup date-time format strings
+*#
+#set $dmYFormat = $skin_dict.Units.TimeFormats.get('date_f', '%-d/%-m/%Y').translate({37: '', 45: ''}).lower()
+#set $timeFormat = $skin_dict.Units.TimeFormats.get('time_f', '%H:%M')
+#set $secondFormat = $skin_dict.Units.TimeFormats.get('second_f', '%S')
+#set $timeLongFormat = ':'.join([$timeFormat, $secondFormat])
+#set $minuteFormat = $skin_dict.Units.TimeFormats.get('minute_f', '%M')
+#set $hourFormat = $skin_dict.Units.TimeFormats.get('hour_f', '%H')
+#set $dateFormat = $skin_dict.Units.TimeFormats.get('date_f', '%-d/%-m/%Y')
+#set $dayFormat = $skin_dict.Units.TimeFormats.get('day_f', '%-d')
+#set $dayNameFormat = $skin_dict.Units.TimeFormats.get('day_name_f', '%A')
+#set $dayOfWeekFormat = $skin_dict.Units.TimeFormats.get('day_of_week_f', '%w')
+#set $dayOfYearFormat = $skin_dict.Units.TimeFormats.get('day_of_year_f', '%j')
+#set $monthFormat = $skin_dict.Units.TimeFormats.get('month_f', '%-m')
+#set $monthNameFormat = $skin_dict.Units.TimeFormats.get('month_name_f', '%B')
+#set $yearFormat = $skin_dict.Units.TimeFormats.get('year_f', '%Y')
+#set $dateTimeFormat = $skin_dict.Units.TimeFormats.get('date_time_f', '%-d/%-m/%Y %H:%M')
+#set $ephemFormat = $skin_dict.Units.TimeFormats.get('ephem_f', '%H:%M UTC %-d %B %Y')
+#set $ephemDateFormat = $skin_dict.Units.TimeFormats.get('ephem_date_f', '%-d %B %Y')
+#set $recordFormat = $skin_dict.Units.TimeFormats.get('record_f', '%-d %B %Y')
+#*
+Setup a few things we need later
+*#
+#set $naString=$skin_dict.Units.StringFormats.get('NONE', 'N/A')
+#set $degree_C_Format=$skin_dict.Units.StringFormats.get('degree_C', '%.1f')
+#set $degree_F_Format=$skin_dict.Units.StringFormats.get('degree_F', '%.1f')
+#set $now = $current.dateTime.raw
+#*
+Astronomical tags/calculations
+*#
 #if $almanac.hasExtras
     #set $changeInDaySeconds = ($almanac.sun.set.raw - $almanac.sun.rise.raw) - ($yestAlmanac.sun.set.raw - $yestAlmanac.sun.rise.raw)
     #set $changeInDay = $time.gmtime(round(abs($changeInDaySeconds), 1))
@@ -176,17 +77,13 @@ template
     #else
         #set $cidSign=""
     #end if
-    #if ($timenow > $almanac.sun.rise.raw) and ($timenow < $almanac.sun.set.raw)
+    #if ($now > $almanac.sun.rise.raw) and ($now < $almanac.sun.set.raw)
         #set $dayornight = "Day"
     #else
         #set $dayornight = "Night"
     #end if
     #set $dayLength = $time.gmtime($almanac.sun.set.raw - $almanac.sun.rise.raw)
-    #set $previousNewMoon = $time.gmtime($almanac.previous_new_moon.raw)
     #set $nextNewMoon = $time.gmtime($almanac.next_new_moon.raw)
-    #set $nextFirstQuarterMoon = $time.gmtime($almanac.next_first_quarter_moon.raw)
-    #set $nextFullMoon = $time.gmtime($almanac.next_full_moon.raw)
-    #set $nextLastQuarterMoon = $time.gmtime($almanac.next_last_quarter_moon.raw)
     #set $nextVernalEquinox = $time.gmtime($almanac.next_vernal_equinox.raw)
     #set $nextSummerSolstice = $time.gmtime($almanac.next_summer_solstice.raw)
     #set $nextAutumnalEquinox = $time.gmtime($almanac.next_autumnal_equinox.raw)
@@ -200,7 +97,7 @@ template
     #else
         #set $cidSign=""
     #end if
-    #if ($timenow > $almanac.sunrise.raw) and ($timenow < $almanac.sunset.raw)
+    #if ($now > $almanac.sunrise.raw) and ($now < $almanac.sunset.raw)
         #set $dayornight = "Day"
     #else
         #set $dayornight = "Night"
@@ -303,14 +200,6 @@ template
 #set $monthRainDays = $month.rain.sum_ge($minRain).format($format_string="%4d", $add_label=False, $None_string="0", $localize=False).strip()
 #set $yearRainDays = $year.rain.sum_ge($minRain).format($format_string="%4d", $add_label=False, $None_string="0", $localize=False).strip()
 ##
-## rain last hour calculation
-## TODO. Can this be replaced by a tag
-#try
-    #set $hour_rain = $rainHourArray[23]
-#except
-    #set $hour_rain = 0
-#end try
-##
 ## sunshine hours calculation
 #try
     #set $today_hours = $day($data_binding='ws_binding').sunshine.sum.hour.raw
@@ -396,12 +285,12 @@ if ( isset($_REQUEST['sce']) && strtolower($_REQUEST['sce']) == 'view' ) {
 #raw $junesolstice = #end raw '$time.strftime($ephemFormat, $nextSummerSolstice)';// June solstice date
 #raw $sepequinox = #end raw '$time.strftime($ephemFormat, $nextAutumnalEquinox)';// September equinox date
 #raw $decsolstice = #end raw '$time.strftime($ephemFormat, $nextWinterSolstice)';// December solstice date
-#raw $newmoon = #end raw '$time.strftime($ephemFormat, $previousNewMoon)';// Date/time of the previous new moon
+#raw $newmoon = #end raw '$moonPhases['newmoon'].format($ephemFormat)';// Date/time of the previous new moon
 #raw $nextnewmoon = #end raw '$time.strftime($ephemFormat, $nextNewMoon)';// Date/time of the next new moon for next month
-#raw $firstquarter = #end raw '$time.strftime($ephemFormat, $nextFirstQuarterMoon)';// Date/time of the next/last first quarter moon
-#raw $lastquarter = #end raw '$time.strftime($ephemFormat, $nextLastQuarterMoon)';// Date/time of the next/last last quarter moon
-#raw $fullmoon = #end raw '$time.strftime($ephemFormat, $nextFullMoon)';// Date/time of the next/last full moon
-#raw $fullmoondate = #end raw '$time.strftime($recordFormat, $nextFullMoon)';// Date of the next/last full moon (date only)
+#raw $firstquarter = #end raw '$moonPhases['firstquarter'].format($ephemFormat)';// Date/time of the next/last first quarter moon
+#raw $lastquarter = #end raw '$moonPhases['lastquarter'].format($ephemFormat)';// Date/time of the next/last last quarter moon
+#raw $fullmoon = #end raw '$moonPhases['fullmoon'].format($ephemFormat)';// Date/time of the next/last full moon
+#raw $fullmoondate = #end raw '$moonPhases['fullmoon'].format($ephemDateFormat)';// Date of the next/last full moon (date only)
 #else
 #raw $sunset = #end raw '$almanac.sunset.format($timeFormat)';// sunset time
 #raw $moonphase = #end raw '$almanac.moon_fullness%';// Moon phase %
@@ -413,7 +302,7 @@ if ( isset($_REQUEST['sce']) && strtolower($_REQUEST['sce']) == 'view' ) {
 #raw $moonapogee = #end raw '$nextApogee';// Next moon apogee date
 #raw $suneclipse = #end raw '$nextSolarEclipse';// Next sun eclipse
 #raw $mooneclipse = #end raw '$nextLunarEclipse';// Next moon eclipse date
-#raw $easterdate = #end raw '$current.Easter.format($recordFormat)';// Next Easter date
+#raw $easterdate = #end raw '$current.Easter.format($ephemDateFormat)';// Next Easter date
 #raw $chinesenewyear = #end raw '$next_cny_date';// Chinese new year
 #raw $hoursofpossibledaylight = #end raw '$time.strftime($timeLongFormat, $dayLength)';// Total hours/minutes of possible daylight for today
 #raw $stationaltitude = #end raw '$station.altitude.foot.format($add_label=False, $localize=False)';   // Station altitude, feet, as set in the units setup
@@ -829,7 +718,7 @@ if ( isset($_REQUEST['sce']) && strtolower($_REQUEST['sce']) == 'view' ) {
 #raw $highsolaryest = #end raw '0';
 #raw $highsolaryesttime = #end raw '$naString';
 #end if
-#raw $hourrn =  #end raw '$hour_rain';
+#raw $hourrn = #end raw '$span($hour_delta=1).rain.sum.format($add_label=False, $None_string='0.0', $localize=False)';
 #raw $maxaverageyest = #end raw '$yesterday.windSpeed.max $current($timestamp=$yest_max_av_wind_ts).windDir.ordinal_compass';
 #raw $maxaverageyestt = #end raw '$yesterday.windSpeed.maxtime.format($timeFormat)';
 #raw $maxavgdirectionletter = #end raw '$current($timestamp=$max_av_wind_ts).windDir.ordinal_compass';

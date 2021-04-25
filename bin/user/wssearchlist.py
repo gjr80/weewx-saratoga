@@ -1429,21 +1429,35 @@ class TaggedArchiveStats(weewx.cheetahgenerator.SearchList):
 #                              class Almanac
 # ==============================================================================
 
-class Almanac(weewx.cheetahgenerator.SearchList):
+class YestAlmanac(weewx.cheetahgenerator.SearchList):
     """SLE to return various Almanac data."""
+
+    # dict to map pyephem moon phase property names to WEEWXtags.php tag names
+    ephem_to_tags = {'previous_new_moon': 'newmoon',
+                     'next_new_moon': 'newmoon',
+                     'previous_first_quarter_moon': 'firstquarter',
+                     'next_first_quarter_moon': 'firstquarter',
+                     'previous_full_moon': 'fullmoon',
+                     'next_full_moon': 'fullmoon',
+                     'previous_last_quarter_moon': 'lastquarter',
+                     'next_last_quarter_moon': 'lastquarter'}
 
     def __init__(self, generator):
         # call our parent's initialisation
-        super(Almanac, self).__init__(generator)
+        super(YestAlmanac, self).__init__(generator)
 
     def get_extension_list(self, timespan, db_lookup):
-        """Returns a search list various Almanac data.
+        """Returns a search list containing various Almanac data.
 
         Obtains an Almanac object for yesterday and returns this object as
         'yestAlmanac' allowing use in WeeWX tags to obtain ephemeris data for
         yesterday, eg: $yestAlmanac.sun.set for yesterdays sun set time.
 
-
+        Returns a list of dicts containing the previous and next four moon
+        phases. Each dict consists of:
+            'name': pyephem phase property name (eg 'next_new_mon',
+                    'previous_first_quarter_moon' etc
+            'ts_vh': a ValueHelper representing the time the phase occurs
 
         Parameters:
             timespan: An instance of weeutil.weeutil.TimeSpan. This will hold
@@ -1453,13 +1467,18 @@ class Almanac(weewx.cheetahgenerator.SearchList):
                        only parameter, will return a database manager object.
 
         Returns:
-            yestAlmanac: An Almanac object for yesterday
-            moonPhases: a list of dicts
-          """
+            yestAlmanac: an Almanac object for yesterday
+            moonPhases: a list of dicts of moon phases and times
+        """
+
+        # obtain the current time for performance logging
         t1 = time.time()
 
         # obtain the report time, we consider this the current time
         gen_ts = self.generator.gen_ts
+
+        # yestAlmanac - an Almanac object for yesterday
+
         # gen_ts could be None, in which case we will use the last know good
         # timestamp in our db as the current time
         db = self.generator.db_binder.get_manager()
@@ -1478,7 +1497,6 @@ class Almanac(weewx.cheetahgenerator.SearchList):
         if rec is not None:
             temp_vt = weewx.units.as_value_tuple(rec, 'outTemp')
             baro_vt = weewx.units.as_value_tuple(rec, 'barometer')
-
             if not isinstance(temp_vt, weewx.units.UnknownType):
                 temp_c = weewx.units.convert(temp_vt, 'degree_C').value
             if not isinstance(baro_vt, weewx.units.UnknownType):
@@ -1505,7 +1523,8 @@ class Almanac(weewx.cheetahgenerator.SearchList):
                                             moon_phases=moonphases,
                                             formatter=self.generator.formatter)
 
-        # Moon phases
+        # moonPhases - times of the previous and next moon phases
+
         # we can use gen_ts as the current time but it could be None, in which
         # case we will use the last know good timestamp in our db as the
         # current time
@@ -1523,7 +1542,6 @@ class Almanac(weewx.cheetahgenerator.SearchList):
         if rec is not None:
             temp_vt = weewx.units.as_value_tuple(rec, 'outTemp')
             baro_vt = weewx.units.as_value_tuple(rec, 'barometer')
-
             if not isinstance(temp_vt, weewx.units.UnknownType):
                 temp_c = weewx.units.convert(temp_vt, 'degree_C').value
             if not isinstance(baro_vt, weewx.units.UnknownType):
@@ -1534,6 +1552,8 @@ class Almanac(weewx.cheetahgenerator.SearchList):
             temp_c = 15.0
         if baro_mbar is None:
             baro_mbar = 1010.0
+        # get an Almanac object, we can use the same altitude and moonphases
+        # data from yestAlmanac
         nowAlmanac = weewx.almanac.Almanac(celestial_ts,
                                            self.generator.stn_info.latitude_f,
                                            self.generator.stn_info.longitude_f,
@@ -1542,20 +1562,31 @@ class Almanac(weewx.cheetahgenerator.SearchList):
                                            pressure=baro_mbar,
                                            moon_phases=moonphases,
                                            formatter=self.generator.formatter)
+        # initialise a list to hold details of each phase
         _phases = []
-        for ph in ['previous_new_moon', 'next_new_moon',
-                   'previous_first_quarter_moon', 'next_first_quarter_moon',
-                   'previous_full_moon', 'next_full_moon',
-                   'previous_last_quarter_moon', 'next_last_quarter_moon']:
-            _phases.append({'name': ph,
-                            'ts': getattr(nowAlmanac, ph).raw})
+        # iterate over the pyephem
+        for ph in self.ephem_to_tags.keys():
+            _phases.append({'name': self.ephem_to_tags[ph],
+                            'ts_vh': getattr(nowAlmanac, ph)})
         # now sort the list in order of ts from earliest to latest
-        sorted_phases = sorted(_phases, key=itemgetter('ts'))
+        _phases.sort(key=lambda item: item.get('ts_vh').raw)
+        # Of the eight 'phases' in our list four will be in the future and four
+        # in the past, we want the next three in the future and the most recent
+        # one in the past, we can discard the rest. We will be left with a
+        # fullmoon, a lastquarter, a newmoon and a firstquarter.
+        _phases = _phases[3:7]
+        moonPhases = dict()
+        for ph in _phases:
+            moonPhases[ph['name']] = ph['ts_vh']
+        # create a small dict with our results
+        sle_dict = {'yestAlmanac': yestAlmanac,
+                    'moonPhases': moonPhases}
+        # get the time taken to execute and log if required
         t2 = time.time()
         if weewx.debug >= 2:
             logdbg("Almanac SLE executed in %0.3f seconds" % (t2-t1))
-        return [{'yestAlmanac': yestAlmanac},
-                {'moonPhases': sorted_phases}]
+        # return our data as a list of dicts
+        return [sle_dict]
 
 
 # ================================================================================
