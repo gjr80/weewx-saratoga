@@ -17,7 +17,7 @@ PARTICULAR PURPOSE.  See the GNU General Public License for more details.
 You should have received a copy of the GNU General Public License along with
 this program.  If not, see http://www.gnu.org/licenses/.
 
-Version: 0.3.0b2                                        Date: xx xxxxx 2021
+Version: 0.3.0b4                                        Date: xx xxxxx 2021
 
 Revision History
     xx xxxxx 2021       v0.3.0
@@ -185,15 +185,13 @@ Alternative Dashboard
     - fields to be implemented/finalised in order to support:
         48, 49
 """
-# TODO. seed RtcrBuffer day stats properties with values from daily summaries on startup
-# TODO. is get_minmax_obs() used?
+# TODO. seed RtcrBuffer day stats properties with values from daily summaries on startup and perhaps again on the next archive record
 
 # python imports
 import datetime
 import math
 import os.path
 import socket
-import sys
 import threading
 import time
 
@@ -271,7 +269,7 @@ except ImportError:
 
 
 # version number of this script
-RTCR_VERSION = '0.3.0b3'
+RTCR_VERSION = '0.3.0b4'
 
 # the obs that we will buffer
 MANIFEST = ['outTemp', 'barometer', 'outHumidity', 'rain', 'rainRate',
@@ -466,54 +464,6 @@ class RealtimeClientraw(StdService):
                     logerr("Unable to shut down %s thread" % self.rtcr_thread.name)
                 else:
                     logdbg("Shut down %s thread." % self.rtcr_thread.name)
-
-    def get_minmax_obs(self, obs_type):
-        """Obtain the alltime max/min values for an observation."""
-
-        # create an interpolation dict
-        inter_dict = {'table_name': self.db_manager.table_name,
-                      'obs_type': obs_type}
-        # the query to be used
-        minmax_sql = "SELECT MIN(min), MAX(max) FROM %(table_name)s_day_%(obs_type)s"
-        # execute the query
-        _row = self.db_manager.getSql(minmax_sql % inter_dict)
-        if not _row or None in _row:
-            return {'min_%s' % obs_type: None,
-                    'max_%s' % obs_type: None}
-        else:
-            return {'min_%s' % obs_type: _row[0],
-                    'max_%s' % obs_type: _row[1]}
-
-    def get_forecast(self):
-        """Obtain the forecast and current conditions info."""
-
-        if self.forecast_manager:
-            manifest = [self.forecast_text_field,
-                        self.forecast_icon_field,
-                        self.current_text_field]
-            fields = [a for a in manifest if a is not None]
-            if len(fields) > 0:
-                result = {}
-                field_str = ','.join(fields)
-                # create an interpolation dict
-                inter_dict = {'table_name': self.forecast_manager.table_name,
-                              'fields': field_str}
-                # the query to be used
-                _sql = "SELECT %(fields)s FROM %(table_name)s "\
-                       "ORDER BY dateTime DESC LIMIT 1"
-                # execute the query
-                _row = self.db_manager.getSql(_sql % inter_dict)
-                if not _row or None in _row:
-                    for num in range(len(fields)):
-                        result[fields[num]] = None
-                else:
-                    for num in range(len(fields)):
-                        result[fields[num]] = _row[num]
-            else:
-                result = None
-        else:
-            result = None
-        return result
 
     def get_historical_rain(self, ts):
         """Obtain yesterdays total rainfall and return as a ValueTuple."""
@@ -918,13 +868,6 @@ class RealtimeClientrawThread(threading.Thread):
         self.windrun_loop = to_bool(rtcr_config_dict.get('windrun_loop',
                                                          'False'))
 
-        # WeeWX does not normally archive appTemp so day stats are not usually
-        # available; however, if the user does have appTemp in a database then
-        # if we have a binding we can use it. Check if an appTemp binding was
-        # specified, if so use it, otherwise default to 'wx_binding'. We will
-        # check for data existence before using it.
-        self.additional_binding = rtcr_config_dict.get('additional_binding', None)
-
         # extra sensors
         extra_sensor_config_dict = rtcr_config_dict.get('ExtraSensors', {})
         # temperature
@@ -979,7 +922,6 @@ class RealtimeClientrawThread(threading.Thread):
         self.db_manager = None
         self.additional_manager = None
         self.day_stats = None
-        self.additional_day_stats = None
         self.buffer = None
         self.packet_cache = None
 
@@ -1049,25 +991,10 @@ class RealtimeClientrawThread(threading.Thread):
             # running before getting db managers
             # get a db manager
             self.db_manager = weewx.manager.open_manager(self.manager_dict)
-            # get a db manager for appTemp
-            if self.additional_binding is not None:
-                pass
-                # TODO. Clean this up
-                # self.additional_manager = weewx.manager.open_manager_with_config(self.config_dict,
-                #                                                                 self.additional_binding)
             # initialise our day stats
             self.day_stats = self.db_manager._get_day_summary(time.time())
-            # TODO. Verify the following lines can be removed, _get_day_summary() sets unit_system
-            # # set the unit system for our day stats
-            # self.day_stats.unit_system = self.db_manager.std_unit_system
-            if self.additional_manager:  # initialise our day stats from our appTemp source
-                self.additional_day_stats = self.additional_manager._get_day_summary(time.time())
-                # TODO. Verify the following lines can be removed, _get_day_summary() sets unit_system
-                # # set the unit system for our day stats
-                # self.additional_day_stats.unit_system = self.additional_manager.std_unit_system
             # create a RtcrBuffer object to hold our loop 'stats'
-            self.buffer = RtcrBuffer(day_stats=self.day_stats,
-                                     additional_day_stats=self.additional_day_stats)
+            self.buffer = RtcrBuffer(day_stats=self.day_stats)
             # setup our loop cache and set some starting wind values
             # get the last good record
             _ts = self.db_manager.lastGoodStamp()
@@ -1136,7 +1063,7 @@ class RealtimeClientrawThread(threading.Thread):
         t1 = time.time()
 
         # If the buffer unit system is None adopt the unit system of the
-        # incoming loop packet, this shul donly ever happen if we were started
+        # incoming loop packet, this should only ever happen if we were started
         # with an empty database
         if self.buffer.unit_system is not None:
             # make sure the packet is in our buffer unit system
@@ -1220,11 +1147,8 @@ class RealtimeClientrawThread(threading.Thread):
         daily summaries.
         """
 
-        # TODO. Do we really need these day stats?
         # refresh our day (archive record based) stats
         self.day_stats = self.db_manager._get_day_summary(record['dateTime'])
-        if self.additional_manager:
-            self.additional_day_stats = self.additional_manager._get_day_summary(record['dateTime'])
 
     def end_archive_period(self):
         """Control processing at the end of each archive period."""
@@ -1971,10 +1895,7 @@ class RealtimeClientrawThread(threading.Thread):
             av_speed10 = None
         data[158] = av_speed10 if av_speed10 is not None else 0.0
         # 159 - wet bulb temperature (Celsius)
-        # wb = calc_wetbulb(packet_wx['outTemp'],
-        #                   packet_wx['outHumidity'],
-        #                   packet_wx['barometer'])
-        wb = packet_wx.get('wetBulb')
+        wb = packet_wx.get('wet_bulb')
         data[159] = wb if wb is not None else 0.0
         # 160 - latitude (-ve for south)
         data[160] = self.latitude
@@ -2063,7 +1984,7 @@ class RealtimeClientrawThread(threading.Thread):
                                                          age=600)
         data[176] = _dir if _dir is not None else 0
         # 177 - record end (WD Version)
-        data[177] = '!!C10.37S120!!'
+        data[177] = '!!WS%s!!' % RTCR_VERSION
         return data
 
     def create_clientraw_string(self, data):
@@ -2109,7 +2030,7 @@ class RealtimeClientrawThread(threading.Thread):
             string.
         """
 
-        result = data
+        result = str(data)
         if data is None:
             result = '0.0'
         elif places is not None:
@@ -2119,8 +2040,7 @@ class RealtimeClientrawThread(threading.Thread):
                 result = _format % _v
             except ValueError:
                 pass
-        # TODO. Is this str() call needed, esp given six.ensure_text()
-        return str(result)
+        return result
 
 
 # ============================================================================
@@ -2445,7 +2365,7 @@ class RtcrBuffer(dict):
     received.
     """
 
-    def __init__(self, day_stats, additional_day_stats=None):
+    def __init__(self, day_stats):
         """Initialise an instance of our class."""
         # initialize my superclass
         super(RtcrBuffer, self).__init__()
@@ -2457,18 +2377,7 @@ class RtcrBuffer(dict):
             seed_func(self, day_stats[obs_type], obs_type,
                       obs_type in HIST_MANIFEST,
                       obs_type in SUM_MANIFEST)
-        # seed our buffer objects from additional_day_stats
-        if additional_day_stats:
-            for obs_type in [f for f in additional_day_stats if f in MANIFEST]:
-                if obs_type not in self:
-                    seed_func = seed_functions.get(obs_type,
-                                                   RtcrBuffer.seed_scalar)
-                    seed_func(self, additional_day_stats[obs_type],
-                              obs_type, obs_type in HILO_MANIFEST,
-                              obs_type in HIST_MANIFEST,
-                              obs_type in SUM_MANIFEST)
         self.last_windSpeed_ts = None
-#        self.windrun = self.seed_windrun(day_stats)
 
     def seed_scalar(self, stats, obs_type, hist, sum):
         """Seed a scalar buffer."""
@@ -2766,39 +2675,3 @@ def calc_trend(obs_type, now_vt, db_manager, then_ts, grace):
             if then is not None:
                 result = now_vt.value - then
     return result
-
-
-def calc_wetbulb(t_a, r_h, p):
-    """Calculate wet bulb temperature.
-
-        Uses formula:
-
-        wb = (((0.00066 * p) * t_a) + ((4098 * big_e)/((t_dc + 237.7) ** 2) * t_dc))/
-                 ((0.00066 * p) + (4098 * big_e)/((t_dc + 237.7) ** 2))
-
-        Where:
-            p = pressure (in hPa)
-            t_a = air temperature (in degree C)
-            r_h = relative humidity (in %)
-            big_e = 6.11 * 10 ** (7.5 * t_dc/(237.7 + t_dc))
-            t_dc = t_a - (14.55 + 0.114 * t_a) * (1 - (0.01 * r_h)) -
-                      ((2.5 + 0.007 * t_a) * (1 - (0.01 * r_h))) ** 3 -
-                      (15.9 + 0.117 * t_a) * (1 - (0.01 * r_h)) ** 14
-
-        Input:
-            t_a: temperature in Celsius
-            r_h: humidity in %
-            p:  pressure in hPa
-
-        Returns:    Wet bulb in degree C. Can be None.
-    """
-
-    if t_a is None or r_h is None or p is None:
-        return None
-    t_dc = t_a - (14.55 + 0.114 * t_a) * (1 - (0.01 * r_h)) - \
-        ((2.5 + 0.007 * t_a) * (1 - (0.01 * r_h))) ** 3 - \
-        (15.9 + 0.117 * t_a) * (1 - (0.01 * r_h)) ** 14
-    big_e = 6.11 * 10 ** (7.5 * t_dc / (237.7 + t_dc))
-    wb = (((0.00066 * p) * t_a) + ((4098 * big_e) / ((t_dc + 237.7) ** 2) * t_dc)) / \
-         ((0.00066 * p) + (4098 * big_e) / ((t_dc + 237.7) ** 2))
-    return wb
