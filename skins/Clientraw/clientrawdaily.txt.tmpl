@@ -35,6 +35,7 @@ Version: 0.1.0                                      Date: xx xxxxx 2021
 Inline python code to setup/initialise a number of variables for use in the
 template
 *#
+#set $version = "0.1.0"
 ## setup format strings
 #set $hourFormat = "%H"
 #set $minuteFormat = "%M"
@@ -247,4 +248,4 @@ $inTempSixhourArray[$i].degree_C.format($format_string="%.1f", $add_label=False,
 0 #slurp
 #end try
 #end for
-#*470*#!!EOR!!#slurp
+#*470*#!!SW$version!!#slurp

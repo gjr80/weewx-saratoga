@@ -39,6 +39,7 @@ template
 #import datetime
 #import time
 ##
+#set $version = '0.1.0'
 ## setup format strings
 #set $timeFormat = "%H:%M"
 #set $timeFormatLong = "%H:%M:%S"
@@ -983,4 +984,4 @@ $inTempHourArray[$i].degree_C.format($format_string="%.1f", $add_label=False, $l
 #*816*#$day.dewpoint.mintime.format($timeFormat) #slurp
 #*817*#$day.radiation.max.format($format_string="%.1f", $add_label=False, $localize=False) #slurp
 #*818*#$day.radiation.maxtime.format($timeFormat) #slurp
-#*819*#!!C10.37S120!!#slurp
+#*819*#!!SW$version!!#slurp

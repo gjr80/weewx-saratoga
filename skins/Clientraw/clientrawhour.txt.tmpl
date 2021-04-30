@@ -37,6 +37,7 @@ template
 *#
 #import time
 ##
+#set $version = '0.1.0'
 ## cache tagged stats required in clientrawhour
 #set $windSpeedMinuteArray = $minute.windSpeed.avgQuery
 #set $windGustMinuteArray = $minute.windGust.maxQuery
@@ -168,4 +169,4 @@ $UVFifteenminuteArray[$i].format($format_string="%.1f", $add_label=False, $local
 0 #slurp
 #end try
 #end for
-#*673*#!!EOR!!#slurp
+#*673*#!!SW$version!!#slurp
