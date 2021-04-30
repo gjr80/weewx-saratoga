@@ -38,6 +38,7 @@ template
 #import datetime
 #import time
 #import math
+#set $version = '0.1.0'
 #*
 Setup date-time format strings
 *#
@@ -83,11 +84,6 @@ Astronomical tags/calculations
         #set $dayornight = "Night"
     #end if
     #set $dayLength = $time.gmtime($almanac.sun.set.raw - $almanac.sun.rise.raw)
-    #set $nextNewMoon = $time.gmtime($almanac.next_new_moon.raw)
-    #set $nextVernalEquinox = $time.gmtime($almanac.next_vernal_equinox.raw)
-    #set $nextSummerSolstice = $time.gmtime($almanac.next_summer_solstice.raw)
-    #set $nextAutumnalEquinox = $time.gmtime($almanac.next_autumnal_equinox.raw)
-    #set $nextWinterSolstice = $time.gmtime($almanac.next_winter_solstice.raw)
     #set $moonAge = $time.gmtime($current.dateTime.raw - $almanac.previous_new_moon.raw)
     #set $moonDays = int(($current.dateTime.raw - $almanac.previous_new_moon.raw)/86400)
 #else
@@ -229,7 +225,7 @@ Astronomical tags/calculations
 #raw
 <?php
 //
-// WEEWXtags.php Version xxx
+// WEEWXtags.php v$version
 //
 // allow viewing of generated source
 if ( isset($_REQUEST['sce']) && strtolower($_REQUEST['sce']) == 'view' ) {
@@ -249,12 +245,12 @@ if ( isset($_REQUEST['sce']) && strtolower($_REQUEST['sce']) == 'view' ) {
 //
 // Units
 // -----#end raw
-#raw $uomtemp = #end raw '&deg;$unit.unit_type.outTemp[-1:]'; //  = 'C', 'F',  (or  'C', 'F', or '&deg;C', '&deg;F' )
+#raw $uomtemp = #end raw '$unit.unit_type.outTemp[-1:]'; //  = 'C', 'F',  (or  'C', 'F', or '&deg;C', '&deg;F' )
 #raw $uombaro = #end raw '$unit.unit_type.barometer'; //  = 'inHg', 'hPa', 'kPa', 'mb'
-#raw $uomwind = #end raw '$unit.label.windSpeed.strip(' ')'; //  = 'kts','mph','kmh','km/h','m/s','Bft'
-#raw $uomrain = #end raw '$unit.label.rain.strip(' ')'; //  = 'mm', 'in'
-#raw $datefmt = #end raw '$dmYFormat.strip(' ')'; //  =  'd/m/y', 'm/d/y'
-#raw $uomdistance = #end raw '$unit.label.windrun.strip(' ')'; // = 'mi','km'  (for windrun variables)
+#raw $uomwind = #end raw '$unit.label.windSpeed.strip()'; //  = 'kts','mph','kmh','km/h','m/s','Bft'
+#raw $uomrain = #end raw '$unit.label.rain.strip()'; //  = 'mm', 'in'
+#raw $datefmt = #end raw '$dmYFormat.strip()'; //  =  'd/m/y', 'm/d/y'
+#raw $uomdistance = #end raw '$unit.label.windrun.strip()[0:2]'; // = 'mi','km'  (for windrun variables)
 //
 // General or Non-Weather Specific Sun/Moon
 // ----------------------------------------
@@ -281,16 +277,20 @@ if ( isset($_REQUEST['sce']) && strtolower($_REQUEST['sce']) == 'view' ) {
 #raw $moonage = #end raw 'Moon age: $moonDays $time.strftime("days,"+$hourFormat+" hours,"+$minuteFormat+" minutes", $moonAge),$almanac.moon_fullness%';// current age of the moon (days since new moon)
 #raw $moonphase = #end raw '$almanac.moon_fullness%';// Moon phase %
 #raw $moonphasename = #end raw '$almanac.moon_phase'; // 10.36z addition
-#raw $marchequinox = #end raw '$time.strftime($ephemFormat, $nextVernalEquinox)';// March equinox date
-#raw $junesolstice = #end raw '$time.strftime($ephemFormat, $nextSummerSolstice)';// June solstice date
-#raw $sepequinox = #end raw '$time.strftime($ephemFormat, $nextAutumnalEquinox)';// September equinox date
-#raw $decsolstice = #end raw '$time.strftime($ephemFormat, $nextWinterSolstice)';// December solstice date
-#raw $newmoon = #end raw '$moonPhases['newmoon'].format($ephemFormat)';// Date/time of the previous new moon
-#raw $nextnewmoon = #end raw '$time.strftime($ephemFormat, $nextNewMoon)';// Date/time of the next new moon for next month
-#raw $firstquarter = #end raw '$moonPhases['firstquarter'].format($ephemFormat)';// Date/time of the next/last first quarter moon
-#raw $lastquarter = #end raw '$moonPhases['lastquarter'].format($ephemFormat)';// Date/time of the next/last last quarter moon
-#raw $fullmoon = #end raw '$moonPhases['fullmoon'].format($ephemFormat)';// Date/time of the next/last full moon
-#raw $fullmoondate = #end raw '$moonPhases['fullmoon'].format($ephemDateFormat)';// Date of the next/last full moon (date only)
+#raw $morningciviltwilight = #end raw '$almanac(horizon=-6).sun(use_center=1).rise.format($timeFormat)';
+#raw $eveningciviltwilight = #end raw '$almanac(horizon=-6).sun(use_center=1).set.format($timeFormat)';
+#raw $morningastrotwilight = #end raw '$almanac(horizon=-18).sun(use_center=1).rise.format($timeFormat)';
+#raw $eveningastrotwilight = #end raw '$almanac(horizon=-18).sun(use_center=1).set.format($timeFormat)';
+#raw $marchequinox = #end raw '$time.strftime($ephemFormat, $equinox.vernal_equinox)';// March equinox date
+#raw $junesolstice = #end raw '$time.strftime($ephemFormat, $equinox.summer_solstice)';// June solstice date
+#raw $sepequinox = #end raw '$time.strftime($ephemFormat, $equinox.autumnal_equinox)';// September equinox date
+#raw $decsolstice = #end raw '$time.strftime($ephemFormat, $equinox.winter_solstice)';// December solstice date
+#raw $newmoon = #end raw '$time.strftime($ephemFormat, $moonPhase.prev_new_moon)';// Date/time of the previous new moon
+#raw $nextnewmoon = #end raw '$time.strftime($ephemFormat, $moonPhase.next_new_moon)';// Date/time of the next new moon for next month
+#raw $firstquarter = #end raw '$time.strftime($ephemFormat, $moonPhase.first_quarter)';// Date/time of the next/last first quarter moon
+#raw $lastquarter = #end raw '$time.strftime($ephemFormat, $moonPhase.last_quarter)';// Date/time of the next/last last quarter moon
+#raw $fullmoon = #end raw '$time.strftime($ephemFormat, $moonPhase.full_moon)';// Date/time of the next/last full moon
+#raw $fullmoondate = #end raw '$time.strftime($ephemDateFormat, $moonPhase.full_moon)';// Date of the next/last full moon (date only)
 #else
 #raw $sunset = #end raw '$almanac.sunset.format($timeFormat)';// sunset time
 #raw $moonphase = #end raw '$almanac.moon_fullness%';// Moon phase %

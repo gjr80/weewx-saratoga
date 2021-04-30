@@ -1430,34 +1430,48 @@ class TaggedArchiveStats(weewx.cheetahgenerator.SearchList):
 # ==============================================================================
 
 class YestAlmanac(weewx.cheetahgenerator.SearchList):
-    """SLE to return various Almanac data."""
+    """SLE to return various Almanac related tags."""
 
     # dict to map pyephem moon phase property names to WEEWXtags.php tag names
-    ephem_to_tags = {'previous_new_moon': 'newmoon',
-                     'next_new_moon': 'newmoon',
-                     'previous_first_quarter_moon': 'firstquarter',
-                     'next_first_quarter_moon': 'firstquarter',
-                     'previous_full_moon': 'fullmoon',
-                     'next_full_moon': 'fullmoon',
-                     'previous_last_quarter_moon': 'lastquarter',
-                     'next_last_quarter_moon': 'lastquarter'}
+    phase_to_tags = {'previous_new_moon': 'prev_new_moon',
+                     'next_new_moon': 'next_new_moon',
+                     'previous_first_quarter_moon': 'first_quarter',
+                     'next_first_quarter_moon': 'first_quarter',
+                     'previous_full_moon': 'full_moon',
+                     'next_full_moon': 'full_moon',
+                     'previous_last_quarter_moon': 'last_quarter',
+                     'next_last_quarter_moon': 'last_quarter'}
+    # dict to map pyephem equinox and solstice property names to WEEWXtags.php
+    # tag names
+    equinox_to_tags = {'previous_vernal_equinox': 'vernal_equinox',
+                       'next_vernal_equinox': 'vernal_equinox',
+                       'previous_summer_solstice': 'summer_solstice',
+                       'next_summer_solstice': 'summer_solstice',
+                       'previous_autumnal_equinox': 'autumnal_equinox',
+                       'next_autumnal_equinox': 'autumnal_equinox',
+                       'previous_winter_solstice': 'winter_solstice',
+                       'next_winter_solstice': 'winter_solstice'}
 
     def __init__(self, generator):
         # call our parent's initialisation
         super(YestAlmanac, self).__init__(generator)
 
     def get_extension_list(self, timespan, db_lookup):
-        """Returns a search list containing various Almanac data.
+        """Returns a search list containing various Almanac related tags.
 
         Obtains an Almanac object for yesterday and returns this object as
         'yestAlmanac' allowing use in WeeWX tags to obtain ephemeris data for
         yesterday, eg: $yestAlmanac.sun.set for yesterdays sun set time.
 
-        Returns a list of dicts containing the previous and next four moon
-        phases. Each dict consists of:
-            'name': pyephem phase property name (eg 'next_new_mon',
-                    'previous_first_quarter_moon' etc
-            'ts_vh': a ValueHelper representing the time the phase occurs
+        Returns a dict containing details of the next new moon and the
+        preceding four moon phases. Each dict entry is keyed by a phase name
+        and contains the time of the respective phase as a struct_time object
+        in UTC.
+
+        Returns a dict containing details of the current years equinoxes and
+        solstices. Each dict entry is keyed by a equinox/solstice name and
+        contains the time of the respective equinox/solstice as a struct_time
+        object in UTC.
 
         Parameters:
             timespan: An instance of weeutil.weeutil.TimeSpan. This will hold
@@ -1468,7 +1482,8 @@ class YestAlmanac(weewx.cheetahgenerator.SearchList):
 
         Returns:
             yestAlmanac: an Almanac object for yesterday
-            moonPhases: a list of dicts of moon phases and times
+            moonPhases: a dict of moon phases and times
+            equinox: a dict of equinoxes and solstices and times
         """
 
         # obtain the current time for performance logging
@@ -1564,23 +1579,58 @@ class YestAlmanac(weewx.cheetahgenerator.SearchList):
                                            formatter=self.generator.formatter)
         # initialise a list to hold details of each phase
         _phases = []
-        # iterate over the pyephem
-        for ph in self.ephem_to_tags.keys():
-            _phases.append({'name': self.ephem_to_tags[ph],
-                            'ts_vh': getattr(nowAlmanac, ph)})
+        # iterate over the pyephem previous and next moon phase properties
+        for ph in self.phase_to_tags.keys():
+            # get the phase details and save as a small dict to our list
+            _phases.append({'name': self.phase_to_tags[ph],
+                            'ts': getattr(nowAlmanac, ph).raw})
         # now sort the list in order of ts from earliest to latest
-        _phases.sort(key=lambda item: item.get('ts_vh').raw)
+        _phases.sort(key=lambda item: item.get('ts'))
+        # obtain the index for the next new moon
+        index = [i for i, ph_dict in enumerate(_phases) if 'next_new_moon' in ph_dict.values()][0]
         # Of the eight 'phases' in our list four will be in the future and four
-        # in the past, we want the next three in the future and the most recent
-        # one in the past, we can discard the rest. We will be left with a
-        # fullmoon, a lastquarter, a newmoon and a firstquarter.
-        _phases = _phases[3:7]
+        # in the past, we want the next new moon and the four phases that
+        # precede it. We will be left with a first quarter, a full moon, a last
+        # quarter and two new moons (previous and next).
+        _phases = _phases[index - 4:index + 1]
+        # create a dict to hold our results
         moonPhases = dict()
+        # iterate over our phases
         for ph in _phases:
-            moonPhases[ph['name']] = ph['ts_vh']
+            # save a struct_time object in GMT for each phase
+            moonPhases[ph['name']] = time.gmtime(ph['ts'])
+
+        # equinox -  times of this years equinoxes and solstices
+
+        # initialise a list to hold details of each equinox/solstice
+        _equinoxes = []
+        # get this year
+        this_year = datetime.date.fromtimestamp(gen_ts).year
+        # iterate over the pyephem previous and next equinox/solstic properties
+        for eq in self.equinox_to_tags.keys():
+            # get the equinox/solstice details and save as a small dict to our
+            # list
+            _equinoxes.append({'name': self.equinox_to_tags[eq],
+                               'ts': getattr(nowAlmanac, eq).raw})
+        # now sort the list in order of ts from earliest to latest
+        _equinoxes.sort(key=lambda item: item.get('ts'))
+        # We now have a list of dicts, sorted by time, of the previous two
+        # equinoxes and two solstices and the next two equinoxes and two
+        # solstices, eight events in total. We want just this years events so
+        # narrow the list to only those events in the current year.
+        _equinoxes = [e for e in _equinoxes if datetime.date.fromtimestamp(e['ts']).year == this_year]
+        # create a dict to hold our results
+        equinoxes = dict()
+        # iterate over our equinoxes and solstices
+        for eq in _equinoxes:
+            # save a struct_time object in GMT for each equinox/solstice
+            equinoxes[eq['name']] = time.gmtime(eq['ts'])
+
         # create a small dict with our results
         sle_dict = {'yestAlmanac': yestAlmanac,
-                    'moonPhases': moonPhases}
+                    'moonPhase': moonPhases,
+                    'equinox': equinoxes}
+
         # get the time taken to execute and log if required
         t2 = time.time()
         if weewx.debug >= 2:
