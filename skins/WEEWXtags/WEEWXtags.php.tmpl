@@ -250,7 +250,7 @@ if ( isset($_REQUEST['sce']) && strtolower($_REQUEST['sce']) == 'view' ) {
 #raw $uomwind = #end raw '$unit.label.windSpeed.strip()'; //  = 'kts','mph','kmh','km/h','m/s','Bft'
 #raw $uomrain = #end raw '$unit.label.rain.strip()'; //  = 'mm', 'in'
 #raw $datefmt = #end raw '$dmYFormat.strip()'; //  =  'd/m/y', 'm/d/y'
-#raw $uomdistance = #end raw '$unit.label.windrun.strip()[0:2]'; // = 'mi','km'  (for windrun variables)
+#raw $uomdistance = #end raw '$unit.unit_type.windrun[0:2]'; // = 'mi','km'  (for windrun variables)
 //
 // General or Non-Weather Specific Sun/Moon
 // ----------------------------------------
