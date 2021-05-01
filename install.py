@@ -68,6 +68,7 @@ ws_config = u"""
 [StdWXCalculate]
     [[Calculations]]
         wet_bulb = prefer_hardware
+        abs_humidity = prefer_hardware, archive
 [DataBindings]
     [[ws_binding]]
         database = ws_sqlite

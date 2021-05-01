@@ -155,6 +155,47 @@ class WSXTypes(weewx.xtypes.XType):
             # there is only one unit
             return weewx.units.ValueTuple(rho, 'kg_per_meter_cubed', 'group_density')
 
+    def calc_abs_humidity(self, obs_type, record, db_manager):
+        """Calculate absolute humidity.
+
+        Calculates absolute humidity using the equation:
+
+        d = 100 * e / (tk * rw)
+
+        where:
+            e = 6.11 * 10 ** (7.5 * tdc / (237.7 + tdc))
+            tk = temperature (K)
+            rw = gas constant for water vapor 461.5 (J/kg*Kelvin)
+            tdc = dewpoint (C)
+        """
+
+        # we need outTemp and dewpoint in order to do the calculation
+        if 'outTemp' not in record and 'dewpoint' not in record:
+            raise weewx.CannotCalculate(obs_type)
+
+        # calculate if all of our pre-requisites are non-None
+        if record['outTemp'] is not None and record['dewpoint'] is not None:
+            # we need outTemp in degree_K, first get outTemp from the record as
+            # a ValueTuple
+            t_vt = weewx.units.as_value_tuple(record, 'outTemp')
+            # now convert to degree_C then finally degree_K
+            tk = weewx.units.CtoK(self.converter.convert(t_vt).value)
+            # we need dewpoint in degree_C, first get dewpoint from the record
+            # as a ValueTuple
+            td_vt = weewx.units.as_value_tuple(record, 'dewpoint')
+            # now convert to degree_C
+            tdc = self.converter.convert(td_vt).value
+            # do the calculations
+            e = 6.11 * 10 ** (7.5 * tdc / (237.7 + tdc))
+            d = 100 * e / (tk * 461.5)
+        else:
+            # we could not calculate so save our result as a 'None'
+            d = None
+        # finally return our absolute humidity ValueTuple converting to the
+        # units used in 'record'
+        return weewx.units.convertStd(weewx.units.ValueTuple(d, 'kg_per_meter_cubed', 'group_density'),
+                                      record['usUnits'])
+
     def calc_cbi(self, obs_type, record, db_manager):
         """Calculate Chandler Burning index."""
 

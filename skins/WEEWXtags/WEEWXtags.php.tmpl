@@ -927,7 +927,11 @@ $lighteningcountlast30minutesnextstorm = '0';
 #set $outTempTrendHourF = $naString
 #end if
 #raw $tempchangelasthourfaren = #end raw '$outTempTrendHourF'; //For snow prediction
-#raw $abshum = #end raw '$current.outHumidity.format(add_label=False, localize=False)'; //For snow prediction
+## tag $abshum assumed to be in g/m^3 rather than kg/m^3
+#if $current.abs_humidity.exists and $current.abs_humidity.raw is not None
+#set $abs_humidity = round($current.abs_humidity.raw * 1000, 2)
+#raw $abshum = #end raw '$abs_humidity'; //For snow prediction
+#end if
 #raw $maxtemp4today = #end raw '$thisday.outTemp.max.format(add_label=False, localize=False)'; // max from station's records
 #raw $mintemp4today = #end raw '$thisday.outTemp.min.format(add_label=False, localize=False)'; // min from station's records
 #raw $maxtemp4todayyr = #end raw '$thisday.outTemp.maxyear'; // max year from station's records
