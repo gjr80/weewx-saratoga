@@ -392,7 +392,9 @@ if ( isset($_REQUEST['sce']) && strtolower($_REQUEST['sce']) == 'view' ) {
 #raw $pressuretrendname = #end raw '$trend_60_baro'; // pressure trend (i.e. 'falling'), last hour
 #raw $pressuretrendname3hour = #end raw '$trend_180_baro';   // pressure trend (i.e. 'falling'), last 3 hours
 
-#raw $vpforecasttext = #end raw '';
+#if $current.forecastText.exists and $current.forecastText.raw is not None
+#raw $vpforecasttext = #end raw '$current.forecastText.raw';
+#end if
 // Rain
 // ----
 // Current:

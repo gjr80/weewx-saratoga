@@ -65,10 +65,12 @@ ws_config = u"""
                 uv_index = %.1f
                 watt_per_meter_squared = %.0f
                 NONE = --
+                
 [StdWXCalculate]
     [[Calculations]]
         wet_bulb = prefer_hardware
         abs_humidity = prefer_hardware, archive
+        
 [DataBindings]
     [[ws_binding]]
         database = ws_sqlite
@@ -80,6 +82,7 @@ ws_config = u"""
         table_name = supp
         manager = weewx.manager.Manager
         schema = user.wsschema.ws_supp_schema
+        
 [Databases]
     [[ws_sqlite]]
         database_type = SQLite
@@ -93,6 +96,7 @@ ws_config = u"""
     [[ws_supp_mysql]]
         database_type = MySQL
         database_name = wdsupp
+        
 [WeewxSaratoga]
     # WeewxSaratoga database binding
     data_binding = ws_binding
@@ -136,6 +140,15 @@ ws_config = u"""
         #   short_time_format = %-I:%M_%p  # recommended for USA users
         #   short_time_format = %H:%M  # recommended for non-USA users
         short_time_format = %H:%M
+        
+[Accumulator]
+
+    # Start WeeWX-Saratoga extractors
+    [[forecastRule]]
+        extractor = last
+    [[forecastText]]
+        accumulator = firstlast
+        extractor = last
 """
 # obtain
 ws_dict = configobj.ConfigObj(StringIO(ws_config))
