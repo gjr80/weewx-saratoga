@@ -46,6 +46,8 @@ ws_config = u"""
         skin = WEEWXtags
         enable = True
         [[[Units]]]
+            [[[[StringFormats]]]]
+                NONE = --
             [[[[TimeFormats]]]]
                 date_f = %d/%m/%Y
                 date_time_f = %d/%m/%Y %H:%M
