@@ -1295,7 +1295,7 @@ class RealtimeClientrawThread(threading.Thread):
             gust = None
         data[2] = gust if gust is not None else 0.0
         # 003 - windDir
-        data[3] = packet_wx['windDir'] if packet_wx['windDir'] is not None else 0.0
+        data[3] = packet_wx['windDir'] if packet_wx['windDir'] is not None else '--'
         # 004 - outTemp (Celsius)
         data[4] = packet_wx['outTemp'] if packet_wx['outTemp'] is not None else 0.0
         # 005 - outHumidity
