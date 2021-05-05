@@ -35,6 +35,8 @@ Revision History
         - default location for generated clientraw.txt is now HTML_ROOT
         - windrun is now derived from loop/archive field windrun only (was
           previously calculated from windSpeed)
+        - added config option disable_local_save to disable saving of
+          clientraw.txt locally on the WeeWX machine
     9 March 2020        v0.2.3
         - fixed missing conversion to integer on some numeric config items
         - added try..except around the main thread code so that thread
@@ -120,6 +122,13 @@ weewx.conf as follows:
         period). Optional, default is 0.
         min_interval = 0
 
+        # If using an external website it may be advantageous to disable the
+        # local save of clientraw.txt to prevent contention on the external web
+        # server. The local save of clientraw.txt can be disabled by use of the
+        # disable_local_save option. Set to True to disable or False to enable
+        # the local save of clientraw.txt. Default is False.
+        # disable_local_save = False
+
         # Update windrun value each loop period or just on each archive period.
         # Optional, default is False.
         windrun_loop = false
@@ -150,9 +159,10 @@ weewx.conf as follows:
         # default is 200.
         grace = 200
 
-3.  If using for some other purpose add a [RealtimeClientraw] stanza to
-weewx.conf containing the settings at step 2 above. Note the different number
-of square brackets and different hierarchical location of the stanza.
+3.  If this service is not being used as part of the WeeWX-Saratoga extension
+add a [RealtimeClientraw] stanza to weewx.conf containing the settings at
+step 2 above. Note the different number of square brackets and different
+hierarchical location of the stanza.
 
 4.  Add the RealtimeClientraw service to the list of report services under
 [Engine] [[Services]] in weewx.conf:
@@ -628,7 +638,7 @@ class RealtimeClientrawThread(threading.Thread):
     # Format dict for clientraw.txt fields. None = no change, 0 = integer (no
     # decimal places), numeric = format to this many decimal places.
     field_formats = {
-        0: None,  # start of
+        0: None,  # start of fields marker
         1: 1,  # - avg speed
         2: 1,  # - gust
         3: 0,  # - windDir
@@ -932,7 +942,7 @@ class RealtimeClientrawThread(threading.Thread):
         if not self.disable_local_save:
             loginf("RealtimeClientraw will generate %s" % self.rtcr_path_file)
             if self.min_interval is None:
-                _msg = "min_interval is None"
+                _msg = "min_interval is None (0 seconds)"
             elif to_int(self.min_interval) == 1:
                 _msg = "min_interval is 1 second"
             else:
