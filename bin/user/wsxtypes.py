@@ -57,9 +57,9 @@ class WSXTypes(weewx.xtypes.XType):
     def calc_wet_bulb(self, obs_type, record, db_manager):
         """Calculate wet bulb temperature."""
 
-        # we need outTemp, pressure and outHumidity in order to do the
+        # we need usUnits, outTemp, pressure and outHumidity in order to do the
         # calculation
-        if 'outTemp' not in record or 'pressure' not in record or 'outHumidity' not in record:
+        if any(key not in record for key in ['usUnits', 'outTemp', 'pressure', 'outHumidity']):
             raise weewx.CannotCalculate(obs_type)
 
         # calculate if all of our pre-requisites are non-None
@@ -118,9 +118,9 @@ class WSXTypes(weewx.xtypes.XType):
         equations.
         """
 
-        # we need outTemp, pressure and outHumidity in order to do the
+        # we need usUnits, outTemp, pressure and outHumidity in order to do the
         # calculation
-        if 'outTemp' not in record or 'pressure' not in record or 'outHumidity' not in record:
+        if any(key not in record for key in ['usUnits', 'outTemp', 'pressure', 'outHumidity']):
             raise weewx.CannotCalculate(obs_type)
 
         # calculate if all of our pre-requisites are non-None
@@ -169,8 +169,8 @@ class WSXTypes(weewx.xtypes.XType):
             tdc = dewpoint (C)
         """
 
-        # we need outTemp and dewpoint in order to do the calculation
-        if 'outTemp' not in record or 'dewpoint' not in record:
+        # we need usUnits, outTemp and dewpoint in order to do the calculation
+        if any(key not in record for key in ['usUnits', 'outTemp', 'dewpoint']):
             raise weewx.CannotCalculate(obs_type)
 
         # calculate if all of our pre-requisites are non-None
@@ -199,8 +199,8 @@ class WSXTypes(weewx.xtypes.XType):
     def calc_cbi(self, obs_type, record, db_manager):
         """Calculate Chandler Burning index."""
 
-        # we need outTemp and outHumidity in order to do the calculation
-        if 'outTemp' not in record or 'outHumidity' not in record:
+        # we need usUnits, outTemp and outHumidity in order to do the calculation
+        if any(key not in record for key in ['usUnits', 'outTemp', 'outHumidity']):
             raise weewx.CannotCalculate(obs_type)
 
         # calculate if all of our pre-requisites are non-None
