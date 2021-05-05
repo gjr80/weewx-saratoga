@@ -36,7 +36,7 @@ import weewx
 from setup import ExtensionInstaller
 
 REQUIRED_VERSION = "4.5.0"
-WS_VERSION = "0.1.0b4"
+WS_VERSION = "0.1.0b5"
 
 # Multi-line config string, makes it easier to include comments. Needs to be
 # explicitly set as unicode or python2 StringIO complains.
@@ -120,9 +120,10 @@ ws_config = u"""
         # To disable or use the webserver on this system, leave the entry 
         # commented out or blank.
         # remote_server_url = http://your.website.com/post_clientraw.php
-
+        
         # min_interval sets the minimum clientraw.txt generation interval. 
-        # Default is 10 seconds.
+        # 10 seconds is recommended for all Saratoga template users. Default 
+        # is 0 seconds.
         min_interval = 10
         
         # Python date-time format strings. Format string codes as per 
