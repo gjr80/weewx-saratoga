@@ -17,7 +17,7 @@ PARTICULAR PURPOSE.  See the GNU General Public License for more details.
 You should have received a copy of the GNU General Public License along with
 this program.  If not, see http://www.gnu.org/licenses/.
 
-Version: 0.3.0b4                                        Date: xx xxxxx 2021
+Version: 0.3.0b5                                        Date: xx xxxxx 2021
 
 Revision History
     xx xxxxx 2021       v0.3.0
@@ -269,7 +269,7 @@ except ImportError:
 
 
 # version number of this script
-RTCR_VERSION = '0.3.0b4'
+RTCR_VERSION = '0.3.0b5'
 
 # the obs that we will buffer
 MANIFEST = ['outTemp', 'barometer', 'outHumidity', 'rain', 'rainRate',
@@ -827,7 +827,9 @@ class RealtimeClientrawThread(threading.Thread):
         rtcr_path = os.path.join(html_root, _path)
         rtcr_filename = rtcr_config_dict.get('rtcr_file_name', 'clientraw.txt')
         self.rtcr_path_file = os.path.join(rtcr_path, rtcr_filename)
-
+        # has local the saving of clientraw.txt been disabled
+        self.disable_local_save = to_bool(rtcr_config_dict.get('disable_local_save',
+                                                               False))
         # get the remote server URL if it exists, if it doesn't set it to None
         self.remote_server_url = rtcr_config_dict.get('remote_server_url', None)
         # timeout to be used for remote URL posts
@@ -927,14 +929,15 @@ class RealtimeClientrawThread(threading.Thread):
 
         # inform the user what we are going to do
         loginf("RealtimeClientraw version %s" % RTCR_VERSION)
-        loginf("RealtimeClientraw will generate %s" % self.rtcr_path_file)
-        if self.min_interval is None:
-            _msg = "min_interval is None"
-        elif to_int(self.min_interval) == 1:
-            _msg = "min_interval is 1 second"
-        else:
-            _msg = "min_interval is %s seconds" % self.min_interval
-        loginf(_msg)
+        if not self.disable_local_save:
+            loginf("RealtimeClientraw will generate %s" % self.rtcr_path_file)
+            if self.min_interval is None:
+                _msg = "min_interval is None"
+            elif to_int(self.min_interval) == 1:
+                _msg = "min_interval is 1 second"
+            else:
+                _msg = "min_interval is %s seconds" % self.min_interval
+            loginf(_msg)
         if self.remote_server_url is not None:
             loginf("%s will be posted to %s by HTTP POST" % (rtcr_filename,
                                                              self.remote_server_url))
@@ -943,6 +946,9 @@ class RealtimeClientrawThread(threading.Thread):
             else:
                 _msg = "HTTP POST timeout is %d seconds" % self.timeout
             logdbg(_msg)
+        if self.disable_local_save and self.remote_server_url is None:
+            loginf("Warning: clientraw.txt will not be saved locally "
+                   "nor will it be posted via HTTP POST")
         logdbg("Date format: '%s', long time format: '%s', short time format: '%s'" % (self.date_fmt,
                                                                                        self.long_time_fmt,
                                                                                        self.short_time_fmt))
@@ -1110,9 +1116,11 @@ class RealtimeClientrawThread(threading.Thread):
                 data = self.calculate(cached_packet)
                 # convert our data dict to a clientraw string
                 cr_string = self.create_clientraw_string(data)
-                # write our file
-                self.write_data(cr_string)
-                # set our write time
+                if not self.disable_local_save:
+                    # write our file
+                    self.write_data(cr_string)
+                # set our write time, this is only used to determine our next
+                # generation time
                 self.last_write = time.time()
                 # if required send the data to a remote URL via HTTP POST
                 if self.remote_server_url is not None:
