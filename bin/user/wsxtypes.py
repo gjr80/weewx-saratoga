@@ -32,22 +32,47 @@ import time
 import weewx.engine
 import weewx.xtypes
 
-log = logging.getLogger(__name__)
-
 
 class WSXTypes(weewx.xtypes.XType):
-    """XType to calculate wet bulb temperature."""
+    """XType to calculate various scalars.
+
+    This XType supports calculation of scalars fo the following types:
+
+    -   Wet bulb temperature
+    -   Air density
+    -   Absolute humidity
+    -   Chandler Burning Index (CBI)
+    -   Easter date
+    -   Davis forecast text
+
+    Each type to be calculated requires a method named calc_type() where 'type'
+    is the name of the type to be calculated. The method must use the following
+    signature:
+
+    def calc_type(self, obs_type, record, db_manager):
+
+    where:
+        'obs_type' is the name of the type to be calculated
+        'record' is a dict containing the current loop packet or archive record
+        'db_manager' is a database manager
+
+    The method may be declared static in which case 'self' should be removed.
+    Additional types may be supported by adding an appropriately named
+    calc_type method.
+
+    The calculation of aggregates and series for supported types is not
+    supported.
+    """
 
     def __init__(self):
-        # we will need temperature and pressure in C and hPa, grab a Metric
+        # we will need various fields in Metric units so grab a Metric
         # converter to use as required
         self.converter = weewx.units.StdUnitConverters[weewx.METRIC]
 
     def get_scalar(self, obs_type, record, db_manager):
-        # We only know how to calculate wet bulb temperature 'wetBulb', air
-        # density 'air_density', 'Chandler Burning Index 'cbi' and the date of
-        # next Easter 'Easter'. For everything else, raise an UnknownType
-        # exception.
+        # we only know how to calculate types for which we have a calc_type()
+        # method, for everything else we raise an UnknownType exception
+        # try to calculate obs_type and if we can't raise an UnknownType exception
         try:
             # form the method name, then call it with arguments
             return getattr(self, 'calc_%s' % obs_type)(obs_type, record, db_manager)
@@ -57,8 +82,8 @@ class WSXTypes(weewx.xtypes.XType):
     def calc_wet_bulb(self, obs_type, record, db_manager):
         """Calculate wet bulb temperature."""
 
-        # we need usUnits, outTemp, pressure and outHumidity in order to do the
-        # calculation
+        # We need usUnits, outTemp, pressure and outHumidity in order to do the
+        # calculation. If any are missing raise a CannotCalculate exception.
         if any(key not in record for key in ['usUnits', 'outTemp', 'pressure', 'outHumidity']):
             raise weewx.CannotCalculate(obs_type)
 
@@ -118,8 +143,8 @@ class WSXTypes(weewx.xtypes.XType):
         equations.
         """
 
-        # we need usUnits, outTemp, pressure and outHumidity in order to do the
-        # calculation
+        # We need usUnits, outTemp, pressure and outHumidity in order to do the
+        # calculation. If any are missing raise a CannotCalculate exception.
         if any(key not in record for key in ['usUnits', 'outTemp', 'pressure', 'outHumidity']):
             raise weewx.CannotCalculate(obs_type)
 
@@ -169,7 +194,8 @@ class WSXTypes(weewx.xtypes.XType):
             tdc = dewpoint (C)
         """
 
-        # we need usUnits, outTemp and dewpoint in order to do the calculation
+        # We need usUnits, outTemp and dewpoint in order to do the calculation.
+        # If any are missing raise a CannotCalculate exception.
         if any(key not in record for key in ['usUnits', 'outTemp', 'dewpoint']):
             raise weewx.CannotCalculate(obs_type)
 
@@ -199,7 +225,8 @@ class WSXTypes(weewx.xtypes.XType):
     def calc_cbi(self, obs_type, record, db_manager):
         """Calculate Chandler Burning index."""
 
-        # we need usUnits, outTemp and outHumidity in order to do the calculation
+        # We need usUnits, outTemp and outHumidity in order to do the
+        # calculation. If any are missing raise a CannotCalculate exception.
         if any(key not in record for key in ['usUnits', 'outTemp', 'outHumidity']):
             raise weewx.CannotCalculate(obs_type)
 
@@ -495,7 +522,8 @@ class WSXTypes(weewx.xtypes.XType):
             196: 'Mostly clear and cooler.'
         }
 
-        # we need forecastRule in order to do the 'calculation'
+        # We need forecastRule in order to do the 'calculation'. If it is
+        # missing raise a CannotCalculate exception.
         if 'forecastRule' not in record:
             raise weewx.CannotCalculate(obs_type)
         # calculate if all of our pre-requisites are non-None
