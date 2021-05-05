@@ -59,7 +59,7 @@ class WSXTypes(weewx.xtypes.XType):
 
         # we need outTemp, pressure and outHumidity in order to do the
         # calculation
-        if 'outTemp' not in record and 'pressure' not in record and 'outHumidity' not in record:
+        if 'outTemp' not in record or 'pressure' not in record or 'outHumidity' not in record:
             raise weewx.CannotCalculate(obs_type)
 
         # calculate if all of our pre-requisites are non-None
@@ -120,7 +120,7 @@ class WSXTypes(weewx.xtypes.XType):
 
         # we need outTemp, pressure and outHumidity in order to do the
         # calculation
-        if 'outTemp' not in record and 'pressure' not in record and 'outHumidity' not in record:
+        if 'outTemp' not in record or 'pressure' not in record or 'outHumidity' not in record:
             raise weewx.CannotCalculate(obs_type)
 
         # calculate if all of our pre-requisites are non-None
@@ -170,7 +170,7 @@ class WSXTypes(weewx.xtypes.XType):
         """
 
         # we need outTemp and dewpoint in order to do the calculation
-        if 'outTemp' not in record and 'dewpoint' not in record:
+        if 'outTemp' not in record or 'dewpoint' not in record:
             raise weewx.CannotCalculate(obs_type)
 
         # calculate if all of our pre-requisites are non-None
@@ -200,7 +200,7 @@ class WSXTypes(weewx.xtypes.XType):
         """Calculate Chandler Burning index."""
 
         # we need outTemp and outHumidity in order to do the calculation
-        if 'outTemp' not in record and 'outHumidity' not in record:
+        if 'outTemp' not in record or 'outHumidity' not in record:
             raise weewx.CannotCalculate(obs_type)
 
         # calculate if all of our pre-requisites are non-None
