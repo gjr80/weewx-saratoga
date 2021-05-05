@@ -852,8 +852,8 @@ $lighteningcountlast30minutesnextstorm = '0';
 //
 #if $trend($time_delta=3600).outTemp.raw is not None
 #set $outTempTrendHourF = $trend($time_delta=3600).outTemp.degree_F.format(add_label=False, localize=False)
-#end if
 #raw $tempchangelasthourfaren = #end raw '$outTempTrendHourF'; //For snow prediction
+#end if
 ## tag $abshum assumed to be in g/m^3 rather than kg/m^3
 #if $current.abs_humidity.exists and $current.abs_humidity.raw is not None
 #set $abs_humidity = round($current.abs_humidity.raw * 1000, 2)
