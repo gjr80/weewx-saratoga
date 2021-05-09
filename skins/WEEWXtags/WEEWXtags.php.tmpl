@@ -269,10 +269,10 @@ if ( isset($_REQUEST['sce']) && strtolower($_REQUEST['sce']) == 'view' ) {
 #raw $dayname = #end raw '$current.dateTime.format($dayNameFormat)';    // Current day name
 #if $almanac.hasExtras
 #raw $sunset = #end raw '$almanac.sun.set.format($timeFormat)';// sunset time
-#raw $moonrisedate = #end raw '$almanac.moon.rise.format($dateFormat)';// moon rise date
-#raw $moonrise = #end raw '$almanac.moon.rise.format($timeFormat)';// moon rise time
-#raw $moonsetdate = #end raw '$almanac.moon.set.format($dateFormat)';// moon set date
-#raw $moonset = #end raw '$almanac.moon.set.format($timeFormat)';// moon set time
+#raw $moonrisedate = #end raw '$almanac.moon.next_rising.format($dateFormat)';// moon rise date
+#raw $moonrise = #end raw '$almanac.moon.next_rising.format($timeFormat)';// moon rise time
+#raw $moonsetdate = #end raw '$almanac.moon.next_setting.format($dateFormat)';// moon set date
+#raw $moonset = #end raw '$almanac.moon.next_setting.format($timeFormat)';// moon set time
 #raw $moonage = #end raw 'Moon age: $moonDays $time.strftime("days,"+$hourFormat+" hours,"+$minuteFormat+" minutes", $moonAge),$almanac.moon_fullness%';// current age of the moon (days since new moon)
 #raw $moonphase = #end raw '$almanac.moon_fullness%';// Moon phase %
 #raw $moonphasename = #end raw '$almanac.moon_phase'; // 10.36z addition
