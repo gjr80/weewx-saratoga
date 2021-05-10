@@ -154,18 +154,6 @@ Astronomical tags/calculations
     #set $nextAphelion = $naString
 #end if
 ##
-## Chinese New Year calculations
-#if $varExists('$next_cny')
-    #try
-        #set $_d, $_m, $_y = $next_cny
-        #set $next_cny_date = datetime.date($_y, $_m, $_d).strftime($recordFormat)
-    #except
-        #set $next_cny_date = $naString
-    #end try
-#else
-    #set $next_cny_date = $naString
-#end if
-##
 ## hot and cold days calculations
 #set $monthDaysHot35 = $month.outTemp.max_ge((35.0,"degree_C")).format(format_string="%6d", add_label=False, localize=False).strip
 #set $monthDaysHot30 = $month.outTemp.max_ge((30.0,"degree_C")).format(format_string="%6d", add_label=False, localize=False).strip
@@ -302,7 +290,7 @@ if ( isset($_REQUEST['sce']) && strtolower($_REQUEST['sce']) == 'view' ) {
 #raw $suneclipse = #end raw '$nextSolarEclipse';// Next sun eclipse
 #raw $mooneclipse = #end raw '$nextLunarEclipse';// Next moon eclipse date
 #raw $easterdate = #end raw '$current.Easter.format($ephemDateFormat)';// Next Easter date
-#raw $chinesenewyear = #end raw '$next_cny_date';// Chinese new year
+#raw $chinesenewyear = #end raw '$cny.format($ephemDateFormat)';// Chinese new year
 #raw $suntransit = #end raw '$almanac.sun.transit.format(' '.join([$timeFormat, $dateFormat]))';
 #raw $moontransittime = #end raw '$almanac.moon.transit.format($timeFormat)';
 #raw $suntransittime = #end raw '$almanac.sun.transit.format($timeFormat)';

@@ -249,7 +249,7 @@ class WSXTypes(weewx.xtypes.XType):
         return weewx.units.ValueTuple(cbi, 'count', 'group_count')
 
     def calc_Easter(self, obs_type, record, db_manager):
-        """Calculate the date of the next Easter."""
+        """Calculate the Easter Sunday date for the current year."""
 
         def calc_easter(year):
             """Calculate the date for Easter in a given year.
@@ -287,10 +287,6 @@ class WSXTypes(weewx.xtypes.XType):
         _year = datetime.date.fromtimestamp(record['dateTime']).year
         # calculate Easter for _year
         easter_ts = calc_easter(_year)
-        # check to see if we have past this calculated date, if so we want next
-        # years date so increment year and recalculate
-        if datetime.date.fromtimestamp(easter_ts) < datetime.date.fromtimestamp(record['dateTime']):
-            easter_ts = calc_easter(_year + 1)
         return weewx.units.ValueTuple(easter_ts, 'unix_epoch', 'group_time')
 
     def calc_forecastText(self, obs_type, record, db_manager):
