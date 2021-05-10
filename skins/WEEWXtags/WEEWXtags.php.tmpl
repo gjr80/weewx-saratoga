@@ -60,11 +60,9 @@ Setup date-time format strings
 #set $ephemDateFormat = $skin_dict.Units.TimeFormats.get('ephem_date_f', '%-d %B %Y')
 #set $recordFormat = $skin_dict.Units.TimeFormats.get('record_f', '%-d %B %Y')
 #*
-Setup a few things we need later
+Setup a couple of shorthand variables
 *#
 #set $naString=$skin_dict.Units.StringFormats.get('NONE', '--')
-#set $degree_C_Format=$skin_dict.Units.StringFormats.get('degree_C', '%.1f')
-#set $degree_F_Format=$skin_dict.Units.StringFormats.get('degree_F', '%.1f')
 #set $now = $current.dateTime.raw
 #*
 Astronomical tags/calculations
@@ -83,8 +81,8 @@ Astronomical tags/calculations
         #set $dayornight = "Night"
     #end if
     #set $dayLength = $time.gmtime($almanac.sun.set.raw - $almanac.sun.rise.raw)
-    #set $moonAge = $time.gmtime($current.dateTime.raw - $almanac.previous_new_moon.raw)
-    #set $moonDays = int(($current.dateTime.raw - $almanac.previous_new_moon.raw)/86400)
+    #set $moonAge = $time.gmtime($now - $almanac.previous_new_moon.raw)
+    #set $moonDays = int(($now - $almanac.previous_new_moon.raw)/86400)
 #else
     #set $changeInDay = $time.gmtime(($almanac.sunset.raw - $almanac.sunrise.raw) - ($yestAlmanac.sunset.raw - $yestAlmanac.sunrise.raw))
     #if int(($almanac.sunset.raw - $almanac.sunrise.raw) - ($yestAlmanac.sunset.raw - $yestAlmanac.sunrise.raw)) < 0
@@ -295,7 +293,7 @@ if ( isset($_REQUEST['sce']) && strtolower($_REQUEST['sce']) == 'view' ) {
 #raw $moontransittime = #end raw '$almanac.moon.transit.format($timeFormat)';
 #raw $suntransittime = #end raw '$almanac.sun.transit.format($timeFormat)';
 #raw $moontransit = #end raw '$almanac.moon.transit.format(' '.join([$timeFormat, $dateFormat]))';
-#raw $hoursofpossibledaylight = #end raw '$time.strftime($timeLongFormat, $dayLength)';// Total hours/minutes of possible daylight for today
+#raw $hoursofpossibledaylight = #end raw '$time.strftime($timeFormat, $dayLength)';// Total hours/minutes of possible daylight for today
 #raw $stationaltitude = #end raw '$station.altitude.foot.format(add_label=False, localize=False)';   // Station altitude, feet, as set in the units setup
 #raw $stationlatitude = #end raw '$lat_dms'; // Latitude (from the sun moon rise/set setup)
 #raw $stationlongitude = #end raw '$long_dms';   // Longitude (from the sun moon rise/set setup)
@@ -327,8 +325,8 @@ if ( isset($_REQUEST['sce']) && strtolower($_REQUEST['sce']) == 'view' ) {
 #raw $heatinodp = #end raw '$current.heatindex.format(format_string="%.0f", add_label=False, localize=False)';    // current heat index,no decimal place
 #raw $windch = #end raw '$current.windchill.format(add_label=False, localize=False)';   // current wind-chill
 #raw $windchnodp = #end raw '$current.windchill.format(format_string="%.0f", add_label=False, localize=False)';    // current wind-chill, no decimal place
-#raw $humidexfaren = #end raw '$current($max_delta=60).humidex.degree_F.format(format_string="%.0f", add_label=False, localize=False)';  // Humidex value in oF
-#raw $humidexcelsius = #end raw '$current($max_delta=60).humidex.degree_C.format(format_string=$degree_C_Format, add_label=False, localize=False)';    // Humidex value in oC
+#raw $humidexfaren = #end raw '$current($max_delta=60).humidex.degree_F.format(add_label=False, localize=False)';  // Humidex value in oF
+#raw $humidexcelsius = #end raw '$current($max_delta=60).humidex.degree_C.format(add_label=False, localize=False)';    // Humidex value in oC
 #raw $apparenttemp = #end raw '$current($max_delta=60).appTemp.format(add_label=False, localize=False)'; // Apparent temperature
 #raw $apparenttempc = #end raw '$current($max_delta=60).appTemp.degree_C.format(add_label=False, localize=False)';   // Apparent temperature, oC
 #raw $apparenttempf = #end raw '$current($max_delta=60).appTemp.degree_F.format(add_label=False, localize=False)';   // Apparent temperature, oF
@@ -344,9 +342,14 @@ if ( isset($_REQUEST['sce']) && strtolower($_REQUEST['sce']) == 'view' ) {
 // Trends:
 // -------
 #raw $temp24hoursago = #end raw '$current($timestamp=$now-86400, $max_delta=300).outTemp.format(add_label=False, localize=False)'; // The temperature 24 hours ago
-#raw $humchangelasthour = #end raw '$trend($time_delta=3600).outHumidity.format(add_label=False, localize=False)';  // Humidity change last hour
-#raw $dewchangelasthour = #end raw '$trend($time_delta=3600).dewpoint.format(add_label=False, localize=False)'; // Dew point change last hour
-#raw $barochangelasthour = #end raw '$trend($time_delta=3600).barometer.format(add_label=False, localize=False)';   // Baro change last hour
+#set $hum_sign_format = $skin_dict.Units.StringFormats.get('percent', '%.0f').replace('%', '%+', 1)
+#raw $humchangelasthour = #end raw '$trend($time_delta=3600).outHumidity.format(format_string=$hum_sign_format, add_label=False, localize=False)';  // Humidity change last hour
+#set $temp_unit_group = $skin_dict.Units.Groups.get('group_temperature')
+#set $temp_sign_format = $skin_dict.Units.StringFormats.get($temp_unit_group, '%.1f').replace('%', '%+', 1)
+#raw $dewchangelasthour = #end raw '$trend($time_delta=3600).dewpoint.format(format_string=$temp_sign_format, add_label=False, localize=False)'; // Dew point change last hour
+#set $baro_unit_group = $skin_dict.Units.Groups.get('group_pressure')
+#set $baro_sign_format = $skin_dict.Units.StringFormats.get($baro_unit_group, '%.2f').replace('%', '%+', 1)
+#raw $barochangelasthour = #end raw '$trend($time_delta=3600).barometer.format(format_string=$baro_sign_format, add_label=False, localize=False)';   // Baro change last hour
 //
 // Wind
 // ----
