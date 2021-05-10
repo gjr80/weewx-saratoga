@@ -439,8 +439,6 @@ if ( isset($_REQUEST['sce']) && strtolower($_REQUEST['sce']) == 'view' ) {
 #raw $lowuvtime = #end raw '$day.UV.mintime.format($timeFormat)';// Time that the daily low UV occurred
 #raw $highuvyest = #end raw '$yesterday.UV.max';// Yesterday's high UV
 #raw $highuvyesttime = #end raw '$yesterday.UV.maxtime.format($timeFormat)';// Time of yesterday's high UV
-### FIXME
-#raw $burntime = #end raw '99';// Time (minutes) to burn (normal skin) at the current UV rate, from the Davis VP with UV sensor
 #end if
 //
 // Record Readings
@@ -785,8 +783,6 @@ $icon_array[35] =  'windyrain.gif';           // Wind+rain
 // MChallis Printable Flyer Add-on Tags
 // ----------------------------------------------------------------------------
 #end raw
-### FIXME
-#raw $maxgsthrtime = #end raw '0';        // time that the max gust last prior 1 hour occurred
 #raw $minbaroyest = #end raw '$yesterday.barometer.min.format(add_label=False, localize=False)';
 #raw $minbaroyestt = #end raw '$yesterday.barometer.mintime.format($timeFormat)';
 #raw $mrecordlowbaro = #end raw '$month.barometer.min.format(add_label=False, localize=False)';
@@ -1202,8 +1198,8 @@ $lighteningcountlast30minutesnextstorm = '0';
 #end if
 ### FIXME
 #raw $raindifffromavyear = #end raw '0';
-#raw $gddmonth = #end raw '$month_gdd';
-#raw $gddyear = #end raw '$year_gdd';
+#raw $gddmonth = #end raw '$month.growdeg.sum.format(add_label=False, localize=False)';
+#raw $gddyear = #end raw '$year.growdeg.sum.format(add_label=False, localize=False)';
 #raw $maxheat = #end raw '$day.heatindex.max.format(add_label=False, localize=False)';
 #raw $maxheatt = #end raw '$day.heatindex.maxtime.format($timeFormat)';
 #raw $maxheatyest = #end raw '$yesterday.heatindex.max.format(add_label=False, localize=False)';
