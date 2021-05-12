@@ -13,16 +13,17 @@ ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
 FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
 details.
 
-Version: 0.1.0                                          Date: xx xxxxx 2021
+Version: 0.1.0                                          Date: 13 May 2021
 
 Revision History
-    xx xxxxx 2021       v0.1.0
+    13 May 2021         v0.1.0
         -   initial release
 """
 
 # python imports
 import configobj
 from distutils.version import StrictVersion
+
 try:
     # Python 3
     from io import StringIO
@@ -36,7 +37,7 @@ import weewx
 from setup import ExtensionInstaller
 
 REQUIRED_VERSION = "4.5.0"
-WS_VERSION = "0.1.0b5"
+WS_VERSION = "0.1.0"
 
 # Multi-line config string, makes it easier to include comments. Needs to be
 # explicitly set as unicode or python2 StringIO complains.
@@ -79,25 +80,14 @@ ws_config = u"""
         table_name = archive
         manager = weewx.manager.DaySummaryManager
         schema = user.wsschema.ws_schema
-    [[ws_supp_binding]]
-        database = ws_supp_sqlite
-        table_name = supp
-        manager = weewx.manager.Manager
-        schema = user.wsschema.ws_supp_schema
         
 [Databases]
     [[ws_sqlite]]
         database_type = SQLite
         database_name = weewxwd.sdb
-    [[ws_supp_sqlite]]
-        database_type = SQLite
-        database_name = wdsupp.sdb
     [[ws_mysql]]
         database_type = MySQL
         database_name = weewxwd
-    [[ws_supp_mysql]]
-        database_type = MySQL
-        database_name = wdsupp
         
 [WeewxSaratoga]
     # WeewxSaratoga database binding
@@ -107,10 +97,6 @@ ws_config = u"""
     # shining
     sunshine_threshold = 120
     
-    [[Supplementary]]
-        # WeewxSaratoga supplementary database binding
-        data_binding = ws_supp_binding
-            
     [[RealtimeClientraw]]
 
         # If using an external website, configure remote_server_url to point to 
@@ -153,7 +139,7 @@ ws_config = u"""
         accumulator = firstlast
         extractor = last
 """
-# obtain
+# obtain our config string as a configobj dict
 ws_dict = configobj.ConfigObj(StringIO(ws_config))
 
 
