@@ -12,10 +12,10 @@ This program is distributed in the hope that it will be useful, but WITHOUT ANY
 WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
 PARTICULAR PURPOSE.  See the GNU General Public License for more details.
 
-Version: 0.1.0                                          Date: xx xxxxx 2021
+Version: 0.1.0                                          Date: 13 May 2021
 
 Revision History
-    xx xxxxx 2021       v0.1.0
+    13 May 2021         v0.1.0
         - initial release
 
 Below are the default schemas for the WeeWX-Saratoga archive table and
@@ -40,18 +40,4 @@ ws_schema = [
     ('outTempDay',   'REAL'),
     ('outTempNight', 'REAL'),
     ('sunshine',     'REAL')
-    ]
-
-# define schema for supp table
-ws_supp_schema = [
-    ('dateTime',            'INTEGER NOT NULL UNIQUE PRIMARY KEY'),
-    ('usUnits',             'INTEGER NOT NULL'),
-    ('interval',            'INTEGER NOT NULL'),
-    ('forecastIcon',        'INTEGER'),
-    ('forecastText',        'VARCHAR(256)'),
-    ('currentIcon',         'INTEGER'),
-    ('currentText',         'VARCHAR(256)'),
-    ('vantageForecastIcon', 'INTEGER'),
-    ('vantageForecastRule', 'VARCHAR(256)'),
-    ('maxSolarRad',         'REAL')
     ]
