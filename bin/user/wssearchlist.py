@@ -12,17 +12,13 @@ This program is distributed in the hope that it will be useful, but WITHOUT ANY
 WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
 PARTICULAR PURPOSE.  See the GNU General Public License for more details.
 
-Version: 0.1.0                                          Date: xx xxxxx 2021
+Version: 0.1.0                                          Date: 13 May 2021
 
 Revision History
-    xx xxxxx 2021       v0.1.0
+    13 May 2021         v0.1.0
         -   initial release
 
-# TODO. Growing degree days, use .convert to do conversions
-# TODO. Growing degree days, can you have negative results
 # TODO. Yesterday almanac needs to handle case where there is no data for yesterday
-# TODO. Can avwind120 and fiends (in fact all in this SLE) be provided by standard WeeWX tags?
-# TODO. Line 1319 is 600 really needed for max
 """
 
 # python imports
@@ -33,7 +29,6 @@ import math
 import time
 
 from datetime import date
-from operator import itemgetter
 
 # WeeWX imports
 import user.wstaggedstats
@@ -726,6 +721,7 @@ class LastRainTags(weewx.cheetahgenerator.SearchList):
                     _row = db_lookup().getSql(_sql % interpolate)
                     if _row:
                         last_rain_ts = _row[0]
+                # TODO. Avoid bare except
                 except:
                     last_rain_ts = None
         else:
@@ -1005,7 +1001,6 @@ class SundryTags(weewx.cheetahgenerator.SearchList):
             self.generator.gen_ts = db_lookup().lastGoodStamp()
         self.generator.gen_ws_ts = db_lookup('ws_binding').lastGoodStamp()
         curr_rec = db_lookup().getRecord(self.generator.gen_ts)
-        curr_ws_rec = db_lookup().getRecord(self.generator.gen_ws_ts)
         # get the unit in use for each group
         (t_type, t_group) = getStandardUnitType(curr_rec['usUnits'],
                                                 'dateTime')
@@ -1028,7 +1023,6 @@ class SundryTags(weewx.cheetahgenerator.SearchList):
                             'Cool', 'Cold', 'Uncomfortably Cold', 'Very Cold',
                             'Extreme Cold']
         curr_rec_metric = weewx.units.to_METRIC(curr_rec)
-        curr_ws_rec_metric = weewx.units.to_METRIC(curr_ws_rec)
         temperature = curr_rec_metric.get('outTemp')
         windchill = curr_rec_metric.get('windchill')
         humidex = curr_rec_metric.get('humidex')
@@ -1324,9 +1318,7 @@ class TaggedStats(weewx.cheetahgenerator.SearchList):
 
         t1 = time.time()
 
-        # TODO. Ths comment does not make sense
-        # Get a TaggedStats structure. This allows constructs such as
-        # WDstats.monthdaily.outTemp.max
+        # get a WsTimeBinder object
         _stats = user.wstaggedstats.WsTimeBinder(db_lookup,
                                                  timespan.stop,
                                                  formatter=self.generator.formatter,
@@ -1410,9 +1402,7 @@ class TaggedArchiveStats(weewx.cheetahgenerator.SearchList):
 
         t1 = time.time()
 
-        # TODO. This comment does not make sense
-        # Get a WDTaggedStats structure. This allows constructs such as
-        # WDstats.minute.outTemp.max
+        # get a WsArchiveTimeBinder structure
         _stats = user.wstaggedstats.WsArchiveTimeBinder(db_lookup,
                                                         timespan.stop,
                                                         formatter=self.generator.formatter,
@@ -1460,8 +1450,8 @@ class YestAlmanac(weewx.cheetahgenerator.SearchList):
         """Returns a search list containing various Almanac related tags.
 
         Obtains an Almanac object for yesterday and returns this object as
-        'yestAlmanac' allowing use in WeeWX tags to obtain ephemeris data for
-        yesterday, eg: $yestAlmanac.sun.set for yesterdays sun set time.
+        'yest_almanac' allowing use in WeeWX tags to obtain ephemeris data for
+        yesterday, eg: $yest_almanac.sun.set for yesterdays sun set time.
 
         Returns a dict containing details of the next new moon and the
         preceding four moon phases. Each dict entry is keyed by a phase name
@@ -1481,8 +1471,8 @@ class YestAlmanac(weewx.cheetahgenerator.SearchList):
                        only parameter, will return a database manager object.
 
         Returns:
-            yestAlmanac: an Almanac object for yesterday
-            moonPhases: a dict of moon phases and times
+            yest_almanac: an Almanac object for yesterday
+            moon_phases: a dict of moon phases and times
             equinox: a dict of equinoxes and solstices and times
         """
 
@@ -1492,7 +1482,7 @@ class YestAlmanac(weewx.cheetahgenerator.SearchList):
         # obtain the report time, we consider this the current time
         gen_ts = self.generator.gen_ts
 
-        # yestAlmanac - an Almanac object for yesterday
+        # yest_almanac - an Almanac object for yesterday
 
         # gen_ts could be None, in which case we will use the last know good
         # timestamp in our db as the current time
@@ -1524,21 +1514,21 @@ class YestAlmanac(weewx.cheetahgenerator.SearchList):
             baro_mbar = 1010.0
         # obtain the Moon phase names we are to use
         _almanac_skin_dict = self.generator.skin_dict.get('Almanac', {})
-        moonphases = _almanac_skin_dict.get('moon_phases',
-                                            weeutil.Moon.moon_phases)
+        moon_phases = _almanac_skin_dict.get('moon_phases',
+                                             weeutil.Moon.moon_phases)
         # get our station altitude in metres
         altitude_vt = weewx.units.convert(self.generator.stn_info.altitude_vt,
                                           "meter")
-        yestAlmanac = weewx.almanac.Almanac(celestial_ts,
-                                            self.generator.stn_info.latitude_f,
-                                            self.generator.stn_info.longitude_f,
-                                            altitude=altitude_vt.value,
-                                            temperature=temp_c,
-                                            pressure=baro_mbar,
-                                            moon_phases=moonphases,
-                                            formatter=self.generator.formatter)
+        yest_almanac = weewx.almanac.Almanac(celestial_ts,
+                                             self.generator.stn_info.latitude_f,
+                                             self.generator.stn_info.longitude_f,
+                                             altitude=altitude_vt.value,
+                                             temperature=temp_c,
+                                             pressure=baro_mbar,
+                                             moon_phases=moon_phases,
+                                             formatter=self.generator.formatter)
 
-        # moonPhases - times of the previous and next moon phases
+        # moon_phases - times of the previous and next moon phases
 
         # we can use gen_ts as the current time but it could be None, in which
         # case we will use the last know good timestamp in our db as the
@@ -1567,23 +1557,23 @@ class YestAlmanac(weewx.cheetahgenerator.SearchList):
             temp_c = 15.0
         if baro_mbar is None:
             baro_mbar = 1010.0
-        # get an Almanac object, we can use the same altitude and moonphases
-        # data from yestAlmanac
-        nowAlmanac = weewx.almanac.Almanac(celestial_ts,
-                                           self.generator.stn_info.latitude_f,
-                                           self.generator.stn_info.longitude_f,
-                                           altitude=altitude_vt.value,
-                                           temperature=temp_c,
-                                           pressure=baro_mbar,
-                                           moon_phases=moonphases,
-                                           formatter=self.generator.formatter)
+        # get an Almanac object, we can use the same altitude and moon phases
+        # data from yest_almanac
+        now_almanac = weewx.almanac.Almanac(celestial_ts,
+                                            self.generator.stn_info.latitude_f,
+                                            self.generator.stn_info.longitude_f,
+                                            altitude=altitude_vt.value,
+                                            temperature=temp_c,
+                                            pressure=baro_mbar,
+                                            moon_phases=moon_phases,
+                                            formatter=self.generator.formatter)
         # initialise a list to hold details of each phase
         _phases = []
         # iterate over the pyephem previous and next moon phase properties
         for ph in self.phase_to_tags.keys():
             # get the phase details and save as a small dict to our list
             _phases.append({'name': self.phase_to_tags[ph],
-                            'ts': getattr(nowAlmanac, ph).raw})
+                            'ts': getattr(now_almanac, ph).raw})
         # now sort the list in order of ts from earliest to latest
         _phases.sort(key=lambda item: item.get('ts'))
         # obtain the index for the next new moon
@@ -1594,11 +1584,11 @@ class YestAlmanac(weewx.cheetahgenerator.SearchList):
         # quarter and two new moons (previous and next).
         _phases = _phases[index - 4:index + 1]
         # create a dict to hold our results
-        moonPhases = dict()
+        moon_phases = dict()
         # iterate over our phases
         for ph in _phases:
             # save a struct_time object in GMT for each phase
-            moonPhases[ph['name']] = time.gmtime(ph['ts'])
+            moon_phases[ph['name']] = time.gmtime(ph['ts'])
 
         # equinox -  times of this years equinoxes and solstices
 
@@ -1606,12 +1596,12 @@ class YestAlmanac(weewx.cheetahgenerator.SearchList):
         _equinoxes = []
         # get this year
         this_year = datetime.date.fromtimestamp(gen_ts).year
-        # iterate over the pyephem previous and next equinox/solstic properties
+        # iterate over the pyephem previous and next equinox/solstice properties
         for eq in self.equinox_to_tags.keys():
             # get the equinox/solstice details and save as a small dict to our
             # list
             _equinoxes.append({'name': self.equinox_to_tags[eq],
-                               'ts': getattr(nowAlmanac, eq).raw})
+                               'ts': getattr(now_almanac, eq).raw})
         # now sort the list in order of ts from earliest to latest
         _equinoxes.sort(key=lambda item: item.get('ts'))
         # We now have a list of dicts, sorted by time, of the previous two
@@ -1627,8 +1617,8 @@ class YestAlmanac(weewx.cheetahgenerator.SearchList):
             equinoxes[eq['name']] = time.gmtime(eq['ts'])
 
         # create a small dict with our results
-        sle_dict = {'yestAlmanac': yestAlmanac,
-                    'moonPhase': moonPhases,
+        sle_dict = {'yest_almanac': yest_almanac,
+                    'moonPhase': moon_phases,
                     'equinox': equinoxes}
 
         # get the time taken to execute and log if required
@@ -1657,68 +1647,6 @@ class SkinDict(weewx.cheetahgenerator.SearchList):
         t2 = time.time()
         if weewx.debug >= 2:
             logdbg("SkinDict SLE executed in %0.3f seconds" % (t2-t1))
-
-
-# ================================================================================
-#                            class MonthlyReportStats
-# ================================================================================
-
-# TODO. Is this SLE required?
-class MonthlyReportStats(weewx.cheetahgenerator.SearchList):
-    """SLE to return various date/time tags used in monthly report."""
-
-    def __init__(self, generator):
-        # call our parent's initialisation
-        super(MonthlyReportStats, self).__init__(generator)
-
-    def get_extension_list(self, timespan, db_lookup):
-        """Returns a search list extension with various date/time tags
-           used in WD monthly report template.
-
-        Parameters:
-            timespan: An instance of weeutil.weeutil.TimeSpan. This will hold
-                      the start and stop times of the domain of valid times.
-
-            db_lookup: This is a function that, given a data binding as its
-                       only parameter, will return a database manager object.
-
-        Returns:
-            month_name:      abbreviated month name (eg Dec) of start of
-                             timespan
-            month_long_name: long month name (eg December) of start of timespan
-            month_number:    month number (eg 12 for December) of start of
-                             timespan
-            year_name:       4 digit year (eg 2013) of start of timespan
-            curr_minute:     current minute of time of last record
-            curr_hour:       current hour of time of last record
-            curr_day:        day of time of last archive record
-            curr_month:      month of time of last archive record
-            curr_year:       year of time of last archive record
-        """
-
-        t1 = time.time()
-
-        # get a required times and convert to time tuples
-        timespan_start_tt = time.localtime(timespan.start)
-        stop_ts = db_lookup().lastGoodStamp()
-        stop_tt = time.localtime(stop_ts)
-
-        # create a small dictionary with the tag names (keys) we want to use
-        search_list = {'month_name':      time.strftime("%b", timespan_start_tt),
-                       'month_long_name': time.strftime("%B", timespan_start_tt),
-                       'month_number':    timespan_start_tt[1],
-                       'year_name':       timespan_start_tt[0],
-                       'curr_minute':     stop_tt[4],
-                       'curr_hour':       stop_tt[3],
-                       'curr_day':        stop_tt[2],
-                       'curr_month':      stop_tt[1],
-                       'curr_year':       stop_tt[0]}
-
-        t2 = time.time()
-        if weewx.debug >= 2:
-            logdbg("MonthlyReportStats SLE executed in %0.3f seconds" % (t2-t1))
-
-        return [search_list]
 
 
 # ==============================================================================
@@ -1784,6 +1712,7 @@ class HourRainTags(weewx.cheetahgenerator.SearchList):
         # enclose our query in a try..except block in case the earlier records
         # do not exist
         tspan = weeutil.weeutil.TimeSpan(start_ts, end_ts)
+        # TODO. Need to rework; _start_vt, _stop_vt and _rain_vt could all be None
         try:
             (_start_vt, _stop_vt, _rain_vt) = db_lookup().getSqlVectors(tspan,
                                                                         'rain')
@@ -1803,7 +1732,7 @@ class HourRainTags(weewx.cheetahgenerator.SearchList):
                 hour_rain.append([time_t, rain_t if rain_t is not None else 0.0])
                 # delete any records older than 1 hour
                 old_ts = time_t - 3600
-                hour_rain = [r for r in hour_rain if  r[0] > old_ts]
+                hour_rain = [r for r in hour_rain if r[0] > old_ts]
                 # get the total rain for the hour in our list
                 this_hour_rain = sum(rr[1] for rr in hour_rain)
                 # if it is more than our current max then update our stats
@@ -1890,7 +1819,7 @@ class ForToday(weewx.cheetahgenerator.SearchList):
         # get our stop month and day
         _stop_month = _stop_d.month
         _stop_day = _stop_d.day
-        # get a date object for todays day/month in the year of our first
+        # get a date object for today's day/month in the year of our first
         # (earliest) record
         _today_first_year_d = _stop_d.replace(year=_first_good_year)
         # Get a date object for the first occurrence of current day/month in
@@ -2642,7 +2571,7 @@ class ManualAverages(weewx.cheetahgenerator.SearchList):
         value are returned as ValueHelpers to allow unit conversion/formatting.
         If one or more month setting is invalid or missing the 'exists' flag
         (eg temp_man_avg_exists) is set to False indicating that there is not a
-        valid, complete suite of average settings for that group. Additinal
+        valid, complete suite of average settings for that group. Additional
         [[[Xxxxx]]] average groups can be catered for by adding to the
         self.average_groups, self.average_abb and self.units_dict dicts as
         required.

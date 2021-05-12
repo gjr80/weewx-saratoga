@@ -12,10 +12,10 @@ This program is distributed in the hope that it will be useful, but WITHOUT ANY
 WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
 PARTICULAR PURPOSE.  See the GNU General Public License for more details.
 
-Version: 0.1.0                                          Date: xx xxxxx 2021
+Version: 0.1.0                                          Date: 13 May 2021
 
 Revision History
-    xx xxxxx 2021       v0.1.0
+    13 May 2021         v0.1.0
         -   initial release
 """
 
@@ -50,8 +50,7 @@ except ImportError:
     import syslog
 
     def logmsg(level, msg):
-        syslog.syslog(level, 'wdastro: %s' % msg)
-
+        syslog.syslog(level, 'wsastro: %s' % msg)
 
     def logdbg(msg):
         logmsg(syslog.LOG_DEBUG, msg)
@@ -616,7 +615,7 @@ class EarthApsis(SearchList):
                      parameter, will return a database manager object.
 
         Returns:
-            next_perhelion: ValueHelper containing date-time of next perihelion
+            next_perihelion: ValueHelper containing date-time of next perihelion
             next_aphelion: ValueHelper containing date-time of next aphelion
         """
 
