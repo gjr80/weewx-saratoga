@@ -17,10 +17,10 @@ PARTICULAR PURPOSE.  See the GNU General Public License for more details.
 You should have received a copy of the GNU General Public License along with
 this program.  If not, see http://www.gnu.org/licenses/.
 
-Version: 0.3.0b5                                        Date: xx xxxxx 2021
+Version: 0.3.0                                          Date: 13 May 2021
 
 Revision History
-    xx xxxxx 2021       v0.3.0
+    13 May 2021         v0.3.0
         - WeeWX 3.4+/4.x python 2.7/3.x compatible
         - dropped support for python 2.5, python 2.6 may be supported but not
           guaranteed
@@ -126,7 +126,7 @@ weewx.conf as follows:
         # local save of clientraw.txt to prevent contention on the external web
         # server. The local save of clientraw.txt can be disabled by use of the
         # disable_local_save option. Set to True to disable or False to enable
-        # the local save of clientraw.txt. Default is False.
+        # the local save of clientraw.txt. Optional, default is False.
         # disable_local_save = False
 
         # Update windrun value each loop period or just on each archive period.
@@ -279,7 +279,7 @@ except ImportError:
 
 
 # version number of this script
-RTCR_VERSION = '0.3.0b5'
+RTCR_VERSION = '0.3.0'
 
 # the obs that we will buffer
 MANIFEST = ['outTemp', 'barometer', 'outHumidity', 'rain', 'rainRate',
@@ -820,7 +820,7 @@ class RealtimeClientrawThread(threading.Thread):
 
     def __init__(self, rtcr_queue, manager_dict, rtcr_config_dict, html_root,
                  location, latitude, longitude, altitude):
-        # initialize my superclass:
+        # initialize my superclass
         threading.Thread.__init__(self)
 
         self.setDaemon(True)
@@ -2411,37 +2411,6 @@ class RtcrBuffer(dict):
                                                                history=True,
                                                                sum=True)
 
-    # @staticmethod
-    # def seed_windrun(day_stats):
-    #     """Seed day windrun."""
-    #
-    #     if 'windSpeed' in day_stats:
-    #         # The wsum field hold the sum of (windSpeed * interval in seconds)
-    #         # for today so we can calculate windrun from wsum - just need to
-    #         # do a little unit conversion and scaling
-    #
-    #         # The day_stats units may be different to our buffer unit system so
-    #         # first convert the wsum value to a km_per_hour based value (the
-    #         # wsum 'units' are a distance but we can use the group_speed
-    #         # conversion to convert to a km_per_hour based value)
-    #         # first get the day_stats windSpeed unit and unit group
-    #         (unit, group) = weewx.units.getStandardUnitType(day_stats.unit_system,
-    #                                                         'windSpeed')
-    #         # now express wsum as a 'group_speed' ValueTuple
-    #         _wr_vt = ValueTuple(day_stats['windSpeed'].wsum, unit, group)
-    #         # convert it to a 'km_per_hour' based value, but we can only do
-    #         # that if our ValueTuple is all non-None
-    #         if _wr_vt.value is not None and _wr_vt.unit is not None and _wr_vt.group is not None:
-    #             _wr_km = convert(_wr_vt, 'km_per_hour').value
-    #             # but _wr_km was based on wsum which was based on seconds not hours
-    #             # so we need to divide by 3600 to get our real windrun in km
-    #             windrun = _wr_km/3600.0
-    #         else:
-    #             windrun = 0.0
-    #     else:
-    #         windrun = 0.0
-    #     return windrun
-
     def add_packet(self, packet):
         """Add a packet to the buffer."""
 
@@ -2468,18 +2437,11 @@ class RtcrBuffer(dict):
 
         # first add it as 'windSpeed' the scalar
         self.add_value(packet, obs_type, hilo, hist, sum)
-
-        # # update today's windrun
-        # if 'windSpeed' in packet:
-        #     try:
-        #         self.windrun += packet['windSpeed'] * (packet['dateTime'] - self.last_windSpeed_ts)/1000.0
-        #     except TypeError:
-        #         pass
-        #     self.last_windSpeed_ts = packet['dateTime']
-
-        # TODO. Comment this code
+        # then add it as a vector 'wind'
+        # have we seen 'wind' before, if not create it as a vector
         if 'wind' not in self:
             self['wind'] = VectorBuffer(stats=None, history=True)
+        # and add wind as a vector
         self['wind']._add_value((packet.get('windSpeed'), packet.get('windDir')),
                                 packet['dateTime'], False, True, False)
 

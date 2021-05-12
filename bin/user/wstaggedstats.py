@@ -12,12 +12,11 @@ This program is distributed in the hope that it will be useful, but WITHOUT ANY
 WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
 PARTICULAR PURPOSE.  See the GNU General Public License for more details.
 
-Version: 0.1.0                                          Date: xx xxxxx 2021
+Version: 0.1.0                                          Date: 13 May 2021
 
 Revision History
-    xx xxxxx 2021       v0.1.0
+    13 May 2021         v0.1.0
         -   initial release
-# TODO. Change any intervals in seconds of multiples of 1 day to a timedelta
 """
 
 # python imports
@@ -37,7 +36,7 @@ WS_TAGGED_STATS_VERSION = '0.1.0'
 # ==============================================================================
 
 class WsTimeBinder(object):
-    """Title?
+    """WeeWX-Saratoga TimeBinder.
 
         This class allows custom tagged stats drawn from the archive database
         in support of the WeeWX-Saratoga templates. This class along with the
@@ -259,35 +258,35 @@ class WsObservationBinder(object):
         self.option_dict = option_dict
 
     def maxQuery(self):
-        final=[]
+        final = []
         for tspan in self.genspans(self.timespan[0], self.timespan[1]):
             result = self.db_lookup().getAggregate(tspan, self.obs_type, 'max')
             final.append(weewx.units.ValueHelper(result, self.context, self.formatter, self.converter))
         return final
 
     def minQuery(self):
-        final=[]
+        final = []
         for tspan in self.genspans(self.timespan[0], self.timespan[1]):
             result = self.db_lookup().getAggregate(tspan, self.obs_type, 'min')
             final.append(weewx.units.ValueHelper(result, self.context, self.formatter, self.converter))
         return final
 
     def avgQuery(self):
-        final=[]
+        final = []
         for tspan in self.genspans(self.timespan[0], self.timespan[1]):
             result = self.db_lookup().getAggregate(tspan, self.obs_type, 'avg')
             final.append(weewx.units.ValueHelper(result, self.context, self.formatter, self.converter))
         return final
 
     def sumQuery(self):
-        final=[]
+        final = []
         for tspan in self.genspans(self.timespan[0], self.timespan[1]):
             result = self.db_lookup().getAggregate(tspan, self.obs_type, 'sum')
             final.append(weewx.units.ValueHelper(result, self.context, self.formatter, self.converter))
         return final
 
     def vecdirQuery(self):
-        final=[]
+        final = []
         for tspan in self.genspans(self.timespan[0], self.timespan[1]):
             result = self.db_lookup().getAggregate(tspan, self.obs_type, 'vecdir')
             final.append(weewx.units.ValueHelper(result, self.context, self.formatter, self.converter))
@@ -335,7 +334,7 @@ class WsObservationBinder(object):
 # ==============================================================================
 
 class WsArchiveTimeBinder(object):
-    """Title?
+    """WeeWX-Saratoga archive based TimeBinder.
 
         This class allows custom tagged stats drawn from the archive database
         in support of the WeeWX-Saratoga templates. This class along with the
@@ -345,7 +344,7 @@ class WsArchiveTimeBinder(object):
         -   $minute.xxxxxx.zzzzzz - hour of stats aggregated by minute
         -   $fifteenminute.xxxxxx.zzzzzz - day of stats aggregated by 15 minutes
         -   $hour.xxxxxx.zzzzzz - day of stats aggregated by hour
-        -   $sixhour.xxxxxx.zzzzzz - week of stats aggegated by 6 hours
+        -   $sixhour.xxxxxx.zzzzzz - week of stats aggregated by 6 hours
 
         where xxxxxx is a WeeWX observation eg outTemp, wind (stats database),
         windSpeed (archive database) etc recorded in the relevant database.
@@ -435,7 +434,7 @@ class WsArchiveTimeBinder(object):
 # ==============================================================================
 
 class WsArchiveTimespanBinder(object):
-    """Title?
+    """WeeWX-Saratoga Archive based TimespanBinder.
 
         Nearly stateless class that holds a binding to a stats database and a
         timespan.
@@ -516,7 +515,7 @@ class WsArchiveTimespanBinder(object):
 # ==============================================================================
 
 class WsArchiveObservationBinder(object):
-    """Title?
+    """WeeWx-Saratoga Archive based ObservationBinder.
 
         This is the final class in the chain of helper classes. It binds the
         statistical database, a time period, and a statistical type all
@@ -781,8 +780,8 @@ class WsArchiveObservationBinder(object):
                                                                             self.obs_type,
                                                                             'sum',
                                                                             self.agg_intvl)
-            vec_counter = 1 # counter points to the result vector element we are working with
-            prop = 60.0 / self.interval # factor to scale vector elements
+            vec_counter = 1  # counter points to the result vector element we are working with
+            prop = 60.0 / self.interval  # factor to scale vector elements
             # step through our 60 minute period minute by minute
             for i in range(60):
                 try:
@@ -821,9 +820,9 @@ class WsArchiveObservationBinder(object):
                         # otherwise our 'minute' ts is later than our current
                         # vector element we need to extrapolate and advance
                         try:
-                            res=result_vt.value[vec_counter + 1] * prop
+                            res = result_vt.value[vec_counter + 1] * prop
                         except (IndexError, TypeError, ValueError):
-                            res=0
+                            res = 0
                         # add our extrapolated result as a ValueHelper
                         final.append(weewx.units.ValueHelper((res, result_vt.unit, result_vt.group),
                                                              'minute',
