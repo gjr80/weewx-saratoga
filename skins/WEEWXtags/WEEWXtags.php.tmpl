@@ -27,7 +27,7 @@ Pre-Requisites
 - WeeWX-Saratoga WeeWX extension
 - PyEphem for inclusion of ephemeris and insolation data
 
-Version: 0.1.0                                      Date: xx xxxxx 2021
+Version: 0.1.0                                      Date: 13 May 2021
 *#
 #*
 Inline python code to setup/initialise a number of variables for use in the
@@ -161,11 +161,9 @@ Astronomical tags/calculations
 #set $monthDaysColdm15 = $month.outTemp.min_le((-15.0,"degree_C")).format(format_string="%6d", add_label=False, localize=False).strip
 ##
 ## max gust last hour calculation
-## TODO. Can this be replaced by a tag
 #set $max_gust_last_hour_ts = $span($hour_delta=1).windGust.maxtime.raw
 ##
 ## max average wind direction calculations
-## TODO. Can these be replaced by tags
 #set $max_av_wind_ts = $day.windSpeed.maxtime.raw
 #set $yest_max_av_wind_ts = $yesterday.windSpeed.maxtime.raw
 ##
