@@ -13,10 +13,10 @@ This program is distributed in the hope that it will be useful, but WITHOUT ANY
 WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
 PARTICULAR PURPOSE.  See the GNU General Public License for more details.
 
-Version: 0.1.0                                          Date: xx xxxxx 2021
+Version: 0.1.0                                          Date: 13 May 2021
 
 Revision History
-    xx xxxxx 2021       v0.1.0
+    13 May 2021         v0.1.0
         -   initial release
 
 """
@@ -24,7 +24,6 @@ Revision History
 # python imports
 from __future__ import absolute_import
 import datetime
-import logging
 import math
 import time
 
@@ -248,7 +247,8 @@ class WSXTypes(weewx.xtypes.XType):
         # required as group_count only supports one unit
         return weewx.units.ValueTuple(cbi, 'count', 'group_count')
 
-    def calc_Easter(self, obs_type, record, db_manager):
+    @staticmethod
+    def calc_Easter(obs_type, record, db_manager):
         """Calculate the Easter Sunday date for the current year."""
 
         def calc_easter(year):
@@ -289,7 +289,8 @@ class WSXTypes(weewx.xtypes.XType):
         easter_ts = calc_easter(_year)
         return weewx.units.ValueTuple(easter_ts, 'unix_epoch', 'group_time')
 
-    def calc_forecastText(self, obs_type, record, db_manager):
+    @staticmethod
+    def calc_forecastText(obs_type, record, db_manager):
         """Obtain the Davis forecast text string."""
 
         # Define a dictionary to look up Davis forecast rule and return
@@ -364,7 +365,7 @@ class WSXTypes(weewx.xtypes.XType):
             66: 'Increasing clouds and warmer. Precipitation possible within 12 hours.',
             67: 'Partly cloudy with little temperature change.',
             68: 'Mostly clear with little temperature change.',
-            69: 'Increasing clouds and warmer. Precipitation likley.',
+            69: 'Increasing clouds and warmer. Precipitation likely.',
             70: 'Clearing and cooler. Precipitation ending within 6 hours.',
             71: 'Partly cloudy with little temperature change.',
             72: 'Clearing and cooler. Precipitation ending within 6 hours.',
@@ -556,4 +557,3 @@ weewx.units.default_unit_label_dict['kg_per_meter_cubed'] = u' kg/m³'
 # belong to
 weewx.units.obs_group_dict['wet_bulb'] = "group_temperature"
 weewx.units.obs_group_dict['air_density'] = "group_density"
-

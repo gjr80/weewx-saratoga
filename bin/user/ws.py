@@ -13,30 +13,19 @@ ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
 FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
 details.
 
-Version: 0.1.0                                          Date: xx xxxxx 2021
+Version: 0.1.0                                          Date: 13 May 2021
 
 Revision History
 
-    xx xxxxx 2021       v0.1.0
+    13 May 2021         v0.1.0
         - initial release
 """
 
 # python imports
-import socket
-import syslog
-import threading
-import json
-import os
 import time
 from datetime import datetime
 
-# python 2/3 compatibility shims
-from six import iteritems
-from six.moves import queue
-from six.moves import urllib
-
 # WeeWX imports
-import weeutil.weeutil
 import weewx
 import weewx.almanac
 import weewx.engine
@@ -45,14 +34,12 @@ import weewx.units
 import weewx.wxformulas
 
 from weewx.units import obs_group_dict
-from weeutil.weeutil import accumulateLeaves, to_int, to_bool
 
 # import/setup logging, WeeWX v3 is syslog based but WeeWX v4 is logging based,
 # try v4 logging and if it fails use v3 logging
 try:
     # WeeWX4 logging
     import logging
-    from weeutil.logger import log_traceback
 
     log = logging.getLogger(__name__)
 
@@ -68,20 +55,9 @@ try:
     def logcri(msg):
         log.critical(msg)
 
-    # log_traceback() generates the same output but the signature and code is
-    # different between v3 and v4. We only need log_traceback at the log.error
-    # level so define a suitable wrapper function.
-
-    def log_traceback_critical(prefix=''):
-        log_traceback(log.critical, prefix=prefix)
-
-    def log_traceback_info(prefix=''):
-        log_traceback(log.info, prefix=prefix)
-
 except ImportError:
     # WeeWX legacy (v3) logging via syslog
     import syslog
-    from weeutil.weeutil import log_traceback
 
     def logmsg(level, msg):
         syslog.syslog(level, 'ws: %s' % msg)
@@ -96,17 +72,7 @@ except ImportError:
         logmsg(syslog.LOG_ERR, msg)
 
     def logcri(msg):
-        logmsg(syslog.LOG_CRITICAL, msg)
-
-    # log_traceback() generates the same output but the signature and code is
-    # different between v3 and v4. We only need log_traceback at the log.error
-    # level so define a suitable wrapper function.
-
-    def log_traceback_critical(prefix=''):
-        log_traceback(prefix=prefix, loglevel=syslog.LOG_CRIT)
-
-    def log_traceback_info(prefix=''):
-        log_traceback(prefix=prefix, loglevel=syslog.LOG_INFO)
+        logmsg(syslog.LOG_CRIT, msg)
 
 WS_VERSION = '0.1.0'
 
@@ -131,14 +97,13 @@ class WsWXCalculate(weewx.engine.StdService):
             self.sunshine_threshold = config_dict['WeewxSaratoga'].get('sunshine_threshold',
                                                                        DEFAULT_SUNSHINE_THRESHOLD)
         else:
-            self.sunshine_threshold  = DEFAULT_SUNSHINE_THRESHOLD
+            self.sunshine_threshold = DEFAULT_SUNSHINE_THRESHOLD
         # bind our self to new loop packet and new archive record events
         self.bind(weewx.NEW_LOOP_PACKET, self.new_loop_packet)
         self.bind(weewx.NEW_ARCHIVE_RECORD, self.new_archive_record)
         # log our version and config
         loginf("WsWXCalculate version %s" % WS_VERSION)
         loginf("WsWXCalculate sunshine threshold: %s" % self.sunshine_threshold)
-
 
     @staticmethod
     def new_loop_packet(event):
@@ -223,7 +188,6 @@ class WsArchive(weewx.engine.StdService):
         loginf("Using binding '%s' to database '%s'" % (self.data_binding,
                                                         dbmanager.database_name))
 
-        # FIXME. Is this still required
         # Check if we have any historical data to bring in from the WeeWX
         # archive.
         # first get a dbmanager for the WeeWX archive
