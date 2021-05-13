@@ -2048,9 +2048,21 @@ class RealtimeClientrawThread(threading.Thread):
             string.
         """
 
-        result = str(data)
+        # Attempt to convert our data to a string, this will be the result we
+        # return if we cannot format as specified. Our data could be a unicode
+        # string so be prepared to catch the error.
+        try:
+            result = str(data)
+        except UnicodeEncodeError:
+            # our data is a unicode string so coalesce to a six.text_type
+            result = six.ensure_text(data)
+        # if our data is None then w don't want to return 'None'
+        # (str(None) == 'None') so return '0.0' instead
         if data is None:
             result = '0.0'
+        # If places is not None then format as a float to 'places' decimal
+        # places. Be prepared to catch any errors and pass through our original
+        # data.
         elif places is not None:
             try:
                 _v = float(data)
@@ -2058,6 +2070,7 @@ class RealtimeClientrawThread(threading.Thread):
                 result = _format % _v
             except ValueError:
                 pass
+        # finally return our result
         return result
 
 
