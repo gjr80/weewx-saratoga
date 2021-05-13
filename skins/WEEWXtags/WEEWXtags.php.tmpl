@@ -68,7 +68,7 @@ Setup a couple of shorthand variables
 Astronomical tags/calculations
 *#
 #if $almanac.hasExtras
-    #set $changeInDaySeconds = ($almanac.sun.set.raw - $almanac.sun.rise.raw) - ($yestAlmanac.sun.set.raw - $yestAlmanac.sun.rise.raw)
+    #set $changeInDaySeconds = ($almanac.sun.set.raw - $almanac.sun.rise.raw) - ($yest_almanac.sun.set.raw - $yest_almanac.sun.rise.raw)
     #set $changeInDay = $time.gmtime(round(abs($changeInDaySeconds), 1))
     #if $changeInDaySeconds < 0
         #set $cidSign="-"
@@ -84,8 +84,8 @@ Astronomical tags/calculations
     #set $moonAge = $time.gmtime($now - $almanac.previous_new_moon.raw)
     #set $moonDays = int(($now - $almanac.previous_new_moon.raw)/86400)
 #else
-    #set $changeInDay = $time.gmtime(($almanac.sunset.raw - $almanac.sunrise.raw) - ($yestAlmanac.sunset.raw - $yestAlmanac.sunrise.raw))
-    #if int(($almanac.sunset.raw - $almanac.sunrise.raw) - ($yestAlmanac.sunset.raw - $yestAlmanac.sunrise.raw)) < 0
+    #set $changeInDay = $time.gmtime(($almanac.sunset.raw - $almanac.sunrise.raw) - ($yest_almanac.sunset.raw - $yest_almanac.sunrise.raw))
+    #if int(($almanac.sunset.raw - $almanac.sunrise.raw) - ($yest_almanac.sunset.raw - $yest_almanac.sunrise.raw)) < 0
         #set $cidSign="-"
     #else
         #set $cidSign=""
