@@ -1,8 +1,8 @@
 # WeeWX-Saratoga #
 
-A *WeeWX* extension to support the [*Saratoga Weather Website Templates*](https://saratoga-weather.org/wxtemplates/index.php) with the *WEEWX-plugin* installed. You can also install scripts that rely on the [Weather-Display](https://www.weather-display.com/files.php) _clientraw*.txt_ files for operation (such as the [alternative dashboard](https://saratoga-weather.org/scripts-legacy.php#scott), or the [clientraw parser](https://saratoga-weather.org/scripts-legacy.php#relayweather)) since this extension generates the needed files.
+The *WeeWX-Saratoga extension* is a *WeeWX* extension to support the [*Saratoga Weather Website Templates*](https://saratoga-weather.org/wxtemplates/index.php) with the *WEEWX-plugin* installed. The extension also supports the *Saratoga Weather Website templates* [Alternative dashboard](https://saratoga-weather.org/scripts-legacy.php#scott). The extension can also be used to support any scripts that rely on one or more of the [Weather-Display](https://www.weather-display.com/files.php) *clientraw* family of files for operation.
 
-The *WeeWX-Saratoga extension* consists of a number of *WeeWX* services, Search List Extensions (SLE) and skins that produce the following data files:
+The *WeeWX-Saratoga extension* consists of a number of [*WeeWX* services](http://weewx.com/docs/customizing.htm#Overall_system_architecture), [Search List Extensions (SLE)](http://weewx.com/docs/customizing.htm#extending_the_list), [XTypes](http://weewx.com/docs/customizing.htm#Adding_new,_derived_types) and [reports/skins](http://weewx.com/docs/customizing.htm#The_standard_reporting_service,_StdReport) that produce the following data files:
 
 -   clientraw.txt
 -   clientrawextra.txt
@@ -10,26 +10,27 @@ The *WeeWX-Saratoga extension* consists of a number of *WeeWX* services, Search 
 -   clientrawhour.txt
 -   daywindrose.png
 -   WEEWXtags.php
+-   various observation plots
 
 The above files are produced during each *WeeWX* report cycle with the exception of *clientraw.txt* which is generated upon receipt of loop packets and (by default) updated at 10 second intervals.
 
-The *WeeWX-Saratoga extension* is based on the *WeeWD-WD* extension. (https://bitbucket.org/ozgreg/weewx-wd and https://github.com/gjr80/weewx-weewx-wd).
+The *WeeWX-Saratoga extension* is based on the *WeeWX-WD extension*. (https://bitbucket.org/ozgreg/weewx-wd and https://github.com/gjr80/weewx-weewx-wd).
 
 
 ## Pre-Requisites ##
 
 The *WeeWX-Saratoga extension* requires:
 
-- *WeeWX* v4.2.0 or later (both Python 2 and Python 3 are supported), and
+- *WeeWX* v4.5.0 or later (both Python 2 and Python 3 are supported), and
 
-- *Pyephem* for extended almanac information. Refer to [WeeWX: Installation using setup.py](http://weewx.com/docs/setup.htm) for the commands to install *python3-ephem* or *pyephem* for your system.
+- *Pyephem* for extended almanac information. Refer to [WeeWX: Installation using setup.py](http://weewx.com/docs/setup.htm) for the commands to install *python3-ephem* (Python 3) or *pyephem* (Python 2) for your system.
 
 
 ## Installation Instructions ##
 
 The preferred method of installing or upgrading the *WeeWX-Saratoga extension* is using the *WeeWX* [*wee_extension* utility](http://weewx.com/docs/utilities.htm#wee_extension_utility). The *WeeWX-Saratoga extension* can also be installed manually.
 
-**Note**: If installing *WeeWX-Saratoga* in place of a previous *WeeWX-WD* installation you should uninstall *WeeWX-WD* before installing the *WeeWX-Saratoga extension*. You may wish to make a backup copy of *weewx.conf* before uninstalling *WeeWX-WD* to aid in configuring the subsequent *WeeWX-Saratoga* installation. The *WeeWX-Saratoga extension* uses the same databases as used by *WeeWX-WD* so these databases should be retained when uninstalling *WeeWX-WD*.
+**Note**: If installing *WeeWX-Saratoga* in place of a previous *WeeWX-WD* please refer to the [Upgrading from *WeeWX-WD*](https://github.com/gjr80/weewx-saratoga/wiki/Upgrading-from-WeeWX%E2%80%90WD) wiki page.
 
 **Note**: Symbolic names are used below to refer to file locations on the *WeeWX* system. Symbolic names allow a common name to be used to refer to a directory that may be different from system to system. The following symbolic names are used below:
 
