@@ -1,6 +1,6 @@
 # WeeWX-Saratoga #
 
-The *WeeWX-Saratoga extension* is a *WeeWX* extension to support the [*Saratoga Weather Website Templates*](https://saratoga-weather.org/wxtemplates/index.php) using the *WEEWX-plugin*. The extension also supports the *Saratoga Weather Website templates* [Alternative dashboard](https://saratoga-weather.org/scripts-legacy.php#scott) and can also be used to support any scripts that rely on one or more of the [Weather-Display](https://www.weather-display.com/files.php) *clientraw* family of files for operation.
+The *WeeWX-Saratoga extension* is a *WeeWX* extension to support the [*Saratoga Weather Website Templates*](https://saratoga-weather.org/wxtemplates/index.php) using the *WEEWX-plugin*. The extension also supports the *Saratoga Weather Website templates* [Alternative dashboard](https://saratoga-weather.org/scripts-legacy.php#scott) and can also be used to support any scripts that rely on one or more of the [Weather-Display](https://www.weather-display.com/index.php) *clientraw* family of files for operation.
 
 The *WeeWX-Saratoga extension* consists of a number of [*WeeWX* services](http://weewx.com/docs/customizing.htm#Overall_system_architecture), [Search List Extensions (SLE)](http://weewx.com/docs/customizing.htm#extending_the_list), [XTypes](http://weewx.com/docs/customizing.htm#Adding_new,_derived_types) and [reports/skins](http://weewx.com/docs/customizing.htm#The_standard_reporting_service,_StdReport) that produce the following data files:
 
@@ -283,7 +283,7 @@ Refer to [where to find things](http://weewx.com/docs/usersguide.htm#Where_to_fi
 
 ## Support ##
 
-General support issues for the *WeeWX-Saratoga extension* may be raised in the Google Groups [weewx-user forum](https://groups.google.com/group/weewx-user "Google Groups weewx-user forum"). The *WeeWX-Saratoga extension* [Issues Page](https://github.com/gjr80/weewx-weewx-wd/issues "WeeWX-Saratoga extension Issues") should only be used for specific bugs in the *WeeWX-Saratoga extension* code. It is recommended that even if a *WeeWX-Saratoga extension* bug is suspected users first post to the Google Groups [weewx-user forum](https://groups.google.com/group/weewx-user "Google Groups weewx-user forum"). Support for the [_WEEWX-plugin_](https://saratoga-weather.org/wxtemplates/install.php) for the *Saratoga Weather Website templates* should be via posts on [WXForum.net, Custom Templates/Scripts board](https://www.wxforum.net/index.php?board=102.0).
+General support issues for the *WeeWX-Saratoga extension* may be raised in the Google Groups [weewx-user forum](https://groups.google.com/g/weewx-user "Google Groups weewx-user forum"). The *WeeWX-Saratoga extension* [Issues Page](https://github.com/gjr80/weewx-weewx-wd/issues "WeeWX-Saratoga extension Issues") should only be used for specific bugs in the *WeeWX-Saratoga extension* code. It is recommended that even if a *WeeWX-Saratoga extension* bug is suspected users first post to the Google Groups [weewx-user forum](https://groups.google.com/g/weewx-user "Google Groups weewx-user forum"). Support for the [_WEEWX-plugin_](https://saratoga-weather.org/wxtemplates/install.php) for the *Saratoga Weather Website templates* should be via posts on [WXForum.net, Custom Templates/Scripts board](https://www.wxforum.net/index.php?board=102.0).
 
 ## Licensing ##
 
