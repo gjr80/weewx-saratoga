@@ -1,6 +1,6 @@
 # WeeWX-Saratoga #
 
-The *WeeWX-Saratoga extension* is a *WeeWX* extension to support the [*Saratoga Weather Website Templates*](https://saratoga-weather.org/wxtemplates/index.php) with the *WEEWX-plugin* installed. The extension also supports the *Saratoga Weather Website templates* [Alternative dashboard](https://saratoga-weather.org/scripts-legacy.php#scott). The extension can also be used to support any scripts that rely on one or more of the [Weather-Display](https://www.weather-display.com/files.php) *clientraw* family of files for operation.
+The *WeeWX-Saratoga extension* is a *WeeWX* extension to support the [*Saratoga Weather Website Templates*](https://saratoga-weather.org/wxtemplates/index.php) using the *WEEWX-plugin*. The extension also supports the *Saratoga Weather Website templates* [Alternative dashboard](https://saratoga-weather.org/scripts-legacy.php#scott) and can also be used to support any scripts that rely on one or more of the [Weather-Display](https://www.weather-display.com/files.php) *clientraw* family of files for operation.
 
 The *WeeWX-Saratoga extension* consists of a number of [*WeeWX* services](http://weewx.com/docs/customizing.htm#Overall_system_architecture), [Search List Extensions (SLE)](http://weewx.com/docs/customizing.htm#extending_the_list), [XTypes](http://weewx.com/docs/customizing.htm#Adding_new,_derived_types) and [reports/skins](http://weewx.com/docs/customizing.htm#The_standard_reporting_service,_StdReport) that produce the following data files:
 
@@ -14,7 +14,7 @@ The *WeeWX-Saratoga extension* consists of a number of [*WeeWX* services](http:/
 
 The above files are produced during each *WeeWX* report cycle with the exception of *clientraw.txt* which is generated upon receipt of loop packets and (by default) updated at 10 second intervals.
 
-The *WeeWX-Saratoga extension* is based on the *WeeWX-WD extension*. (https://bitbucket.org/ozgreg/weewx-wd and https://github.com/gjr80/weewx-weewx-wd).
+The *WeeWX-Saratoga extension* is based on the original [*weewx-WD extension*](https://bitbucket.org/ozgreg/weewx-wd) and the later forked [*WeeWX-WD extension*](https://github.com/gjr80/weewx-weewx-wd).
 
 
 ## Pre-Requisites ##
@@ -26,7 +26,7 @@ The *WeeWX-Saratoga extension* requires:
 - *Pyephem* for extended almanac information. Refer to [WeeWX: Installation using setup.py](http://weewx.com/docs/setup.htm) for the commands to install *python3-ephem* (Python 3) or *pyephem* (Python 2) for your system.
 
 
-## Installation Instructions ##
+## Installation and Upgrade Instructions ##
 
 The preferred method of installing or upgrading the *WeeWX-Saratoga extension* is using the *WeeWX* [*wee_extension* utility](http://weewx.com/docs/utilities.htm#wee_extension_utility). The *WeeWX-Saratoga extension* can also be installed manually.
 
@@ -43,7 +43,7 @@ The preferred method of installing or upgrading the *WeeWX-Saratoga extension* i
 Refer to [where to find things](http://weewx.com/docs/usersguide.htm#Where_to_find_things) in the *WeeWX User's Guide* for further information.
 
 
-### Installation using the *wee_extension* utility ###
+### Installing or Upgrading using the *wee_extension* utility ###
 
 1.  Download the *WeeWX-Saratoga extension* from the *WeeWX-Saratoga extension* [releases page](https://github.com/gjr80/weewx-saratoga/releases) into a directory accessible from the *WeeWX* machine:
 
@@ -82,6 +82,10 @@ Refer to [where to find things](http://weewx.com/docs/usersguide.htm#Where_to_fi
 		Saved configuration dictionary. Backup copy at /home/weewx/weewx.conf.20210403130000
 		Finished installing extension '/var/tmp/ws-0.1.0.tar.gz'
 
+    **Note:** If upgrading an existing *WeeWX-Saratoga extension* installation any previous *WeeWX-Saratoga extension* configuration information in *weewx.conf* will have been retained and upgraded as required. *wee_extension* will save a timestamped backup copy of the pre-upgrade *weewx.conf* as detailed in the *wee_extension* output, eg:
+    
+        Saved configuration dictionary. Backup copy at /home/weewx/weewx.conf.20210403130000
+    
 1. Start *WeeWX*:
 
         $ sudo /etc/init.d/weewx start
@@ -98,7 +102,7 @@ Refer to [where to find things](http://weewx.com/docs/usersguide.htm#Where_to_fi
 
 1. The *WeeWX-Saratoga extension* installation can be further customized (eg remote file transfer, units of measure etc) by referring to the [WeeWX-Saratoga wiki](https://github.com/gjr80/weewx-saratoga/wiki).
 
-### Manual installation ###
+### Installing or upgrading manually ###
 
 1.  Download the *WeeWX-Saratoga extension* from the *WeeWX-Saratoga extension* [releases page](https://github.com/gjr80/weewx-saratoga/releases) into a directory accessible from the *WeeWX* machine.
 
@@ -120,6 +124,8 @@ Refer to [where to find things](http://weewx.com/docs/usersguide.htm#Where_to_fi
 1.  Edit *weewx.conf*:
 
         $ vi weewx.conf
+    
+    **Note:** If manually upgrading an existing *WeeWX-Saratoga extension* installation it is the user's responsibility to retain any previous *WeeWX-Saratoga extension* configuration information in *weewx.conf*. It is strongly recommended that a backup copy of *weewx.conf* be made before any upgrade changes are made to *weewx.conf*.
 
 1.  In *weewx.conf*, modify the *[StdReport]* section by adding the following sub-sections:
 
@@ -277,7 +283,7 @@ Refer to [where to find things](http://weewx.com/docs/usersguide.htm#Where_to_fi
 
 ## Support ##
 
-General support issues may be raised in the Google Groups [weewx-user forum](https://groups.google.com/group/weewx-user "Google Groups weewx-user forum"). Specific bugs in the *WeeWX-Saratoga extension* code should be the subject of a new issue raised here via the [Issues Page](https://github.com/gjr80/weewx-weewx-wd/issues "WeeWX-Saratoga extension Issues").  Support for the [_WEEWX-plugin_](https://saratoga-weather.org/wxtemplates/install.php) for the Saratoga website template should be via posts on [WXForum.net, Custom Templates/Scripts board](https://www.wxforum.net/index.php?board=102.0).
+General support issues for the *WeeWX-Saratoga extension* may be raised in the Google Groups [weewx-user forum](https://groups.google.com/group/weewx-user "Google Groups weewx-user forum"). The *WeeWX-Saratoga extension* [Issues Page](https://github.com/gjr80/weewx-weewx-wd/issues "WeeWX-Saratoga extension Issues") should only be used for specific bugs in the *WeeWX-Saratoga extension* code. It is recommended that even if a *WeeWX-Saratoga extension* bug is suspected users first post to the Google Groups [weewx-user forum](https://groups.google.com/group/weewx-user "Google Groups weewx-user forum"). Support for the [_WEEWX-plugin_](https://saratoga-weather.org/wxtemplates/install.php) for the *Saratoga Weather Website templates* should be via posts on [WXForum.net, Custom Templates/Scripts board](https://www.wxforum.net/index.php?board=102.0).
 
 ## Licensing ##
 
