@@ -23,14 +23,14 @@ The *WeeWX-Saratoga extension* requires:
 
 - *WeeWX* v4.5.0 or later (both Python 2 and Python 3 are supported), and
 
-- *Pyephem* for extended almanac information. Refer to [WeeWX: Installation using setup.py](http://weewx.com/docs/setup.htm) for the commands to install *python3-ephem* (Python 3) or *pyephem* (Python 2) for your system.
+- the *Pyephem* Python library for extended almanac information. Refer to [WeeWX: Installation using setup.py](http://weewx.com/docs/setup.htm) for the commands to install *python3-ephem* (Python 3) or *pyephem* (Python 2) for your system.
 
 
 ## Installation and Upgrade Instructions ##
 
 The preferred method of installing or upgrading the *WeeWX-Saratoga extension* is using the *WeeWX* [*wee_extension* utility](http://weewx.com/docs/utilities.htm#wee_extension_utility). The *WeeWX-Saratoga extension* can also be installed manually.
 
-**Note**: If installing *WeeWX-Saratoga* in place of a previous *WeeWX-WD* please refer to the [Upgrading from *WeeWX-WD*](https://github.com/gjr80/weewx-saratoga/wiki/Upgrading-from-WeeWX%E2%80%90WD) wiki page.
+**Note**: If installing the *WeeWX-Saratoga extension* in place of *WeeWX-WD* please refer to the [Upgrading from *WeeWX-WD*](https://github.com/gjr80/weewx-saratoga/wiki/Upgrading-from-WeeWX%E2%80%90WD) wiki page.
 
 **Note**: Symbolic names are used below to refer to file locations on the *WeeWX* system. Symbolic names allow a common name to be used to refer to a directory that may be different from system to system. The following symbolic names are used below:
 
@@ -213,18 +213,12 @@ Refer to [where to find things](http://weewx.com/docs/usersguide.htm#Where_to_fi
         [[ws_sqlite]]
             database_type = SQLite
             database_name = weewxwd.sdb
-        [[ws_supp_sqlite]]
-            database_type = SQLite
-            database_name = wdsupp.sdb
 
     if using MySQL instead add something like (with settings for your MySQL setup):
 
         [[ws_mysql]]
             database_type = MySQL
             database_name = weewxwd
-        [[ws_supp_mysql]]
-            database_type = MySQL
-            database_name = wdsupp
 
 1.  In *weewx.conf*, add the following sub-section to the *[DataBindings]* section:
 
@@ -233,11 +227,6 @@ Refer to [where to find things](http://weewx.com/docs/usersguide.htm#Where_to_fi
             table_name = archive
             manager = weewx.manager.DaySummaryManager
             schema = user.wsschema.ws_schema
-        [[ws_supp_binding]]
-            database = ws_supp_sqlite
-            table_name = supp
-            manager = weewx.manager.Manager
-            schema = user.wsschema.ws_supp_schema
 
     if using MySQL instead, add something like (with settings for your MySQL
     setup):
@@ -247,12 +236,6 @@ Refer to [where to find things](http://weewx.com/docs/usersguide.htm#Where_to_fi
             table_name = archive
             manager = weewx.manager.DaySummaryManager
             schema = user.wdschema.weewxwd_schema
-
-        [[wdsupp_binding]]
-            database = wd_supp_mysql
-            table_name = supp
-            manager = weewx.manager.Manager
-            schema = user.wdschema.wdsupp_schema
 
 1.  In *weewx.conf*, modify the services lists in *[Engine]* as indicated:
 
@@ -283,7 +266,7 @@ Refer to [where to find things](http://weewx.com/docs/usersguide.htm#Where_to_fi
 
 ## Support ##
 
-General support issues for the *WeeWX-Saratoga extension* may be raised in the Google Groups [weewx-user forum](https://groups.google.com/g/weewx-user "Google Groups weewx-user forum"). The *WeeWX-Saratoga extension* [Issues Page](https://github.com/gjr80/weewx-weewx-wd/issues "WeeWX-Saratoga extension Issues") should only be used for specific bugs in the *WeeWX-Saratoga extension* code. It is recommended that even if a *WeeWX-Saratoga extension* bug is suspected users first post to the Google Groups [weewx-user forum](https://groups.google.com/g/weewx-user "Google Groups weewx-user forum"). Support for the [_WEEWX-plugin_](https://saratoga-weather.org/wxtemplates/install.php) for the *Saratoga Weather Website templates* should be via posts on [WXForum.net, Custom Templates/Scripts board](https://www.wxforum.net/index.php?board=102.0).
+General support issues for the *WeeWX-Saratoga extension* may be raised in the Google Groups [weewx-user forum](https://groups.google.com/g/weewx-user "Google Groups weewx-user forum"). The *WeeWX-Saratoga extension* [Issues Page](https://github.com/gjr80/weewx-saratoga/issues "WeeWX-Saratoga extension Issues") should only be used for specific bugs in the *WeeWX-Saratoga extension* code. It is recommended that even if a *WeeWX-Saratoga extension* bug is suspected users first post to the Google Groups [weewx-user forum](https://groups.google.com/g/weewx-user "Google Groups weewx-user forum"). Support for the [_WEEWX-plugin_](https://saratoga-weather.org/wxtemplates/install.php) for the *Saratoga Weather Website templates* should be via posts on [WXForum.net, Custom Templates/Scripts board](https://www.wxforum.net/index.php?board=102.0).
 
 ## Licensing ##
 
