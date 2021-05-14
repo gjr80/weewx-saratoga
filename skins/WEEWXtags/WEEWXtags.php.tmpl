@@ -41,7 +41,7 @@ template
 #*
 Setup date-time format strings
 *#
-#set $dmYFormat = $skin_dict.Units.TimeFormats.get('date_f', '%-d/%-m/%Y').translate({37: '', 45: ''}).lower()
+#set $dmYFormat = $skin_dict.Units.TimeFormats.get('date_f', '%-d/%-m/%Y').replace('%', '').replace('-', '').lower()
 #set $timeFormat = $skin_dict.Units.TimeFormats.get('time_f', '%H:%M')
 #set $secondFormat = $skin_dict.Units.TimeFormats.get('second_f', '%S')
 #set $timeLongFormat = ':'.join([$timeFormat, $secondFormat])
