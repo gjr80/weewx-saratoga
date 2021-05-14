@@ -178,6 +178,9 @@ class WSInstaller(ExtensionInstaller):
                                         'skins/Clientraw/clientrawhour.txt.tmpl',
                                         'skins/Clientraw/skin.conf']),
                    ('skins/WEEWXtags', ['skins/WEEWXtags/skin.conf',
-                                        'skins/WEEWXtags/WEEWXtags.php.tmpl']),
+                                        'skins/WEEWXtags/WEEWXtags.php.tmpl',
+                                        'skins/WEEWXtags/font/LICENSE.txt',
+                                        'skins/WEEWXtags/font/OpenSans-Bold.ttf',
+                                        'skins/WEEWXtags/font/OpenSans-Regular.ttf']),
                    ]
             )
