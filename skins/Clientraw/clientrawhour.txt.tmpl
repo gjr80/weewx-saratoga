@@ -28,7 +28,7 @@ Pre-Requisites
 - WeeWX-Saratoga WeeWX extension
 - PyEphem for inclusion of ephemeris and insolation data
 
-Version: 0.1.0                                      Date: 13 May 2021
+Version: 0.1.1                                      Date: ?? May 2021
 
 *#
 #*
@@ -37,7 +37,7 @@ template
 *#
 #import time
 ##
-#set $version = '0.1.0'
+#set $version = '0.1.1'
 ## cache tagged stats required in clientrawhour
 #set $windSpeedMinuteArray = $minute.windSpeed.avgQuery
 #set $windGustMinuteArray = $minute.windGust.maxQuery
@@ -62,7 +62,7 @@ template
 #*001*##*Last 60 Minutes Wind Speed. Min 01=60 min ago, Min 60=now*##slurp
 #for $i in range (60):
 #try
-$windSpeedMinuteArray[$i].knot.format($format_string="%.1f", $add_label=False, $localize=False) #slurp
+$windSpeedMinuteArray[$i].knot.format(format_string="%.1f", add_label=False, localize=False) #slurp
 #except TypeError
 0 #slurp
 #except IndexError
@@ -72,7 +72,7 @@ $windSpeedMinuteArray[$i].knot.format($format_string="%.1f", $add_label=False, $
 #*061*##*Last 60 Minutes Wind Gust. Min 01=60 min ago, Min 60=now*##slurp
 #for $i in range (60):
 #try
-$windGustMinuteArray[$i].knot.format($format_string="%.1f", $add_label=False, $localize=False) #slurp
+$windGustMinuteArray[$i].knot.format(format_string="%.1f", add_label=False, localize=False) #slurp
 #except TypeError
 0 #slurp
 #except IndexError
@@ -82,7 +82,7 @@ $windGustMinuteArray[$i].knot.format($format_string="%.1f", $add_label=False, $l
 #*121*##*Last 60 Minutes Wind Direction. Min 01=60 min ago, Min 60=now*##slurp
 #for $i in range (60):
 #try
-$windDirMinuteArray[$i].format($format_string="%.0f", $add_label=False, $localize=False) #slurp
+$windDirMinuteArray[$i].format(format_string="%.0f", add_label=False, localize=False) #slurp
 #except TypeError
 0 #slurp
 #except IndexError
@@ -92,7 +92,7 @@ $windDirMinuteArray[$i].format($format_string="%.0f", $add_label=False, $localiz
 #*181*##*Last 60 Minutes Outside Temp. Min 01=60 min ago, Min 60=now*##slurp
 #for $i in range (60):
 #try
-$outTempMinuteArray[$i].degree_C.format($format_string="%.1f", $add_label=False, $localize=False) #slurp
+$outTempMinuteArray[$i].degree_C.format(format_string="%.1f", add_label=False, localize=False) #slurp
 #except TypeError
 0 #slurp
 #except IndexError
@@ -102,7 +102,7 @@ $outTempMinuteArray[$i].degree_C.format($format_string="%.1f", $add_label=False,
 #*241*##*Last 60 Minutes Outside Humidity. Min 01=60 min ago, Min 60=now*##slurp
 #for $i in range (60):
 #try
-$outHumidityMinuteArray[$i].format($format_string="%.0f", $add_label=False, $localize=False) #slurp
+$outHumidityMinuteArray[$i].format(format_string="%.0f", add_label=False, localize=False) #slurp
 #except TypeError
 0 #slurp
 #except IndexError
@@ -112,7 +112,7 @@ $outHumidityMinuteArray[$i].format($format_string="%.0f", $add_label=False, $loc
 #*301*##*Last 60 Minutes Barometer. Min 01=60 min ago, Min 60=now*##slurp
 #for $i in range (60):
 #try
-$barometerMinuteArray[$i].format($format_string="%.1f", $add_label=False, $localize=False) #slurp
+$barometerMinuteArray[$i].format(format_string="%.1f", add_label=False, localize=False) #slurp
 #except TypeError
 0 #slurp
 #except IndexError
@@ -142,7 +142,7 @@ $rain_accum_str #slurp
 #*421*##*Last 60 Minutes Solar. Min 01=60 min ago, Min 60=now*##slurp
 #for $i in range (60):
 #try
-$radiationMinuteArray[$i].format($format_string="%.0f", $add_label=False, $localize=False) #slurp
+$radiationMinuteArray[$i].format(format_string="%.0f", add_label=False, localize=False) #slurp
 #except TypeError
 0 #slurp
 #except IndexError
@@ -152,7 +152,7 @@ $radiationMinuteArray[$i].format($format_string="%.0f", $add_label=False, $local
 #*481*##*Last 24 Hours of 15 minute Solar Readings. Hr 01, Min 00=24 hr ago, Hr 24, Min 45=now*##slurp
 #for $i in range (96):
 #try
-$radiationFifteenminuteArray[$i].format($format_string="%.0f", $add_label=False, $localize=False) #slurp
+$radiationFifteenminuteArray[$i].format(format_string="%.0f", add_label=False, localize=False) #slurp
 #except TypeError
 0 #slurp
 #except IndexError
@@ -162,11 +162,11 @@ $radiationFifteenminuteArray[$i].format($format_string="%.0f", $add_label=False,
 #*577*##*Last 24 Hours of 15 minute UV Readings. Hr 01, Min 00=24 hr ago, Hr 24, Min 45=now*##slurp
 #for $i in range (96):
 #try
-$UVFifteenminuteArray[$i].format($format_string="%.1f", $add_label=False, $localize=False) #slurp
+$UVFifteenminuteArray[$i].format(format_string="%.1f", add_label=False, localize=False) #slurp
 #except TypeError
 0 #slurp
 #except IndexError
 0 #slurp
 #end try
 #end for
-#*673*#!!SW$version!!#slurp
+#*673*#!!WS$version!!#slurp
