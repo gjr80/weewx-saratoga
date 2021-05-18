@@ -27,7 +27,7 @@ Pre-Requisites
 - WeeWX-Saratoga WeeWX extension
 - PyEphem for inclusion of ephemeris and insolation data
 
-Version: 0.1.0                                      Date: 13 May 2021
+Version: 0.1.1                                      Date: ?? May 2021
 *#
 #*
 Inline python code to setup/initialise a number of variables for use in the
@@ -37,7 +37,7 @@ template
 #import datetime
 #import time
 #import math
-#set $version = '0.1.0'
+#set $version = '0.1.1'
 #*
 Setup date-time format strings
 *#
@@ -362,10 +362,11 @@ if ( isset($_REQUEST['sce']) && strtolower($_REQUEST['sce']) == 'view' ) {
 #raw $dirlabel = #end raw '$current.windDir.ordinal_compass';   // wind direction (NNE etc)
 #raw $maxgustlastimediatehourtime =  #end raw '$span($hour_delta=1).windGust.maxtime.format($timeFormat)';  //   time that the max gust last prior 1 hour occurred
 #raw $avwindlastimediate10 = #end raw '$span($time_delta=600).windSpeed.avg.format(add_label=False, localize=False)';  // Average wind for the last immediate 10 minute period
-#raw $avdir10minute =  #end raw '$avdir10.format(add_label=False, localize=False)';    // average ten minute wind direction (degrees)
+#set $avdir10 = int(round($span($time_delta=600).windvec.last.polar.raw[1], 0))
+#raw $avdir10minute =  #end raw '$avdir10';    // average ten minute wind direction (degrees)
 
-#raw $beaufortnum = #end raw '$beaufort'; //Beaufort wind force number
-#raw $currbftspeed = #end raw '$beaufort bft'; //Current Beaufort wind speed
+#raw $beaufortnum = #end raw '$current.windSpeed.beaufort'; //Beaufort wind force number
+#raw $currbftspeed = #end raw '$current.windSpeed.beaufort bft'; //Current Beaufort wind speed
 #raw $bftspeedtext = #end raw '$beaufortDesc'; //Beaufort scale in text (i.e Fresh Breeze)
 //
 // Barometer
@@ -431,11 +432,11 @@ if ( isset($_REQUEST['sce']) && strtolower($_REQUEST['sce']) == 'view' ) {
 #raw $lowsolartime = #end raw '$day.radiation.mintime.format($timeFormat)';// Time that the daily low solar occurred
 #end if
 #if $day.UV.has_data
-#raw $VPuv = #end raw '$current.UV';// UV number
-#raw $highuv = #end raw '$day.UV.max';// Daily high UV (for Davis VP stations)
+#raw $VPuv = #end raw '$current.UV.format(add_label=False, localize=False)';// UV number
+#raw $highuv = #end raw '$day.UV.max.format(add_label=False, localize=False)';// Daily high UV (for Davis VP stations)
 #raw $highuvtime = #end raw '$day.UV.maxtime.format($timeFormat)';// Time that the daily high UV occurred
 #raw $lowuvtime = #end raw '$day.UV.mintime.format($timeFormat)';// Time that the daily low UV occurred
-#raw $highuvyest = #end raw '$yesterday.UV.max';// Yesterday's high UV
+#raw $highuvyest = #end raw '$yesterday.UV.max.format(add_label=False, localize=False)';// Yesterday's high UV
 #raw $highuvyesttime = #end raw '$yesterday.UV.maxtime.format($timeFormat)';// Time of yesterday's high UV
 #end if
 //
@@ -638,21 +639,21 @@ if ( isset($_REQUEST['sce']) && strtolower($_REQUEST['sce']) == 'view' ) {
 #raw $highsolaryesttime = #end raw '$yesterday.radiation.maxtime.format($timeFormat)';
 #end if
 #raw $hourrn = #end raw '$span($hour_delta=1).rain.sum.format(add_label=False, None_string='0.0', localize=False)';
-#raw $maxaverageyest = #end raw '$yesterday.windSpeed.max';
+#raw $maxaverageyest = #end raw '$yesterday.windSpeed.max.format(add_label=False, localize=False)';
 #raw $maxaverageyestt = #end raw '$yesterday.windSpeed.maxtime.format($timeFormat)';
 #raw $maxavgdirectionletter = #end raw '$current($timestamp=$max_av_wind_ts).windDir.ordinal_compass';
-#raw $maxavgspd = #end raw '$day.windSpeed.max.format(add_label=False)';
+#raw $maxavgspd = #end raw '$day.windSpeed.max.format(add_label=False, localize=False)';
 #raw $maxavgspdt = #end raw '$day.windSpeed.maxtime.format($timeFormat)';
 #raw $maxbaroyest = #end raw '$yesterday.barometer.max.format(add_label=False, localize=False)';
 #raw $maxbaroyestt = #end raw '$yesterday.barometer.maxtime.format($timeFormat)';
 #raw $maxgstdirectionletter = #end raw '$day.wind.gustdir.ordinal_compass';
-#raw $maxgustyest = #end raw '$yesterday.wind.max $yesterday.wind.gustdir.ordinal_compass';
+#raw $maxgustyest = #end raw '$yesterday.wind.max.format(localize=False) $yesterday.wind.gustdir.ordinal_compass';
 #raw $maxgustyestt = #end raw '$yesterday.wind.maxtime.format($timeFormat)';
 #if $month($data_binding='ws_binding').outTempDay.has_data
-#raw $mcoldestdayonrecord = #end raw '$month($data_binding='ws_binding').outTempDay.minmax.format(add_label=False)$unit.unit_type.outTemp[-1:] on: $month($data_binding='ws_binding').outTempDay.minmaxtime.format($recordFormat)';
+#raw $mcoldestdayonrecord = #end raw '$month($data_binding='ws_binding').outTempDay.minmax.format(add_label=False, localize=False)$unit.unit_type.outTemp[-1:] on: $month($data_binding='ws_binding').outTempDay.minmaxtime.format($recordFormat)';
 #end if
 #if $month($data_binding='ws_binding').outTempNight.has_data
-#raw $mcoldestnightonrecord = #end raw '$month($data_binding='ws_binding').outTempNight.min.format(add_label=False)$unit.unit_type.outTemp[-1:] on: $month($data_binding='ws_binding').outTempNight.mintime.format($recordFormat)';
+#raw $mcoldestnightonrecord = #end raw '$month($data_binding='ws_binding').outTempNight.min.format(add_label=False, localize=False)$unit.unit_type.outTemp[-1:] on: $month($data_binding='ws_binding').outTempNight.mintime.format($recordFormat)';
 #end if
 #raw $minchillyest = #end raw '$yesterday.windchill.min.format(add_label=False, localize=False)';
 #raw $minchillyestt = #end raw '$yesterday.windchill.mintime.format($timeFormat)';
@@ -681,17 +682,17 @@ if ( isset($_REQUEST['sce']) && strtolower($_REQUEST['sce']) == 'view' ) {
 #raw $mrecordlowtempyear = #end raw '$month.outTemp.mintime.format($yearFormat)';
 #raw $mrecordwindspeed = #end raw '$month.windSpeed.max.format(add_label=False, localize=False)'; // Month Record Avg Wind Speed
 #if $month($data_binding='ws_binding').outTempDay.has_data
-#raw $mwarmestdayonrecord = #end raw '$month($data_binding='ws_binding').outTempDay.max.format(add_label=False)$unit.unit_type.outTemp[-1:] on: $month($data_binding='ws_binding').outTempDay.maxtime.format($recordFormat)';
+#raw $mwarmestdayonrecord = #end raw '$month($data_binding='ws_binding').outTempDay.max.format(add_label=False, localize=False)$unit.unit_type.outTemp[-1:] on: $month($data_binding='ws_binding').outTempDay.maxtime.format($recordFormat)';
 #end if
 #if $month($data_binding='ws_binding').outTempNight.has_data
-#raw $mwarmestnightonrecord = #end raw '$month($data_binding='ws_binding').outTempNight.maxmin.format(add_label=False)$unit.unit_type.outTemp[-1:] on: $month($data_binding='ws_binding').outTempNight.maxmintime.format($recordFormat)';
+#raw $mwarmestnightonrecord = #end raw '$month($data_binding='ws_binding').outTempNight.maxmin.format(add_label=False, localize=False)$unit.unit_type.outTemp[-1:] on: $month($data_binding='ws_binding').outTempNight.maxmintime.format($recordFormat)';
 #end if
 #raw $raincurrentweek = #end raw '$seven_day.rain.sum.format(add_label=False, localize=False)';
 #raw $raintodatemonthago = #end raw '$rainthisday.lastmonth.format(add_label=False, localize=False)';
 #raw $raintodateyearago = #end raw '$rainthisday.lastyear.format(add_label=False, localize=False)';
 #raw $timeoflastrainalways = #end raw '$last_rain.format($timeFormat)';
-#raw $windruntodatethismonth = #end raw '$month.windrun.sum.format(localize=False)';
-#raw $windruntodatethisyear = #end raw '$year.windrun.sum.format(localize=False)';
+#raw $windruntodatethismonth = #end raw '$month.windrun.sum($add_label=False, $localize=False)';
+#raw $windruntodatethisyear = #end raw '$year.windrun.sum($add_label=False, $localize=False)';
 #raw $windruntoday = #end raw '$day.windrun.sum.format(add_label=False, localize=False)';
 #raw $yesterdaydaviset = #end raw '$yesterday.ET.sum.format(add_label=False, localize=False)';
 #raw $yrecordhighavwindday = #end raw '$year.windSpeed.maxtime.format($dayFormat)';
@@ -953,12 +954,12 @@ $lighteningcountlast30minutesnextstorm = '0';
 #raw $recordhighheatindex = #end raw '$alltime.heatindex.max.format(add_label=False, localize=False)';
 #raw $recordlowchill = #end raw '$alltime.windchill.min.format(add_label=False, localize=False)';  //record low windchill
 #if $alltime($data_binding='ws_binding').outTempDay.has_data
-#raw $warmestdayonrecord = #end raw '$alltime($data_binding='ws_binding').outTempDay.max.format(add_label=False)$unit.unit_type.outTemp[-1:] on: $alltime($data_binding='ws_binding').outTempDay.maxtime.format($recordFormat)'; //Warmest Day on Record
-#raw $coldestdayonrecord = #end raw '$alltime($data_binding='ws_binding').outTempDay.minmax.format(add_label=False)$unit.unit_type.outTemp[-1:] on: $alltime($data_binding='ws_binding').outTempDay.minmaxtime.format($recordFormat)'; //coldest Day on Record
+#raw $warmestdayonrecord = #end raw '$alltime($data_binding='ws_binding').outTempDay.max.format(add_label=False, localize=False)$unit.unit_type.outTemp[-1:] on: $alltime($data_binding='ws_binding').outTempDay.maxtime.format($recordFormat)'; //Warmest Day on Record
+#raw $coldestdayonrecord = #end raw '$alltime($data_binding='ws_binding').outTempDay.minmax.format(add_label=False, localize=False)$unit.unit_type.outTemp[-1:] on: $alltime($data_binding='ws_binding').outTempDay.minmaxtime.format($recordFormat)'; //coldest Day on Record
 #end if
 #if $alltime($data_binding='ws_binding').outTempNight.has_data
-#raw $warmestnightonrecord = #end raw '$alltime($data_binding='ws_binding').outTempNight.maxmin.format(add_label=False)$unit.unit_type.outTemp[-1:] on: $alltime($data_binding='ws_binding').outTempNight.maxmintime.format($recordFormat)'; //Warmest Night on Record
-#raw $coldestnightonrecord = #end raw '$alltime($data_binding='ws_binding').outTempNight.min.format(add_label=False)$unit.unit_type.outTemp[-1:] on: $alltime($data_binding='ws_binding').outTempNight.mintime.format($recordFormat)'; //coldest Night on Record
+#raw $warmestnightonrecord = #end raw '$alltime($data_binding='ws_binding').outTempNight.maxmin.format(add_label=False, localize=False)$unit.unit_type.outTemp[-1:] on: $alltime($data_binding='ws_binding').outTempNight.maxmintime.format($recordFormat)'; //Warmest Night on Record
+#raw $coldestnightonrecord = #end raw '$alltime($data_binding='ws_binding').outTempNight.min.format(add_label=False, localize=False)$unit.unit_type.outTemp[-1:] on: $alltime($data_binding='ws_binding').outTempNight.mintime.format($recordFormat)'; //coldest Night on Record
 #end if
 #raw $recordwindgust = #end raw '$alltime.wind.max.format(add_label=False, localize=False)'; // All Time Record wind gust
 #raw $recordwindspeed = #end raw '$alltime.windSpeed.max.format(add_label=False, localize=False)'; // All Time Record Avg Wind Speed
@@ -1042,15 +1043,15 @@ $lighteningcountlast30minutesnextstorm = '0';
 #raw $recordhighsolaryear = #end raw '$alltime.radiation.maxtime.format($yearFormat)';
 #end if
 #if $day.UV.has_data
-#raw $mrecordhighuv = #end raw '$month.UV.max';
+#raw $mrecordhighuv = #end raw '$month.UV.max.format(add_label=False, localize=False)';
 #raw $mrecordhighuvmonth = #end raw '$month.UV.maxtime.format($monthFormat)';
 #raw $mrecordhighuvday = #end raw '$month.UV.maxtime.format($dayFormat)';
 #raw $mrecordhighuvyear = #end raw '$month.UV.maxtime.format($yearFormat)';
-#raw $yrecordhighuv = #end raw '$year.UV.max';
+#raw $yrecordhighuv = #end raw '$year.UV.max.format(add_label=False, localize=False)';
 #raw $yrecordhighuvmonth = #end raw '$year.UV.maxtime.format($monthFormat)';
 #raw $yrecordhighuvday = #end raw '$year.UV.maxtime.format($dayFormat)';
 #raw $yrecordhighuvyear = #end raw '$year.UV.maxtime.format($yearFormat)';
-#raw $recordhighuv = #end raw '$alltime.UV.max';
+#raw $recordhighuv = #end raw '$alltime.UV.max.format(add_label=False, localize=False)';
 #raw $recordhighuvmonth = #end raw '$alltime.UV.maxtime.format($monthFormat)';
 #raw $recordhighuvday = #end raw '$alltime.UV.maxtime.format($dayFormat)';
 #raw $recordhighuvyear = #end raw '$alltime.UV.maxtime.format($yearFormat)';
@@ -1060,12 +1061,12 @@ $lighteningcountlast30minutesnextstorm = '0';
 #raw $yrecordhighheatindexday = #end raw '$year.heatindex.maxtime.format($dayFormat)';
 #raw $yrecordhighheatindexyear = #end raw '$year.heatindex.maxtime.format($yearFormat)';
 #if $year($data_binding='ws_binding').outTempDay.has_data
-#raw $ywarmestdayonrecord = #end raw '$year($data_binding='ws_binding').outTempDay.max.format(add_label=False)$unit.unit_type.outTemp[-1:] on: $year($data_binding='ws_binding').outTempDay.maxtime.format($recordFormat)'; //Warmest Day this month
-#raw $ycoldestdayonrecord = #end raw '$year($data_binding='ws_binding').outTempDay.minmax.format(add_label=False)$unit.unit_type.outTemp[-1:] on: $year($data_binding='ws_binding').outTempDay.minmaxtime.format($recordFormat)'; //Coldest Day this month
+#raw $ywarmestdayonrecord = #end raw '$year($data_binding='ws_binding').outTempDay.max.format(add_label=False, localize=False)$unit.unit_type.outTemp[-1:] on: $year($data_binding='ws_binding').outTempDay.maxtime.format($recordFormat)'; //Warmest Day this month
+#raw $ycoldestdayonrecord = #end raw '$year($data_binding='ws_binding').outTempDay.minmax.format(add_label=False, localize=False)$unit.unit_type.outTemp[-1:] on: $year($data_binding='ws_binding').outTempDay.minmaxtime.format($recordFormat)'; //Coldest Day this month
 #end if
 #if $alltime($data_binding='ws_binding').outTempNight.has_data
-#raw $ywarmestnightonrecord = #end raw '$year($data_binding='ws_binding').outTempNight.maxmin.format(add_label=False)$unit.unit_type.outTemp[-1:] on: $year($data_binding='ws_binding').outTempNight.maxmintime.format($recordFormat)'; //Warmest Night this month
-#raw $ycoldestnightonrecord = #end raw '$year($data_binding='ws_binding').outTempNight.min.format(add_label=False)$unit.unit_type.outTemp[-1:] on: $year($data_binding='ws_binding').outTempNight.mintime.format($recordFormat)'; //Coldest Night this month
+#raw $ywarmestnightonrecord = #end raw '$year($data_binding='ws_binding').outTempNight.maxmin.format(add_label=False, localize=False)$unit.unit_type.outTemp[-1:] on: $year($data_binding='ws_binding').outTempNight.maxmintime.format($recordFormat)'; //Warmest Night this month
+#raw $ycoldestnightonrecord = #end raw '$year($data_binding='ws_binding').outTempNight.min.format(add_label=False, localize=False)$unit.unit_type.outTemp[-1:] on: $year($data_binding='ws_binding').outTempNight.mintime.format($recordFormat)'; //Coldest Night this month
 #end if
 #raw $yrecordhighwindrun = #end raw '$year.windrun.maxsum.format(add_label=False, localize=False)';
 #raw $yrecordhighwindrunmth = #end raw '$year.windrun.maxsumtime.format($monthFormat)';
@@ -1180,7 +1181,7 @@ $lighteningcountlast30minutesnextstorm = '0';
 #raw $sunshinehourstodatemonth = #end raw '$month_sunshine_hours';
 #raw $maxsolarfortime = #end raw '$current.maxSolarRad.format(add_label=False, localize=False)';
 #raw $wetbulb = #end raw '$current.wet_bulb.format(add_label=False, localize=False)';
-#raw $chandler = #end raw '$current.cbi.format(format_string="%.1f")';
+#raw $chandler = #end raw '$current.cbi.format(format_string="%.1f", localize=False)';
 #raw $maxdew = #end raw '$day.dewpoint.max.format(add_label=False, localize=False)';
 #raw $maxdewt = #end raw '$day.dewpoint.maxtime.format($timeFormat)';
 #raw $mindew = #end raw '$day.dewpoint.min.format(add_label=False, localize=False)';
