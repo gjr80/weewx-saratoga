@@ -13,9 +13,11 @@ This program is distributed in the hope that it will be useful, but WITHOUT ANY
 WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
 PARTICULAR PURPOSE.  See the GNU General Public License for more details.
 
-Version: 0.1.0                                          Date: 13 May 2021
+Version: 0.1.1                                          Date: ?? May 2021
 
 Revision History
+    ?? May 2021         v0.1.1
+        -
     13 May 2021         v0.1.0
         -   initial release
 
@@ -31,6 +33,12 @@ import time
 import weewx.engine
 import weewx.xtypes
 
+WS_XTYPES_VERSION = '0.1.1'
+
+
+# ==============================================================================
+#                               Class WSXTypes
+# ==============================================================================
 
 class WSXTypes(weewx.xtypes.XType):
     """XType to calculate various scalars.
@@ -531,6 +539,10 @@ class WSXTypes(weewx.xtypes.XType):
         # return our result as a ValueTuple using None as the units and group
         return weewx.units.ValueTuple(forecast_text, None, None)
 
+
+# ==============================================================================
+#                             Class StdWSXTypes
+# ==============================================================================
 
 class StdWSXTypes(weewx.engine.StdService):
     """Instantiate and register the XTypes extension WSXTypes."""
