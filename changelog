@@ -1,2 +1,5 @@
+v0.1.1
+-   implemented localize_numbers report option to control whether numeric
+    portions of WEEWXtags.php tags are formatted as per the system locale
 v0.1.0
-*   Initial release
+-   initial release
