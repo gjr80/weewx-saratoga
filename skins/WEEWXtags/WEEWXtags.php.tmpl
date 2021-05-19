@@ -35,6 +35,7 @@ template
 *#
 #from datetime import date
 #import datetime
+#import locale
 #import time
 #import math
 #from weeutil.weeutil import to_bool
@@ -69,6 +70,11 @@ Setup a couple of shorthand variables
 Localize numbers (decimal point)
 *#
 #set $localize_num = to_bool($skin_dict.get('localize_numbers', False))
+#if $localize_num
+#set $zero_decimal = locale.format_string('%.1f', 0)
+#else
+#set $zero_decimal = '0.0'
+#end if
 #*
 Astronomical tags/calculations
 *#
@@ -408,18 +414,22 @@ if ( isset($_REQUEST['sce']) && strtolower($_REQUEST['sce']) == 'view' ) {
 #raw $dayswithrainyear = #end raw '$yearRainDays';  // Days with rain for the year
 #raw $currentrainratehr = #end raw '$current.rainRate.format(add_label=False, localize=$localize_num)';   // Current rain rate, mm/hr (or in./hr)
 #set $rr_format = $skin_dict.Units.StringFormats[$skin_dict.Units.Groups.group_rainrate]
+#if $localize_num
+#set $maxrainrate = locale.format_string($rr_format, $day.rainRate.max.raw / 60.0) if $day.rainRate.max.raw != None else $naString
+#else
 #set $maxrainrate = $rr_format % ($day.rainRate.max.raw / 60.0) if $day.rainRate.max.raw != None else $naString
+#end if
 #raw $maxrainrate = #end raw '$maxrainrate'; // Max rain rate,for the day, mm/min (or in./min)
 #raw $maxrainratehr = #end raw '$day.rainRate.max.format(add_label=False, localize=$localize_num)';   // Max rain rate,for the day, mm/hr (or in.mm)
 #raw $maxrainratetime = #end raw '$day.rainRate.maxtime.format($timeFormat)';   // Time that occurred
 // Yesterday:
 // ----------
-#raw $yesterdayrain = #end raw '$yesterday.rain.sum.format(add_label=False, None_string='0.0', localize=$localize_num)';   // Yesterday rain
+#raw $yesterdayrain = #end raw '$yesterday.rain.sum.format(add_label=False, None_string=$zero_decimal, localize=$localize_num)';   // Yesterday rain
 #if $current.stormStart.exists
 #raw $vpstormrainstart = #end raw '$current.stormStart.format($dateFormat, '0/0/0')';  //Davis VP Storm rain start date
 #end if
 #if $current.stormRain.exists
-#raw $vpstormrain = #end raw '$current.stormRain.format(add_label=False, None_string='0.0', localize=$localize_num)';           //Davis VP Storm rain value
+#raw $vpstormrain = #end raw '$current.stormRain.format(add_label=False, None_string=$zero_decimal, localize=$localize_num)';           //Davis VP Storm rain value
 #end if
 //
 // Sunshine/Solar/ET
@@ -643,7 +653,7 @@ if ( isset($_REQUEST['sce']) && strtolower($_REQUEST['sce']) == 'view' ) {
 #raw $highsolaryest = #end raw '$yesterday.radiation.max.format(add_label=False, localize=$localize_num)';
 #raw $highsolaryesttime = #end raw '$yesterday.radiation.maxtime.format($timeFormat)';
 #end if
-#raw $hourrn = #end raw '$span($hour_delta=1).rain.sum.format(add_label=False, None_string='0.0', localize=$localize_num)';
+#raw $hourrn = #end raw '$span($hour_delta=1).rain.sum.format(add_label=False, None_string=$zero_decimal, localize=$localize_num)';
 #raw $maxaverageyest = #end raw '$yesterday.windSpeed.max.format(add_label=False, localize=$localize_num)';
 #raw $maxaverageyestt = #end raw '$yesterday.windSpeed.maxtime.format($timeFormat)';
 #raw $maxavgdirectionletter = #end raw '$current($timestamp=$max_av_wind_ts).windDir.ordinal_compass';
