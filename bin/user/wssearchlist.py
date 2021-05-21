@@ -12,13 +12,13 @@ This program is distributed in the hope that it will be useful, but WITHOUT ANY
 WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
 PARTICULAR PURPOSE.  See the GNU General Public License for more details.
 
-Version: 0.1.1                                          Date: ?? May 2021
+Version: 0.1.1                                          Date: 21 May 2021
 
 Revision History
-    ?? May 2021         v0.1.1
-        -
+    21 May 2021         v0.1.1
+        - version number change only
     13 May 2021         v0.1.0
-        -   initial release
+        - initial release
 
 # TODO. Yesterday almanac needs to handle case where there is no data for yesterday
 """
