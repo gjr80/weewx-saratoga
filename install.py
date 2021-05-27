@@ -52,13 +52,7 @@ ws_config = u"""
             [[[[StringFormats]]]]
                 NONE = --
             [[[[TimeFormats]]]]
-                # Date format. Recommended entries are:
-                #   date_f = %m/%d/%Y  # recommended for USA users
-                #   date_f = %d/%m/%Y  # recommended for non-USA users 
                 date_f = %d/%m/%Y
-                # Date-time format. Recommended entries are:
-                #   date_time_f = %m/%d/%Y %H:%M  # recommended for USA users
-                #   date_time_f = %d/%m/%Y %H:%M  # recommended for non-USA users 
                 date_time_f = %d/%m/%Y %H:%M
     [[ClientrawReport]]
         skin = Clientraw
@@ -76,16 +70,19 @@ ws_config = u"""
                 uv_index = %.1f
                 watt_per_meter_squared = %.0f
                 NONE = --
+                
 [StdWXCalculate]
     [[Calculations]]
         wet_bulb = prefer_hardware
         abs_humidity = prefer_hardware, archive
+        
 [DataBindings]
     [[ws_binding]]
         database = ws_sqlite
         table_name = archive
         manager = weewx.manager.DaySummaryManager
         schema = user.wsschema.ws_schema
+        
 [Databases]
     [[ws_sqlite]]
         database_type = SQLite
@@ -93,6 +90,7 @@ ws_config = u"""
     [[ws_mysql]]
         database_type = MySQL
         database_name = weewxwd
+        
 [WeewxSaratoga]
     # WeewxSaratoga database binding
     data_binding = ws_binding
@@ -133,7 +131,9 @@ ws_config = u"""
         #   short_time_format = %-I:%M_%p  # recommended for USA users
         #   short_time_format = %H:%M  # recommended for non-USA users
         short_time_format = %H:%M
+        
 [Accumulator]
+
     # Start WeeWX-Saratoga extractors
     [[forecastRule]]
         extractor = last
