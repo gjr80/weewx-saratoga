@@ -387,13 +387,11 @@ if ( isset($_REQUEST['sce']) && strtolower($_REQUEST['sce']) == 'view' ) {
 #raw $baro = #end raw '$current.barometer.format(add_label=False, localize=$localize_num)';
 #raw $baroinusa2dp = #end raw '$current.barometer.inHg.format(format_string="%.2f", localize=$localize_num)';  // Current barometer reading in inches, 2 decimal places only.
 #raw $trend = #end raw '$trend($time_delta=3600).barometer.format(add_label=False, localize=$localize_num)';  // amount of change in the last hour
-
 #raw $trend3hour = #end raw '$trend($time_delta=10800).barometer.format(add_label=False, localize=$localize_num)';  // amount of change in the last 3 hours
 #raw $pressuretrendname = #end raw '$trend_60_baro'; // pressure trend (i.e. 'falling'), last hour
 #raw $pressuretrendname3hour = #end raw '$trend_180_baro';   // pressure trend (i.e. 'falling'), last 3 hours
-
 #if $current.forecastText.exists and $current.forecastText.raw is not None
-#raw $vpforecasttext = #end raw '$current.forecastText.raw';
+#raw $vpforecasttext = #end raw '$current.forecastText.format(format_string="%s", localize=False)';
 #end if
 // Rain
 // ----
@@ -1186,7 +1184,11 @@ $lighteningcountlast30minutesnextstorm = '0';
 #raw $cddyear = #end raw '$year.cooldeg.sum.format(add_label=False, localize=$localize_num)';    // Cooling Degree for year to date
 #raw $minchillweek = #end raw '$seven_day.windchill.min.format(add_label=False, localize=$localize_num)';  // Minimum Wind Chill over past 7 days
 #raw $maxheatweek = #end raw '$seven_day.heatindex.max.format(add_label=False, localize=$localize_num)';  // Maximum Heat Index over past 7 days *** NEW IN V2.00
+#if $current.air_density.exists
 #raw $airdensity = #end raw '$current.air_density.format(add_label=False, localize=$localize_num)';  //air density
+#else
+#raw $airdensity = #end raw '$naString';  //air density
+#end if
 #if $almanac.hasExtras
 #raw $solarnoon = #end raw '$almanac.sun.transit.format($timeFormat)'; // Solar noon
 #raw $changeinday = #end raw '$cidSign$time.strftime($hourFormat+":"+$minuteFormat+":"+$secondFormat, $changeInDay)';  // change in day length since yesterday
@@ -1195,8 +1197,16 @@ $lighteningcountlast30minutesnextstorm = '0';
 #raw $sunshinehourstodateday = #end raw '$today_sunshine_hours';
 #raw $sunshinehourstodatemonth = #end raw '$month_sunshine_hours';
 #raw $maxsolarfortime = #end raw '$current.maxSolarRad.format(add_label=False, localize=$localize_num)';
+#if $current.wet_bulb.exists
 #raw $wetbulb = #end raw '$current.wet_bulb.format(add_label=False, localize=$localize_num)';
+#else
+#raw $wetbulb = #end raw '$naString';
+#end if
+#if $current.cbi.exists
 #raw $chandler = #end raw '$current.cbi.format(format_string="%.1f", localize=$localize_num)';
+#else
+#raw $chandler = #end raw '$naString';
+#end if
 #raw $maxdew = #end raw '$day.dewpoint.max.format(add_label=False, localize=$localize_num)';
 #raw $maxdewt = #end raw '$day.dewpoint.maxtime.format($timeFormat)';
 #raw $mindew = #end raw '$day.dewpoint.min.format(add_label=False, localize=$localize_num)';
