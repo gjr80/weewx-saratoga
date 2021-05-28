@@ -13,16 +13,19 @@ ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
 FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
 details.
 
-Version: 0.1.0                                          Date: xx xxxxx 2021
+Version: 0.1.1                                          Date: 21 May 2021
 
 Revision History
-    xx xxxxx 2021       v0.1.0
-        -   initial release
+    21 May 2021         v0.1.1
+        - version number change only
+    13 May 2021         v0.1.0
+        - initial release
 """
 
 # python imports
 import configobj
 from distutils.version import StrictVersion
+
 try:
     # Python 3
     from io import StringIO
@@ -35,8 +38,8 @@ import weewx
 
 from setup import ExtensionInstaller
 
-REQUIRED_VERSION = "4.2.0"
-WS_VERSION = "0.1.0b3"
+REQUIRED_VERSION = "4.5.0"
+WS_VERSION = "0.1.1"
 
 # Multi-line config string, makes it easier to include comments. Needs to be
 # explicitly set as unicode or python2 StringIO complains.
@@ -45,15 +48,15 @@ ws_config = u"""
     [[WEEWXtagsReport]]
         skin = WEEWXtags
         enable = True
-        HTML_ROOT = ws
         [[[Units]]]
+            [[[[StringFormats]]]]
+                NONE = --
             [[[[TimeFormats]]]]
                 date_f = %d/%m/%Y
                 date_time_f = %d/%m/%Y %H:%M
     [[ClientrawReport]]
         skin = Clientraw
         enable = True
-        HTML_ROOT = ws
         [[[Units]]]
             [[[[StringFormats]]]]
                 degree_C = %.1f
@@ -67,34 +70,27 @@ ws_config = u"""
                 uv_index = %.1f
                 watt_per_meter_squared = %.0f
                 NONE = --
+                
 [StdWXCalculate]
     [[Calculations]]
-        outTempDay = software
-        outTempNight = software
+        wet_bulb = prefer_hardware
+        abs_humidity = prefer_hardware, archive
+        
 [DataBindings]
     [[ws_binding]]
         database = ws_sqlite
         table_name = archive
         manager = weewx.manager.DaySummaryManager
         schema = user.wsschema.ws_schema
-    [[ws_supp_binding]]
-        database = ws_supp_sqlite
-        table_name = supp
-        manager = weewx.manager.Manager
-        schema = user.wsschema.ws_supp_schema
+        
 [Databases]
     [[ws_sqlite]]
         database_type = SQLite
         database_name = weewxwd.sdb
-    [[ws_supp_sqlite]]
-        database_type = SQLite
-        database_name = wdsupp.sdb
     [[ws_mysql]]
         database_type = MySQL
         database_name = weewxwd
-    [[ws_supp_mysql]]
-        database_type = MySQL
-        database_name = wdsupp
+        
 [WeewxSaratoga]
     # WeewxSaratoga database binding
     data_binding = ws_binding
@@ -103,19 +99,6 @@ ws_config = u"""
     # shining
     sunshine_threshold = 120
     
-    [[Supplementary]]
-        # WeewxSaratoga supplementary database binding
-        data_binding = ws_supp_binding
-        [[[WU]]]
-            api_key = replace_me
-            enable = False
-        [[[DS]]]
-            api_key = replace_me
-            enable = False
-        [[[File]]]
-            file = /path/and/filename
-            enable = False
-            
     [[RealtimeClientraw]]
 
         # If using an external website, configure remote_server_url to point to 
@@ -125,9 +108,10 @@ ws_config = u"""
         # To disable or use the webserver on this system, leave the entry 
         # commented out or blank.
         # remote_server_url = http://your.website.com/post_clientraw.php
-
+        
         # min_interval sets the minimum clientraw.txt generation interval. 
-        # Default is 10 seconds.
+        # 10 seconds is recommended for all Saratoga template users. Default 
+        # is 0 seconds.
         min_interval = 10
         
         # Python date-time format strings. Format string codes as per 
@@ -147,8 +131,17 @@ ws_config = u"""
         #   short_time_format = %-I:%M_%p  # recommended for USA users
         #   short_time_format = %H:%M  # recommended for non-USA users
         short_time_format = %H:%M
+        
+[Accumulator]
+
+    # Start WeeWX-Saratoga extractors
+    [[forecastRule]]
+        extractor = last
+    [[forecastText]]
+        accumulator = firstlast
+        extractor = last
 """
-# obtain
+# obtain our config string as a configobj dict
 ws_dict = configobj.ConfigObj(StringIO(ws_config))
 
 
@@ -170,23 +163,26 @@ class WSInstaller(ExtensionInstaller):
             author="Gary Roderick",
             author_email="gjroderick<@>gmail.com",
             process_services=['user.ws.WsWXCalculate'],
-            xtype_services = ['user.wsxtypes.OutTempDayNight'],
-            archive_services=['user.ws.WsArchive',
-                              'user.ws.WsSuppArchive'],
+            xtype_services=['user.wsxtypes.StdWSXTypes'],
+            archive_services=['user.ws.WsArchive'],
             report_services=['user.rtcr.RealtimeClientraw'],
             config=ws_dict,
             files=[('bin/user', ['bin/user/rtcr.py',
                                  'bin/user/stackedwindrose.py',
+                                 'bin/user/ws.py',
                                  'bin/user/wsastro.py',
                                  'bin/user/wsschema.py',
                                  'bin/user/wssearchlist.py',
                                  'bin/user/wstaggedstats.py',
-                                 'bin/user/ws.py']),
+                                 'bin/user/wsxtypes.py']),
                    ('skins/Clientraw', ['skins/Clientraw/clientrawdaily.txt.tmpl',
                                         'skins/Clientraw/clientrawextra.txt.tmpl',
                                         'skins/Clientraw/clientrawhour.txt.tmpl',
                                         'skins/Clientraw/skin.conf']),
                    ('skins/WEEWXtags', ['skins/WEEWXtags/skin.conf',
-                                        'skins/WEEWXtags/WEEWXtags.php.tmpl']),
+                                        'skins/WEEWXtags/WEEWXtags.php.tmpl',
+                                        'skins/WEEWXtags/font/LICENSE.txt',
+                                        'skins/WEEWXtags/font/OpenSans-Bold.ttf',
+                                        'skins/WEEWXtags/font/OpenSans-Regular.ttf']),
                    ]
             )

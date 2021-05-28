@@ -12,10 +12,12 @@ This program is distributed in the hope that it will be useful, but WITHOUT ANY
 WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
 PARTICULAR PURPOSE.  See the GNU General Public License for more details.
 
-Version: 0.1.0                                          Date: xx xxxxx 2021
+Version: 0.1.1                                          Date: 21 May 2021
 
 Revision History
-    xx xxxxx 2021       v0.1.0
+    21 May 2021         v0.1.1
+        - version number change only
+    13 May 2021         v0.1.0
         -   initial release
 """
 
@@ -32,7 +34,7 @@ from six.moves import zip
 # WeeWX imports
 import weewx
 from weewx.cheetahgenerator import SearchList
-from weewx.units import ValueHelper
+from weewx.units import ValueHelper, ValueTuple
 
 # import/setup logging, WeeWX v3 is syslog based but WeeWX v4 is logging based,
 # try v4 logging and if it fails use v3 logging
@@ -50,13 +52,12 @@ except ImportError:
     import syslog
 
     def logmsg(level, msg):
-        syslog.syslog(level, 'wdastro: %s' % msg)
-
+        syslog.syslog(level, 'wsastro: %s' % msg)
 
     def logdbg(msg):
         logmsg(syslog.LOG_DEBUG, msg)
 
-WS_ASTRO_VERSION = '0.1.0'
+WS_ASTRO_VERSION = '0.1.1'
 
 
 class MoonApsis(SearchList):
@@ -514,24 +515,6 @@ class Eclipse(SearchList):
           next_lunar_eclipse: Timestamp of next lunar eclipse
           next_lunar_eclipse_type: Type of next lunar eclipse. Can be 'Partial',
                                    'Penumbral' or 'Total'
-        # get a timestamp for now
-        search_ts = timespan.stop
-        # wrap in a try..except just in case
-        try:
-            # find the index of the next perihelion
-            next_perihelion_idx = bisect.bisect_left(self.perihelion, search_ts)
-            # find the index of the next aphelion
-            next_aphelion_idx = bisect.bisect_left(self.aphelion, search_ts)
-            # get ts of next perihelion
-            next_perihelion_ts = self.perihelion[next_perihelion_idx]
-            # get ts of next aphelion
-            next_aphelion_ts = self.aphelion[next_aphelion_idx]
-        except:
-            # if an error then set them to None
-            next_perhelion_ts = None
-            next_aphelion_ts = None
-
-        # make our ts into ValueHelpers
         """
 
         t1 = time.time()
@@ -634,7 +617,7 @@ class EarthApsis(SearchList):
                      parameter, will return a database manager object.
 
         Returns:
-            next_perhelion: ValueHelper containing date-time of next perihelion
+            next_perihelion: ValueHelper containing date-time of next perihelion
             next_aphelion: ValueHelper containing date-time of next aphelion
         """
 
@@ -682,15 +665,15 @@ class ChineseNewYear(SearchList):
 
     def __init__(self, generator):
         SearchList.__init__(self, generator)
-        self.cny_dict = {2014: (31, 1), 2015: (19, 2), 2016: (8,  2),
-                         2017: (28, 1), 2018: (16, 2), 2019: (5,  2),
-                         2020: (25, 1), 2021: (12, 2), 2022: (1,  2),
-                         2023: (22, 1), 2024: (10, 2), 2025: (29, 1),
-                         2026: (17, 2), 2027: (6,  2), 2028: (26, 1),
-                         2029: (13, 2), 2030: (3,  2), 2031: (23, 1),
-                         2032: (11, 2), 2033: (31, 1), 2034: (19, 2),
-                         2035: (8,  2), 2036: (28, 1), 2037: (15, 2),
-                         2038: (4,  2), 2039: (24, 1), 2040: (12, 2)
+        self.cny_dict = {2014: (1, 31), 2015: (2, 19), 2016: (2, 8),
+                         2017: (1, 28), 2018: (2, 16), 2019: (2, 5),
+                         2020: (1, 25), 2021: (2, 12), 2022: (2, 1),
+                         2023: (1, 22), 2024: (2, 10), 2025: (1, 29),
+                         2026: (2, 17), 2027: (2, 6), 2028: (1, 26),
+                         2029: (2, 13), 2030: (2, 3), 2031: (1, 23),
+                         2032: (2, 11), 2033: (1, 31), 2034: (2, 19),
+                         2035: (2, 8), 2036: (1, 28), 2037: (2, 15),
+                         2038: (2, 4), 2039: (1, 24), 2040: (2, 12)
                          }
 
     def get_extension_list(self, timespan, db_lookup):
@@ -712,24 +695,29 @@ class ChineseNewYear(SearchList):
 
         t1 = time.time()
 
-        # get a date object for now as well as the year
+        # get a date object for now so we can get the year
         _date = datetime.date.fromtimestamp(timespan.stop)
         _year = _date.year
         # wrap in a try..except just in case
         try:
             # construct our tuple using current year and a lookup
-            cny = self.cny_dict[_year] + (_year, )
-            # we need to check if this years CNY has passed
-            _d, _m, _y = cny
-            if _date > datetime.date(_y, _m, _d):
-                # if it has passed then get construct next year's
-                cny = self.cny_dict[_year + 1] + (_year + 1, )
-        except ValueError:
+            cny_d = datetime.date(*((_year, ) + self.cny_dict.get(_year, ())))
+        except (TypeError, ValueError):
             # if we strike an error then return None
-            cny = None
-
-        # now create a small dictionary with suitable keys
-        search_list_extension = {'next_cny': cny}
+            cny_vt = ValueTuple(None, 'unix_epoch', 'group_time')
+        else:
+            # we have a valid date object so obtain a timestamp and convert to
+            # a ValueTuple
+            cny_ts = time.mktime(cny_d.timetuple())
+            cny_vt = ValueTuple(cny_ts, 'unix_epoch', 'group_time')
+        # get our result as a ValueHelper so we can easily format our tag in 
+        # reports
+        cny_vh = ValueHelper(cny_vt,
+                             'current',
+                             formatter=self.generator.formatter,
+                             converter=self.generator.converter)
+        # now create a small dictionary with our result
+        search_list_extension = {'cny': cny_vh}
 
         t2 = time.time()
         if weewx.debug >= 2:

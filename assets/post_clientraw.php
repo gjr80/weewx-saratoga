@@ -1,4 +1,6 @@
 <?php
+// Saratoga WEEWX-plugin info for checking version information
+// Version 1.00 - 14-May-2021 - initial release
 /*
 post_clientraw.php
 
@@ -18,7 +20,7 @@ PARTICULAR PURPOSE.  See the GNU General Public License for more details.
 You should have received a copy of the GNU General Public License along with
 this program.  If not, see http://www.gnu.org/licenses/.
 
-Version: 0.1.0                                        Date: 2 April 2021
+Coded: 0.1.0                                        Date: 2 April 2021
 
 Revision History
   2 April 2021         v0.1.0

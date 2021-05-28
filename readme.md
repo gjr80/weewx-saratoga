@@ -1,8 +1,8 @@
 # WeeWX-Saratoga #
 
-A *WeeWX* extension to support the [*Saratoga Weather Website Templates*](https://saratoga-weather.org/wxtemplates/index.php) with the *WEEWX-plugin* installed. You can also install scripts that rely on the [Weather-Display](https://www.weather-display.com/files.php) _clientraw*.txt_ files for operation (such as the [alternative dashboard](https://saratoga-weather.org/scripts-legacy.php#scott), or the [clientraw parser](https://saratoga-weather.org/scripts-legacy.php#relayweather)) since this extension generates the needed files.
+The *WeeWX-Saratoga extension* is a *WeeWX* extension to support the [*Saratoga Weather Website Templates*](https://saratoga-weather.org/wxtemplates/index.php) using the *WEEWX-plugin*. The extension also supports the *Saratoga Weather Website templates* [Alternative dashboard](https://saratoga-weather.org/scripts-legacy.php#scott) and can also be used to support any scripts that rely on one or more of the [Weather-Display](https://www.weather-display.com/index.php) *clientraw* family of files for operation.
 
-The *WeeWX-Saratoga extension* consists of a number of *WeeWX* services, Search List Extensions (SLE) and skins that produce the following data files:
+The *WeeWX-Saratoga extension* consists of a number of [*WeeWX* services](http://weewx.com/docs/customizing.htm#Overall_system_architecture), [Search List Extensions (SLE)](http://weewx.com/docs/customizing.htm#extending_the_list), [XTypes](http://weewx.com/docs/customizing.htm#Adding_new,_derived_types) and [reports/skins](http://weewx.com/docs/customizing.htm#The_standard_reporting_service,_StdReport) that produce the following data files:
 
 -   clientraw.txt
 -   clientrawextra.txt
@@ -10,26 +10,27 @@ The *WeeWX-Saratoga extension* consists of a number of *WeeWX* services, Search 
 -   clientrawhour.txt
 -   daywindrose.png
 -   WEEWXtags.php
+-   various observation plots
 
 The above files are produced during each *WeeWX* report cycle with the exception of *clientraw.txt* which is generated upon receipt of loop packets and (by default) updated at 10 second intervals.
 
-The *WeeWX-Saratoga extension* is based on the *WeeWD-WD* extension. (https://bitbucket.org/ozgreg/weewx-wd and https://github.com/gjr80/weewx-weewx-wd).
+The *WeeWX-Saratoga extension* is based on the original [*weewx-WD extension*](https://bitbucket.org/ozgreg/weewx-wd) and the later forked [*WeeWX-WD extension*](https://github.com/gjr80/weewx-weewx-wd).
 
 
 ## Pre-Requisites ##
 
 The *WeeWX-Saratoga extension* requires:
 
-- *WeeWX* v4.2.0 or later (both Python 2 and Python 3 are supported), and
+- *WeeWX* v4.5.0 or later (both Python 2 and Python 3 are supported), and
 
-- *Pyephem* for extended almanac information. Refer to [WeeWX: Installation using setup.py](http://weewx.com/docs/setup.htm) for the commands to install *python3-ephem* or *pyephem* for your system.
+- the *Pyephem* Python library for extended almanac information. Refer to [WeeWX: Installation using setup.py](http://weewx.com/docs/setup.htm) for the commands to install *python3-ephem* (Python 3) or *pyephem* (Python 2) for your system.
 
 
-## Installation Instructions ##
+## Installation and Upgrade Instructions ##
 
 The preferred method of installing or upgrading the *WeeWX-Saratoga extension* is using the *WeeWX* [*wee_extension* utility](http://weewx.com/docs/utilities.htm#wee_extension_utility). The *WeeWX-Saratoga extension* can also be installed manually.
 
-**Note**: If installing *WeeWX-Saratoga* in place of a previous *WeeWX-WD* installation you should uninstall *WeeWX-WD* before installing the *WeeWX-Saratoga extension*. You may wish to make a backup copy of *weewx.conf* before uninstalling *WeeWX-WD* to aid in configuring the subsequent *WeeWX-Saratoga* installation. The *WeeWX-Saratoga extension* uses the same databases as used by *WeeWX-WD* so these databases should be retained when uninstalling *WeeWX-WD*.
+**Note**: If installing the *WeeWX-Saratoga extension* in place of *WeeWX-WD* please refer to the [Upgrading from *WeeWX-WD*](https://github.com/gjr80/weewx-saratoga/wiki/Upgrading-from-WeeWX%E2%80%90WD) wiki page.
 
 **Note**: Symbolic names are used below to refer to file locations on the *WeeWX* system. Symbolic names allow a common name to be used to refer to a directory that may be different from system to system. The following symbolic names are used below:
 
@@ -42,11 +43,11 @@ The preferred method of installing or upgrading the *WeeWX-Saratoga extension* i
 Refer to [where to find things](http://weewx.com/docs/usersguide.htm#Where_to_find_things) in the *WeeWX User's Guide* for further information.
 
 
-### Installation using the *wee_extension* utility ###
+### Installing or Upgrading using the *wee_extension* utility ###
 
 1.  Download the *WeeWX-Saratoga extension* from the *WeeWX-Saratoga extension* [releases page](https://github.com/gjr80/weewx-saratoga/releases) into a directory accessible from the *WeeWX* machine:
 
-        $ wget -P /var/tmp https://github.com/gjr80/weewx-saratoga/releases/download/v0.1.0/ws-0.1.0.tar.gz
+        $ wget -P /var/tmp https://github.com/gjr80/weewx-saratoga/releases/download/v0.1.1/ws-0.1.1.tar.gz
 
 	in this case the extension will be downloaded to directory */var/tmp*.
 
@@ -65,7 +66,7 @@ Refer to [where to find things](http://weewx.com/docs/usersguide.htm#Where_to_fi
 
 1.  Install the *WeeWX-Saratoga extension* downloaded at step 1 using the *WeeWX* *wee_extension* utility:
 
-        $ wee_extension --install=/var/tmp/ws-0.1.0.tar.gz
+        $ wee_extension --install=/var/tmp/ws-0.1.1.tar.gz
 
     **Note:** Depending on your system/installation the above command may need to be prefixed with *sudo*.
 
@@ -75,12 +76,16 @@ Refer to [where to find things](http://weewx.com/docs/usersguide.htm#Where_to_fi
 
     This will result in output similar to the following:
 
-		Request to install '/var/tmp/ws-0.1.0.tar.gz'
-		Extracting from tar archive /var/tmp/ws-0.1.0.tar.gz
+		Request to install '/var/tmp/ws-0.1.1.tar.gz'
+		Extracting from tar archive /var/tmp/ws-0.1.1.tar.gz
 		Saving installer file to /home/weewx/bin/user/installer/WeeWX-Saratoga
 		Saved configuration dictionary. Backup copy at /home/weewx/weewx.conf.20210403130000
-		Finished installing extension '/var/tmp/ws-0.1.0.tar.gz'
+		Finished installing extension '/var/tmp/ws-0.1.1.tar.gz'
 
+    **Note:** If upgrading an existing *WeeWX-Saratoga extension* installation any previous *WeeWX-Saratoga extension* configuration information in *weewx.conf* will have been retained and upgraded as required. *wee_extension* will save a timestamped backup copy of the pre-upgrade *weewx.conf* as detailed in the *wee_extension* output, eg:
+    
+        Saved configuration dictionary. Backup copy at /home/weewx/weewx.conf.20210403130000
+    
 1. Start *WeeWX*:
 
         $ sudo /etc/init.d/weewx start
@@ -97,17 +102,17 @@ Refer to [where to find things](http://weewx.com/docs/usersguide.htm#Where_to_fi
 
 1. The *WeeWX-Saratoga extension* installation can be further customized (eg remote file transfer, units of measure etc) by referring to the [WeeWX-Saratoga wiki](https://github.com/gjr80/weewx-saratoga/wiki).
 
-### Manual installation ###
+### Installing or upgrading manually ###
 
 1.  Download the *WeeWX-Saratoga extension* from the *WeeWX-Saratoga extension* [releases page](https://github.com/gjr80/weewx-saratoga/releases) into a directory accessible from the *WeeWX* machine.
 
-        $ wget -P /var/tmp https://github.com/gjr80/weewx-saratoga/releases/download/v0.1.0/ws-0.1.0.tar.gz
+        $ wget -P /var/tmp https://github.com/gjr80/weewx-saratoga/releases/download/v0.1.1/ws-0.1.1.tar.gz
 
 	in this case the extension will be downloaded to directory */var/tmp*.
 
 1.  Unpack the extension as follows:
 
-        $ tar xvfz /var/tmp/ws-0.1.0.tar.gz
+        $ tar xvfz /var/tmp/ws-0.1.1.tar.gz
 
 1.  Copy files from within the resulting *ws* directory as follows:
 
@@ -119,6 +124,8 @@ Refer to [where to find things](http://weewx.com/docs/usersguide.htm#Where_to_fi
 1.  Edit *weewx.conf*:
 
         $ vi weewx.conf
+    
+    **Note:** If manually upgrading an existing *WeeWX-Saratoga extension* installation it is the user's responsibility to retain any previous *WeeWX-Saratoga extension* configuration information in *weewx.conf*. It is strongly recommended that a backup copy of *weewx.conf* be made before any upgrade changes are made to *weewx.conf*.
 
 1.  In *weewx.conf*, modify the *[StdReport]* section by adding the following sub-sections:
 
@@ -206,18 +213,12 @@ Refer to [where to find things](http://weewx.com/docs/usersguide.htm#Where_to_fi
         [[ws_sqlite]]
             database_type = SQLite
             database_name = weewxwd.sdb
-        [[ws_supp_sqlite]]
-            database_type = SQLite
-            database_name = wdsupp.sdb
 
     if using MySQL instead add something like (with settings for your MySQL setup):
 
         [[ws_mysql]]
             database_type = MySQL
             database_name = weewxwd
-        [[ws_supp_mysql]]
-            database_type = MySQL
-            database_name = wdsupp
 
 1.  In *weewx.conf*, add the following sub-section to the *[DataBindings]* section:
 
@@ -226,11 +227,6 @@ Refer to [where to find things](http://weewx.com/docs/usersguide.htm#Where_to_fi
             table_name = archive
             manager = weewx.manager.DaySummaryManager
             schema = user.wsschema.ws_schema
-        [[ws_supp_binding]]
-            database = ws_supp_sqlite
-            table_name = supp
-            manager = weewx.manager.Manager
-            schema = user.wsschema.ws_supp_schema
 
     if using MySQL instead, add something like (with settings for your MySQL
     setup):
@@ -240,12 +236,6 @@ Refer to [where to find things](http://weewx.com/docs/usersguide.htm#Where_to_fi
             table_name = archive
             manager = weewx.manager.DaySummaryManager
             schema = user.wdschema.weewxwd_schema
-
-        [[wdsupp_binding]]
-            database = wd_supp_mysql
-            table_name = supp
-            manager = weewx.manager.Manager
-            schema = user.wdschema.wdsupp_schema
 
 1.  In *weewx.conf*, modify the services lists in *[Engine]* as indicated:
 
@@ -276,7 +266,7 @@ Refer to [where to find things](http://weewx.com/docs/usersguide.htm#Where_to_fi
 
 ## Support ##
 
-General support issues may be raised in the Google Groups [weewx-user forum](https://groups.google.com/group/weewx-user "Google Groups weewx-user forum"). Specific bugs in the *WeeWX-Saratoga extension* code should be the subject of a new issue raised here via the [Issues Page](https://github.com/gjr80/weewx-weewx-wd/issues "WeeWX-Saratoga extension Issues").  Support for the [_WEEWX-plugin_](https://saratoga-weather.org/wxtemplates/install.php) for the Saratoga website template should be via posts on [WXForum.net, Custom Templates/Scripts board](https://www.wxforum.net/index.php?board=102.0).
+General support issues for the *WeeWX-Saratoga extension* may be raised in the Google Groups [weewx-user forum](https://groups.google.com/g/weewx-user "Google Groups weewx-user forum"). The *WeeWX-Saratoga extension* [Issues Page](https://github.com/gjr80/weewx-saratoga/issues "WeeWX-Saratoga extension Issues") should only be used for specific bugs in the *WeeWX-Saratoga extension* code. It is recommended that even if a *WeeWX-Saratoga extension* bug is suspected users first post to the Google Groups [weewx-user forum](https://groups.google.com/g/weewx-user "Google Groups weewx-user forum"). Support for the [_WEEWX-plugin_](https://saratoga-weather.org/wxtemplates/install.php) for the *Saratoga Weather Website templates* should be via posts on [WXForum.net, Custom Templates/Scripts board](https://www.wxforum.net/index.php?board=102.0).
 
 ## Licensing ##
 
