@@ -930,7 +930,11 @@ $inTempHourArray[$i].degree_C.format(format_string="%.1f", add_label=False, loca
 #*762*#$alltime.dewpoint.mintime.format($dayFormat) #slurp
 #*763*#$alltime.dewpoint.mintime.format($monthFormat) #slurp
 #*764*#$alltime.dewpoint.mintime.format($yearFormat) #slurp
-#*765*#$current.cbi.format(format_string="%.1f", localize=False) #slurp
+#if $current.cbi.exists
+#*765*#$current.cbi.format(format_string="%.1f", None_string="--", localize=False) #slurp
+#else
+#*765*#- #slurp
+#end if
 #*766*#- #slurp
 #*767*#$yesterday.outTemp.max.degree_C.format(format_string="%.1f", add_label=False, localize=False) #slurp
 #*768*#$yesterday.outTemp.min.degree_C.format(format_string="%.1f", add_label=False, localize=False) #slurp
