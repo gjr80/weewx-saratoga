@@ -877,7 +877,7 @@ class RealtimeClientrawThread(threading.Thread):
         # how to treat wind direction that is None
         try:
             # do we have a numeric value
-            _nd = to_int(rtcr_config_dict.get('null_dir'))
+            _nd = "%d" % to_int(rtcr_config_dict.get('null_dir'))
         except (ValueError, TypeError):
             # perhaps we have a string, take it's upper case form with a
             # default of 'LAST'
@@ -1332,7 +1332,17 @@ class RealtimeClientrawThread(threading.Thread):
             gust = None
         data[2] = gust if gust is not None else 0.0
         # 003 - windDir
-        data[3] = packet_wx['windDir'] if packet_wx['windDir'] is not None else '--'
+        if packet_wx['windDir'] is None:
+            if self.null_dir == 'LAST':
+                try:
+                    _dir = self.buffer['windDir'].last
+                except KeyError:
+                    _dir = self.null_dir
+            else:
+                _dir = self.null_dir
+        else:
+            _dir = self.null_dir
+        data[3] = _dir
         # 004 - outTemp (Celsius)
         data[4] = packet_wx['outTemp'] if packet_wx['outTemp'] is not None else 0.0
         # 005 - outHumidity
@@ -1684,6 +1694,7 @@ class RealtimeClientrawThread(threading.Thread):
         # 116 - date of last lightning strike - will not implement
         data[116] = '---'
         # 117 - wind average direction
+        # just just .vec_dir, it will always return a non-None value
         data[117] = self.buffer['wind'].vec_dir
         # 118 - nexstorm distance - will not implement
         data[118] = 0.0
