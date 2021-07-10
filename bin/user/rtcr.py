@@ -159,6 +159,15 @@ weewx.conf as follows:
         # default is 200.
         grace = 200
 
+        # By default WeeWX sets wind direction to None when wind speed is 0
+        # (this behaviour can be overridden using the WeeWX force_null
+        # option [http://weewx.com/docs/usersguide.htm#force_null]. This
+        # behaviour may cause problems with machinery that processes clientraw
+        # data and expects wind direction to always exist.
+        # null_dir = N
+        # null_dir = 0
+        null_dir = last
+
 3.  If this service is not being used as part of the WeeWX-Saratoga extension
 add a [RealtimeClientraw] stanza to weewx.conf containing the settings at
 step 2 above. Note the different number of square brackets and different
@@ -864,6 +873,16 @@ class RealtimeClientrawThread(threading.Thread):
 
         # grace period when looking for archive records
         self.grace = to_int(rtcr_config_dict.get('grace', DEFAULT_GRACE))
+
+        # how to treat wind direction that is None
+        try:
+            # do we have a numeric value
+            _nd = to_int(rtcr_config_dict.get('null_dir'))
+        except (ValueError, TypeError):
+            # perhaps we have a string, take it's upper case form with a
+            # default of 'LAST'
+            _nd = rtcr_config_dict.get('null_dir', 'LAST').upper()
+        self.null_dir = _nd
 
         # debug settings
         self.debug_loop = to_bool(rtcr_config_dict.get('debug_loop', False))
