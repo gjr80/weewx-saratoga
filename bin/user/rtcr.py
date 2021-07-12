@@ -826,6 +826,14 @@ class RealtimeClientrawThread(threading.Thread):
         176: 0,  # - 10 minute average wind direction
         177: None,  # - record end
     }
+    # default direction if no other non-None value can be found
+    DEFAULT_DIR = 0
+    # intercardinal to degrees lookup:
+    ic_to_degrees = {'N': '0', 'NNE': '22.5', 'NE': '45', 'ENE': '67.5',
+                     'E': '90', 'ESE': '112.5', 'SE': '135', 'SSE': '157.5',
+                     'S': '180', 'SSW': '202.5', 'SW': '225', 'WSW': '247.5',
+                     'W': '270', 'WNW': '292.5', 'NW': '315', 'NNW': '337.5'
+                     }
 
     def __init__(self, rtcr_queue, manager_dict, rtcr_config_dict, html_root,
                  location, latitude, longitude, altitude):
@@ -874,15 +882,19 @@ class RealtimeClientrawThread(threading.Thread):
         # grace period when looking for archive records
         self.grace = to_int(rtcr_config_dict.get('grace', DEFAULT_GRACE))
 
-        # how to treat wind direction that is None
+        # How to treat wind direction that is None. If self.null_dir == 'LAST' 
+        # then we use the last known direction, otherwise we use whatever is 
+        # stored in self.null_dir. 
+        # first get the null_dir config option if it exists, default to 'LAST'
+        _nd = rtcr_config_dict.get('null_dir', 'LAST')
+        # no try to convert to an int
         try:
-            # do we have a numeric value
-            _nd = "%d" % to_int(rtcr_config_dict.get('null_dir'))
+            _deg = "%d" % int(_nd)
         except (ValueError, TypeError):
-            # perhaps we have a string, take it's upper case form with a
-            # default of 'LAST'
-            _nd = rtcr_config_dict.get('null_dir', 'LAST').upper()
-        self.null_dir = _nd
+            # perhaps we have a string inter-cardinal direction or it's 'LAST', 
+            # try to convert it to degrees, if we can't default to 'LAST'
+            _deg = RealtimeClientrawThread.ic_to_degrees.get(_nd, 'LAST')
+        self.null_dir = _deg
 
         # debug settings
         self.debug_loop = to_bool(rtcr_config_dict.get('debug_loop', False))
@@ -1332,16 +1344,24 @@ class RealtimeClientrawThread(threading.Thread):
             gust = None
         data[2] = gust if gust is not None else 0.0
         # 003 - windDir
+        # do we have a non-None direction
         if packet_wx['windDir'] is None:
+            # direction is None, so what are we to use
             if self.null_dir == 'LAST':
+                # we should use the last known direction, see if we can get it
+                # from our buffer
                 try:
                     _dir = self.buffer['windDir'].last
                 except KeyError:
-                    _dir = self.null_dir
+                    # could not get last known direction from the buffer so use
+                    # our default
+                    _dir = RealtimeClientrawThread.DEFAULT_DIR
             else:
+                # we have a user specified default to use so use it
                 _dir = self.null_dir
         else:
-            _dir = self.null_dir
+            # we have a direction in the packet so use it
+            _dir = packet_wx['windDir']
         data[3] = _dir
         # 004 - outTemp (Celsius)
         data[4] = packet_wx['outTemp'] if packet_wx['outTemp'] is not None else 0.0
