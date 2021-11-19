@@ -17,7 +17,7 @@ PARTICULAR PURPOSE.  See the GNU General Public License for more details.
 You should have received a copy of the GNU General Public License along with
 this program.  If not, see http://www.gnu.org/licenses/.
 
-Version: 0.3.0                                          Date: 13 May 2021
+Version: 0.3.1                                          Date: 13 May 2021
 
 Revision History
     13 May 2021         v0.3.0
@@ -2365,7 +2365,10 @@ class ScalarBuffer(object):
         if len(self.history) > 0:
             born = ts - age
             rec = [a.value for a in self.history if a.ts >= born]
-            return float(sum(rec))/len(rec)
+            if len(rec) > 0:
+                return float(sum(rec))/len(rec)
+            else:
+                return None
         else:
             return None
 
