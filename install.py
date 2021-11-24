@@ -13,9 +13,11 @@ ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
 FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
 details.
 
-Version: 0.1.1                                          Date: 21 May 2021
+Version: 0.1.2                                          Date: 25 November 2021
 
 Revision History
+    25 November 2021    v0.1.2
+        - version number change only
     21 May 2021         v0.1.1
         - version number change only
     13 May 2021         v0.1.0
@@ -39,7 +41,7 @@ import weewx
 from setup import ExtensionInstaller
 
 REQUIRED_VERSION = "4.5.0"
-WS_VERSION = "0.1.1"
+WS_VERSION = "0.1.2"
 
 # Multi-line config string, makes it easier to include comments. Needs to be
 # explicitly set as unicode or python2 StringIO complains.
