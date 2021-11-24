@@ -369,8 +369,18 @@ if ( isset($_REQUEST['sce']) && strtolower($_REQUEST['sce']) == 'view' ) {
 #raw $maxgst = #end raw '$day.wind.max.format(add_label=False, localize=$localize_num)';    // today's maximum wind speed
 #raw $maxgstt = #end raw '$day.wind.maxtime.format($timeFormat)';   // time this occurred
 #raw $maxgsthr = #end raw '$span($hour_delta=1).windGust.max.format(localize=$localize_num) $current($timestamp=$max_gust_last_hour_ts).windGustDir.ordinal_compass'; // maximum gust last hour
-#raw $dirdeg = #end raw '$current.windDir.format(add_label=False, localize=$localize_num)'; // wind direction (degrees)
-#raw $dirlabel = #end raw '$current.windDir.ordinal_compass';   // wind direction (NNE etc)
+#if $current.windDir.raw is not None
+    #set $_dirdeg = $current.windDir.format(add_label=False, localize=$localize_num)
+    #set $_dirlabel = $current.windDir.ordinal_compass
+#elif $current.windGustDir.raw is not None
+    #set $_dirdeg = $current.windGustDir.format(add_label=False, localize=$localize_num)
+    #set $_dirlabel = $current.windGustDir.ordinal_compass
+#else
+    #set $_dirdeg = '0'
+    #set $_dirlabel = ''
+#end if
+#raw $dirdeg = #end raw '$_dirdeg'; // wind direction (degrees)
+#raw $dirlabel = #end raw '$_dirlabel';   // wind direction (NNE etc)
 #raw $maxgustlastimediatehourtime =  #end raw '$span($hour_delta=1).windGust.maxtime.format($timeFormat)';  //   time that the max gust last prior 1 hour occurred
 #raw $avwindlastimediate10 = #end raw '$span($time_delta=600).windSpeed.avg.format(add_label=False, localize=$localize_num)';  // Average wind for the last immediate 10 minute period
 #set $avdir10 = int(round($span($time_delta=600).windvec.last.polar.raw[1], 0))
