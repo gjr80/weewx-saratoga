@@ -12,9 +12,11 @@ This program is distributed in the hope that it will be useful, but WITHOUT ANY
 WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
 PARTICULAR PURPOSE.  See the GNU General Public License for more details.
 
-Version: 0.1.1                                          Date: 21 May 2021
+Version: 0.1.2                                          Date: 25 November 2021
 
 Revision History
+    25 November 2021    v0.1.2
+        - version number change only
     21 May 2021         v0.1.1
         - version number change only
     13 May 2021         v0.1.0
@@ -74,7 +76,7 @@ except ImportError:
     def logdbg(msg):
         logmsg(syslog.LOG_DEBUG, msg)
 
-WS_SLE_VERSION = '0.1.1'
+WS_SLE_VERSION = '0.1.2'
 
 
 def get_first_day(dt, d_years=0, d_months=0):

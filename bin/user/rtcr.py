@@ -17,9 +17,13 @@ PARTICULAR PURPOSE.  See the GNU General Public License for more details.
 You should have received a copy of the GNU General Public License along with
 this program.  If not, see http://www.gnu.org/licenses/.
 
-Version: 0.3.1                                          Date: 13 May 2021
+Version: 0.3.2                                          Date: 25 November 2021
 
 Revision History
+    25 November 2021    v0.3.2
+        - debug log output now controlled by [[RealtimeClientraw]] debug
+          options rather than the WeeWX global debug option
+        - fixed bug when obtaining average values from scalar buffers
     13 May 2021         v0.3.0
         - WeeWX 3.4+/4.x python 2.7/3.x compatible
         - dropped support for python 2.5, python 2.6 may be supported but not
@@ -279,7 +283,7 @@ except ImportError:
 
 
 # version number of this script
-RTCR_VERSION = '0.3.0'
+RTCR_VERSION = '0.3.2'
 
 # the obs that we will buffer
 MANIFEST = ['outTemp', 'barometer', 'outHumidity', 'rain', 'rainRate',
