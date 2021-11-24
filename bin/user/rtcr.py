@@ -1137,14 +1137,14 @@ class RealtimeClientrawThread(threading.Thread):
                     # post the data
                     self.post_data(cr_string)
                 # log the generation
-                if weewx.debug > 0 or self.debug_gen:
+                if self.debug_gen:
                     loginf("packet (%s) clientraw.txt generated in %.5f seconds" % (cached_packet['dateTime'],
                                                                                     (self.last_write-t1)))
             except Exception as e:
                 log_traceback_error('rtcrthread: **** ')
         else:
             # we skipped this packet so log it
-            if weewx.debug > 0 or self.debug_gen:
+            if self.debug_gen:
                 loginf("packet (%s) skipped" % conv_packet['dateTime'])
 
     def process_stats(self, package):
@@ -1198,18 +1198,18 @@ class RealtimeClientrawThread(threading.Thread):
             if 200 <= response.code <= 299:
                 # no exception thrown and we received a good response code, log
                 # it and return.
-                if weewx.debug > 1 or self.debug_post:
+                if self.debug_post:
                     loginf("Data successfully posted. Received response: '%s %s'" % (response.getcode(),
                                                                                      response.msg))
                 return
             # we received a bad response code, log it and continue
-            if weewx.debug > 0 or self.debug_post:
+            if self.debug_post:
                 loginf("Failed to post data. Received response: '%s %s'" % (response.getcode(),
                                                                             response.msg))
         except (urllib.error.URLError, socket.error,
                 http_client.BadStatusLine, http_client.IncompleteRead) as e:
             # an exception was thrown, log it and continue
-            if weewx.debug > 0 or self.debug_post:
+            if self.debug_post:
                 loginf("Failed to post data. Exception error message: '%s'" % e)
 
     def post_request(self, request, payload):
