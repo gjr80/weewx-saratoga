@@ -27,7 +27,7 @@ Pre-Requisites
 - WeeWX-Saratoga WeeWX extension
 - PyEphem for inclusion of ephemeris and insolation data
 
-Version: 0.1.1                                      Date: 21 May 2021
+Version: 0.1.2                                      Date: 25 November 2021
 *#
 #*
 Inline python code to setup/initialise a number of variables for use in the
@@ -39,7 +39,7 @@ template
 #import time
 #import math
 #from weeutil.weeutil import to_bool
-#set $version = '0.1.1'
+#set $version = '0.1.2'
 #*
 Setup date-time format strings
 *#
@@ -298,10 +298,12 @@ if ( isset($_REQUEST['sce']) && strtolower($_REQUEST['sce']) == 'view' ) {
 #raw $mooneclipse = #end raw '$nextLunarEclipse';// Next moon eclipse date
 #raw $easterdate = #end raw '$current.Easter.format($ephemDateFormat)';// Next Easter date
 #raw $chinesenewyear = #end raw '$cny.format($ephemDateFormat)';// Chinese new year
+#if $almanac.hasExtras
 #raw $suntransit = #end raw '$almanac.sun.transit.format(' '.join([$timeFormat, $dateFormat]))';
 #raw $moontransittime = #end raw '$almanac.moon.transit.format($timeFormat)';
 #raw $suntransittime = #end raw '$almanac.sun.transit.format($timeFormat)';
 #raw $moontransit = #end raw '$almanac.moon.transit.format(' '.join([$timeFormat, $dateFormat]))';
+#end if
 #raw $hoursofpossibledaylight = #end raw '$time.strftime($timeFormat, $dayLength)';// Total hours/minutes of possible daylight for today
 #raw $stationaltitude = #end raw '$station.altitude.foot.format(add_label=False, localize=$localize_num)';   // Station altitude, feet, as set in the units setup
 #raw $stationlatitude = #end raw '$lat_dms'; // Latitude (from the sun moon rise/set setup)

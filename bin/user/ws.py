@@ -13,10 +13,12 @@ ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
 FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
 details.
 
-Version: 0.1.1                                          Date: 21 May 2021
+Version: 0.1.2                                          Date: 25 November 2021
 
 Revision History
 
+    25 November 2021    v0.1.2
+        - WsWXCalculate now logs pyepehem installation status on startup
     21 May 2021         v0.1.1
         - version number change only
     13 May 2021         v0.1.0
@@ -24,6 +26,7 @@ Revision History
 """
 
 # python imports
+import sys
 import time
 from datetime import datetime
 
@@ -76,7 +79,7 @@ except ImportError:
     def logcri(msg):
         logmsg(syslog.LOG_CRIT, msg)
 
-WS_VERSION = '0.1.1'
+WS_VERSION = '0.1.2'
 
 # Default radiation threshold value used for calculating sunshine
 DEFAULT_SUNSHINE_THRESHOLD = 120
@@ -106,6 +109,13 @@ class WsWXCalculate(weewx.engine.StdService):
         # log our version and config
         loginf("WsWXCalculate version %s" % WS_VERSION)
         loginf("WsWXCalculate sunshine threshold: %s" % self.sunshine_threshold)
+        # not really our place to say since we don't use extended Almanac
+        # capabilities, but since some of our supported templates/SLEs do we
+        # will log pyephem's availability
+        if 'ephem' in sys.modules:
+            loginf('pyephem was detected')
+        else:
+            loginf('pyephem was not detected')
 
     @staticmethod
     def new_loop_packet(event):

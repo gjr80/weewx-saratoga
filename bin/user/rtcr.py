@@ -17,9 +17,13 @@ PARTICULAR PURPOSE.  See the GNU General Public License for more details.
 You should have received a copy of the GNU General Public License along with
 this program.  If not, see http://www.gnu.org/licenses/.
 
-Version: 0.3.1                                          Date: 13 May 2021
+Version: 0.3.2                                          Date: 25 November 2021
 
 Revision History
+    25 November 2021    v0.3.2
+        - debug log output now controlled by [[RealtimeClientraw]] debug
+          options rather than the WeeWX global debug option
+        - fixed bug when obtaining average values from scalar buffers
     13 May 2021         v0.3.0
         - WeeWX 3.4+/4.x python 2.7/3.x compatible
         - dropped support for python 2.5, python 2.6 may be supported but not
@@ -288,7 +292,7 @@ except ImportError:
 
 
 # version number of this script
-RTCR_VERSION = '0.3.0'
+RTCR_VERSION = '0.3.2'
 
 # the obs that we will buffer
 MANIFEST = ['outTemp', 'barometer', 'outHumidity', 'rain', 'rainRate',
@@ -1168,14 +1172,14 @@ class RealtimeClientrawThread(threading.Thread):
                     # post the data
                     self.post_data(cr_string)
                 # log the generation
-                if weewx.debug > 0 or self.debug_gen:
+                if self.debug_gen:
                     loginf("packet (%s) clientraw.txt generated in %.5f seconds" % (cached_packet['dateTime'],
                                                                                     (self.last_write-t1)))
             except Exception as e:
                 log_traceback_error('rtcrthread: **** ')
         else:
             # we skipped this packet so log it
-            if weewx.debug > 0 or self.debug_gen:
+            if self.debug_gen:
                 loginf("packet (%s) skipped" % conv_packet['dateTime'])
 
     def process_stats(self, package):
@@ -1229,18 +1233,18 @@ class RealtimeClientrawThread(threading.Thread):
             if 200 <= response.code <= 299:
                 # no exception thrown and we received a good response code, log
                 # it and return.
-                if weewx.debug > 1 or self.debug_post:
+                if self.debug_post:
                     loginf("Data successfully posted. Received response: '%s %s'" % (response.getcode(),
                                                                                      response.msg))
                 return
             # we received a bad response code, log it and continue
-            if weewx.debug > 0 or self.debug_post:
+            if self.debug_post:
                 loginf("Failed to post data. Received response: '%s %s'" % (response.getcode(),
                                                                             response.msg))
         except (urllib.error.URLError, socket.error,
                 http_client.BadStatusLine, http_client.IncompleteRead) as e:
             # an exception was thrown, log it and continue
-            if weewx.debug > 0 or self.debug_post:
+            if self.debug_post:
                 loginf("Failed to post data. Exception error message: '%s'" % e)
 
     def post_request(self, request, payload):

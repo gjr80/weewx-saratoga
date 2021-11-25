@@ -1,6 +1,6 @@
 <?php
 // Saratoga WEEWX-plugin info for checking version information
-// Version 1.00 - 14-May-2021 - initial release
+// Version 0.1.1 - 21 May 2021 - initial release
 /*
 post_clientraw.php
 
@@ -20,17 +20,17 @@ PARTICULAR PURPOSE.  See the GNU General Public License for more details.
 You should have received a copy of the GNU General Public License along with
 this program.  If not, see http://www.gnu.org/licenses/.
 
-Coded: 0.1.0                                        Date: 2 April 2021
+Version: 0.1.1                                          Date: 21 May 2021
 
 Revision History
-  2 April 2021         v0.1.0
-      - initial release
-  11 April 2021         v0.1.1   K. True mods
-      - added return codes for results
+  21 May 2021           v0.1.1   K. True mods
+      - added return codes for results:
         200 - OK for proper operation
         400 - Bad Request for malformed POST request (clientraw missing/malformed)
         405 - Method Not Allowed for GET or HEAD requests
         507 - Insufficient Storage if writing clientraw.txt to disk fails
+  2 April 2021         v0.1.0
+      - initial release
 
 
 Instructions for use:

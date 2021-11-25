@@ -47,7 +47,7 @@ Refer to [where to find things](http://weewx.com/docs/usersguide.htm#Where_to_fi
 
 1.  Download the *WeeWX-Saratoga extension* from the *WeeWX-Saratoga extension* [releases page](https://github.com/gjr80/weewx-saratoga/releases) into a directory accessible from the *WeeWX* machine:
 
-        $ wget -P /var/tmp https://github.com/gjr80/weewx-saratoga/releases/download/v0.1.1/ws-0.1.1.tar.gz
+        $ wget -P /var/tmp https://github.com/gjr80/weewx-saratoga/releases/download/v0.1.2/ws-0.1.2.tar.gz
 
 	in this case the extension will be downloaded to directory */var/tmp*.
 
@@ -66,7 +66,7 @@ Refer to [where to find things](http://weewx.com/docs/usersguide.htm#Where_to_fi
 
 1.  Install the *WeeWX-Saratoga extension* downloaded at step 1 using the *WeeWX* *wee_extension* utility:
 
-        $ wee_extension --install=/var/tmp/ws-0.1.1.tar.gz
+        $ wee_extension --install=/var/tmp/ws-0.1.2.tar.gz
 
     **Note:** Depending on your system/installation the above command may need to be prefixed with *sudo*.
 
@@ -76,11 +76,11 @@ Refer to [where to find things](http://weewx.com/docs/usersguide.htm#Where_to_fi
 
     This will result in output similar to the following:
 
-		Request to install '/var/tmp/ws-0.1.1.tar.gz'
-		Extracting from tar archive /var/tmp/ws-0.1.1.tar.gz
+		Request to install '/var/tmp/ws-0.1.2.tar.gz'
+		Extracting from tar archive /var/tmp/ws-0.1.2.tar.gz
 		Saving installer file to /home/weewx/bin/user/installer/WeeWX-Saratoga
 		Saved configuration dictionary. Backup copy at /home/weewx/weewx.conf.20210403130000
-		Finished installing extension '/var/tmp/ws-0.1.1.tar.gz'
+		Finished installing extension '/var/tmp/ws-0.1.2.tar.gz'
 
     **Note:** If upgrading an existing *WeeWX-Saratoga extension* installation any previous *WeeWX-Saratoga extension* configuration information in *weewx.conf* will have been retained and upgraded as required. *wee_extension* will save a timestamped backup copy of the pre-upgrade *weewx.conf* as detailed in the *wee_extension* output, eg:
     
@@ -106,13 +106,13 @@ Refer to [where to find things](http://weewx.com/docs/usersguide.htm#Where_to_fi
 
 1.  Download the *WeeWX-Saratoga extension* from the *WeeWX-Saratoga extension* [releases page](https://github.com/gjr80/weewx-saratoga/releases) into a directory accessible from the *WeeWX* machine.
 
-        $ wget -P /var/tmp https://github.com/gjr80/weewx-saratoga/releases/download/v0.1.1/ws-0.1.1.tar.gz
+        $ wget -P /var/tmp https://github.com/gjr80/weewx-saratoga/releases/download/v0.1.2/ws-0.1.2.tar.gz
 
 	in this case the extension will be downloaded to directory */var/tmp*.
 
 1.  Unpack the extension as follows:
 
-        $ tar xvfz /var/tmp/ws-0.1.1.tar.gz
+        $ tar xvfz /var/tmp/ws-0.1.2.tar.gz
 
 1.  Copy files from within the resulting *ws* directory as follows:
 
@@ -231,8 +231,8 @@ Refer to [where to find things](http://weewx.com/docs/usersguide.htm#Where_to_fi
     if using MySQL instead, add something like (with settings for your MySQL
     setup):
 
-        [[wd_binding]]
-            database = weewxwd_mysql
+        [[ws_binding]]
+            database = ws_mysql
             table_name = archive
             manager = weewx.manager.DaySummaryManager
             schema = user.wdschema.weewxwd_schema
