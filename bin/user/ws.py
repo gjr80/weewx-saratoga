@@ -18,7 +18,7 @@ Version: 0.1.2                                          Date: 25 November 2021
 Revision History
 
     25 November 2021    v0.1.2
-        - version number change only
+        - WsWXCalculate now logs pyepehem installation status on startup
     21 May 2021         v0.1.1
         - version number change only
     13 May 2021         v0.1.0
@@ -26,6 +26,7 @@ Revision History
 """
 
 # python imports
+import sys
 import time
 from datetime import datetime
 
@@ -108,6 +109,13 @@ class WsWXCalculate(weewx.engine.StdService):
         # log our version and config
         loginf("WsWXCalculate version %s" % WS_VERSION)
         loginf("WsWXCalculate sunshine threshold: %s" % self.sunshine_threshold)
+        # not really our place to say since we don't use extended Almanac
+        # capabilities, but since some of our supported templates/SLEs do we
+        # will log pyephem's availability
+        if 'ephem' in sys.modules:
+            loginf('pyephem was detected')
+        else:
+            loginf('pyephem was not detected')
 
     @staticmethod
     def new_loop_packet(event):

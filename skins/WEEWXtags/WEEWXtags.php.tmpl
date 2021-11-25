@@ -298,10 +298,12 @@ if ( isset($_REQUEST['sce']) && strtolower($_REQUEST['sce']) == 'view' ) {
 #raw $mooneclipse = #end raw '$nextLunarEclipse';// Next moon eclipse date
 #raw $easterdate = #end raw '$current.Easter.format($ephemDateFormat)';// Next Easter date
 #raw $chinesenewyear = #end raw '$cny.format($ephemDateFormat)';// Chinese new year
+#if $almanac.hasExtras
 #raw $suntransit = #end raw '$almanac.sun.transit.format(' '.join([$timeFormat, $dateFormat]))';
 #raw $moontransittime = #end raw '$almanac.moon.transit.format($timeFormat)';
 #raw $suntransittime = #end raw '$almanac.sun.transit.format($timeFormat)';
 #raw $moontransit = #end raw '$almanac.moon.transit.format(' '.join([$timeFormat, $dateFormat]))';
+#end if
 #raw $hoursofpossibledaylight = #end raw '$time.strftime($timeFormat, $dayLength)';// Total hours/minutes of possible daylight for today
 #raw $stationaltitude = #end raw '$station.altitude.foot.format(add_label=False, localize=$localize_num)';   // Station altitude, feet, as set in the units setup
 #raw $stationlatitude = #end raw '$lat_dms'; // Latitude (from the sun moon rise/set setup)
