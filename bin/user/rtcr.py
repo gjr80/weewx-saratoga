@@ -17,9 +17,12 @@ PARTICULAR PURPOSE.  See the GNU General Public License for more details.
 You should have received a copy of the GNU General Public License along with
 this program.  If not, see http://www.gnu.org/licenses/.
 
-Version: 0.3.2                                          Date: 25 November 2021
+Version: 0.3.3                                          Date: ?? November 2021
 
 Revision History
+    ?? November 2021    v0.3.3
+        - introduced support for hierarchical log_success and log_failure
+          config options to control logging of HTTP POST results
     25 November 2021    v0.3.2
         - debug log output now controlled by [[RealtimeClientraw]] debug
           options rather than the WeeWX global debug option
@@ -869,6 +872,14 @@ class RealtimeClientrawThread(threading.Thread):
         # grace period when looking for archive records
         self.grace = to_int(rtcr_config_dict.get('grace', DEFAULT_GRACE))
 
+        # determine how much logging is desired
+        self.log_success = to_bool(weeutil.config.search_up(rtcr_config_dict,
+                                                            'log_success',
+                                                            False))
+        self.log_failure = to_bool(weeutil.config.search_up(rtcr_config_dict,
+                                                            'log_failure',
+                                                            True))
+
         # debug settings
         self.debug_loop = to_bool(rtcr_config_dict.get('debug_loop', False))
         self.debug_archive = to_bool(rtcr_config_dict.get('debug_archive',
@@ -1202,18 +1213,18 @@ class RealtimeClientrawThread(threading.Thread):
             if 200 <= response.code <= 299:
                 # no exception thrown and we received a good response code, log
                 # it and return.
-                if self.debug_post:
+                if self.log_success or self.debug_post:
                     loginf("Data successfully posted. Received response: '%s %s'" % (response.getcode(),
                                                                                      response.msg))
                 return
             # we received a bad response code, log it and continue
-            if self.debug_post:
+            if self.log_failure or self.debug_post:
                 loginf("Failed to post data. Received response: '%s %s'" % (response.getcode(),
                                                                             response.msg))
         except (urllib.error.URLError, socket.error,
                 http_client.BadStatusLine, http_client.IncompleteRead) as e:
             # an exception was thrown, log it and continue
-            if self.debug_post:
+            if self.log_failure or self.debug_post:
                 loginf("Failed to post data. Exception error message: '%s'" % e)
 
     def post_request(self, request, payload):
