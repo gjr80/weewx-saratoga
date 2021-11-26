@@ -15,7 +15,7 @@ WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
 PARTICULAR PURPOSE.  See the GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License along with
-this program.  If not, see http://www.gnu.org/licenses/.
+this program.  If not, see https://www.gnu.org/licenses/.
 
 Version: 0.3.3                                          Date: ?? November 2021
 
@@ -91,7 +91,7 @@ A list showing which clientraw.txt fields are/are not populated by the
 RealtimeClientraw service is included below.
 
 Inspired by crt.py v0.5 by Matthew Wall, a WeeWX service to emit loop data to
-file in Cumulus realtime format. Refer http://wiki.sandaysoft.com/a/Realtime.txt
+file in Cumulus realtime format. Refer https://cumuluswiki.org/a/Realtime.txt
 
 Abbreviated instructions for use:
 
