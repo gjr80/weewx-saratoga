@@ -12,9 +12,12 @@ This program is distributed in the hope that it will be useful, but WITHOUT ANY
 WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
 PARTICULAR PURPOSE.  See the GNU General Public License for more details.
 
-Version: 0.1.2                                          Date: 25 November 2021
+Version: 0.1.3                                          Date: ?? January 2022
 
 Revision History
+    ?? January 2022     v0.1.3
+        - refactored TimespanTags() SLE to work with revised SLE load order in
+          WeeWX v4.6.0
     25 November 2021    v0.1.2
         - YestAlmanac SLE now tolerates the absence of pyephem
     21 May 2021         v0.1.1
@@ -759,6 +762,13 @@ class TimeSpanTags(weewx.cheetahgenerator.SearchList):
     def get_extension_list(self, timespan, db_lookup):
         """Returns a search list with various custom TimespanBinder tags.
 
+        Supports all data binding, formatting and conversion options of similar
+        pre-defined tags such as $day, $week etc.
+
+        This could be done in a simpler manner ala the stats.py example but
+        using a class such as WsTimeBInder() simplifies the inclusion of
+        parameters such as data_binding etc.
+
         Parameters:
             timespan: An instance of weeutil.weeutil.TimeSpan. This will hold
                       the start and stop times of the domain of valid times.
@@ -767,34 +777,57 @@ class TimeSpanTags(weewx.cheetahgenerator.SearchList):
                        only parameter, will return a database manager object.
 
         Returns:
-            tspan_binder: A TimespanBinder object that allows a data binding to
-                          be specified (default to None) when calling $alltime
-                          eg $alltime.outTemp.max for the all time high outside
-                          temp.
-                          $alltime($data_binding='ws_binding').humidex.max
-                          for the all time high humidex where humidex
-                          resides in the 'ws_binding' database.
-
-                          Standard WeeWX unit conversion and formatting options
-                          are available.
+            time_binder: A WsTimeBinder object that allows a data binding to be
+                         specified (defaults to None) when calling each of the
+                         supported tags,
+                         eg $alltime($data_binding='ws_binding').humidex.max
+                         for the all time high humidex where humidex resides in
+                         the 'ws_binding' database.
         """
 
         t1 = time.time()
 
-        class WsBinder(weewx.tags.TimeBinder):
+        class WsTimeBinder(object):
             """Class supporting additional TimeSpan based aggregate tags."""
 
             def __init__(self, db_lookup, report_time,
-                         formatter=weewx.units.Formatter(),
-                         converter=weewx.units.Converter(), **option_dict):
-                # initialise my superclass
-                super(WsBinder, self).__init__(db_lookup, report_time,
-                                               formatter=formatter,
-                                               converter=converter,
-                                               **option_dict)
+                         formatter=None,
+                         converter=None,
+                         **option_dict):
+                """Initialize an instance of WsTimeBinder.
+
+                db_lookup: A function with call signature
+                           db_lookup(data_binding), which returns a database
+                           manager and where data_binding is an optional
+                           binding name. If not given, then a default binding
+                           will be used.
+
+                report_time: The time for which the report should be run.
+
+                formatter: An instance of weewx.units.Formatter() holding the
+                           formatting information to be used. [Optional. If
+                           not given, the default Formatter will be used.]
+
+                converter: An instance of weewx.units.Converter() holding the
+                           target unit information to be used. [Optional. If
+                           not given, the default Converter will be used.]
+
+                option_dict: Other options which can be used to customize
+                             calculations. [Optional.]
+                """
+                self.db_lookup = db_lookup
+                self.report_time = report_time
+                self.formatter = formatter or weewx.units.Formatter()
+                self.converter = converter or weewx.units.Converter()
+                self.option_dict = option_dict
+
 
             def dayagg(self, data_binding=None, ago=0):
-                """Return a TimespanBinder from midnight until ago seconds ago."""
+                """Return a TimespanBinder from midnight until ago seconds ago.
+
+                Identical to $day.xxx when ago=0 but $dayagg($ago=3600).xxx
+                allows adjustment of the timespan since midnight.
+                """
 
                 # Get a TimeSpan object representing the period from midnight
                 # until 'ago' seconds ago. Midnight is midnight at the start of
@@ -809,10 +842,12 @@ class TimeSpanTags(weewx.cheetahgenerator.SearchList):
                 # return a TimespanBinder object, using the timespan we just
                 # calculated
                 return TimespanBinder(ago_tspan,
-                                      self.db_lookup, context='current',
+                                      self.db_lookup,
+                                      context='current',
                                       data_binding=data_binding,
                                       formatter=self.formatter,
-                                      converter=self.converter)
+                                      converter=self.converter,
+                                      **self.option_dict)
 
             def alltime(self, data_binding=None):
                 """Return a TimeSpanBinder covering all archive records.
@@ -832,13 +867,18 @@ class TimeSpanTags(weewx.cheetahgenerator.SearchList):
                 # return a TimespanBinder object, using the timespan we just
                 # calculated
                 return TimespanBinder(alltime_tspan,
-                                      self.db_lookup, context='alltime',
+                                      self.db_lookup,
+                                      context='alltime',
                                       data_binding=data_binding,
                                       formatter=self.formatter,
-                                      converter=self.converter)
+                                      converter=self.converter,
+                                      **self.option_dict)
 
             def seven_day(self, data_binding=None):
-                """Return a TimeSpanBinder for the the last 7 days."""
+                """Return a TimeSpanBinder for the last seven days.
+
+                Timespan used starts on a midnight boundary.
+                """
 
                 # calculate the time at midnight, seven days ago.
                 _stop_d = datetime.date.fromtimestamp(timespan.stop)
@@ -850,13 +890,20 @@ class TimeSpanTags(weewx.cheetahgenerator.SearchList):
                 # now return a TimespanBinder object, using the timespan we just
                 # calculated
                 return TimespanBinder(seven_day_tspan,
-                                      self.db_lookup, context='seven_day',
+                                      self.db_lookup,
+                                      context='seven_day',
                                       data_binding=data_binding,
                                       formatter=self.formatter,
-                                      converter=self.converter)
+                                      converter=self.converter,
+                                      **self.option_dict)
 
             def since(self, data_binding=None, hour=0, minute=0, second=0):
-                """Return a TimeSpanBinder since the a given time."""
+                """Return a TimeSpanBinder 'since' a given time.
+
+                For example $since($hour=9).xxx will use the timespan since
+                0900. Remember though, depending on the current time the
+                timespan could start some time on a previous day.
+                """
 
                 # obtain the report time as a datetime object
                 stop_dt = datetime.datetime.fromtimestamp(timespan.stop)
@@ -875,15 +922,18 @@ class TimeSpanTags(weewx.cheetahgenerator.SearchList):
                 # now return a TimespanBinder object, using the timespan we just
                 # calculated
                 return TimespanBinder(since_tspan,
-                                      self.db_lookup, context='current',
+                                      self.db_lookup,
+                                      context='current',
                                       data_binding=data_binding,
                                       formatter=self.formatter,
-                                      converter=self.converter)
+                                      converter=self.converter,
+                                      **self.option_dict)
 
-        time_binder = WsBinder(db_lookup,
-                               timespan.stop,
-                               self.generator.formatter,
-                               self.generator.converter)
+        # obtain a WsTimeBinder object
+        time_binder = WsTimeBinder(db_lookup,
+                                   timespan.stop,
+                                   self.generator.formatter,
+                                   self.generator.converter)
 
         t2 = time.time()
         if weewx.debug >= 2:
