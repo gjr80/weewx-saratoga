@@ -23,6 +23,8 @@ Revision History
     ?? November 2021    v0.3.3
         - introduced support for hierarchical log_success and log_failure
           config options to control logging of HTTP POST results
+        - user can now specify wind direction output when wind direction is
+          null/None
     25 November 2021    v0.3.2
         - debug log output now controlled by [[RealtimeClientraw]] debug
           options rather than the WeeWX global debug option
