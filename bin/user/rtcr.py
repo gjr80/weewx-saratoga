@@ -166,6 +166,15 @@ weewx.conf as follows:
         # default is 200.
         grace = 200
 
+        # By default WeeWX sets wind direction to None when wind speed is 0
+        # (this behaviour can be overridden using the WeeWX force_null
+        # option [http://weewx.com/docs/usersguide.htm#force_null]. This
+        # behaviour may cause problems with machinery that processes clientraw
+        # data and expects wind direction to always exist.
+        # null_dir = N
+        # null_dir = 0
+        null_dir = last
+
 3.  If this service is not being used as part of the WeeWX-Saratoga extension
 add a [RealtimeClientraw] stanza to weewx.conf containing the settings at
 step 2 above. Note the different number of square brackets and different
@@ -824,6 +833,14 @@ class RealtimeClientrawThread(threading.Thread):
         176: 0,  # - 10 minute average wind direction
         177: None,  # - record end
     }
+    # default direction if no other non-None value can be found
+    DEFAULT_DIR = 0
+    # intercardinal to degrees lookup:
+    ic_to_degrees = {'N': '0', 'NNE': '22.5', 'NE': '45', 'ENE': '67.5',
+                     'E': '90', 'ESE': '112.5', 'SE': '135', 'SSE': '157.5',
+                     'S': '180', 'SSW': '202.5', 'SW': '225', 'WSW': '247.5',
+                     'W': '270', 'WNW': '292.5', 'NW': '315', 'NNW': '337.5'
+                     }
 
     def __init__(self, rtcr_queue, manager_dict, rtcr_config_dict, html_root,
                  location, latitude, longitude, altitude):
@@ -879,6 +896,20 @@ class RealtimeClientrawThread(threading.Thread):
         self.log_failure = to_bool(weeutil.config.search_up(rtcr_config_dict,
                                                             'log_failure',
                                                             True))
+
+        # How to treat wind direction that is None. If self.null_dir == 'LAST'
+        # then we use the last known direction, otherwise we use whatever is
+        # stored in self.null_dir.
+        # first get the null_dir config option if it exists, default to 'LAST'
+        _nd = rtcr_config_dict.get('null_dir', 'LAST')
+        # no try to convert to an int
+        try:
+            _deg = "%d" % int(_nd)
+        except (ValueError, TypeError):
+            # perhaps we have a string inter-cardinal direction or it's 'LAST',
+            # try to convert it to degrees, if we can't default to 'LAST'
+            _deg = RealtimeClientrawThread.ic_to_degrees.get(_nd, 'LAST')
+        self.null_dir = _deg
 
         # debug settings
         self.debug_loop = to_bool(rtcr_config_dict.get('debug_loop', False))
@@ -1328,7 +1359,25 @@ class RealtimeClientrawThread(threading.Thread):
             gust = None
         data[2] = gust if gust is not None else 0.0
         # 003 - windDir
-        data[3] = packet_wx['windDir'] if packet_wx['windDir'] is not None else '--'
+        # do we have a non-None direction
+        if packet_wx['windDir'] is None:
+            # direction is None, so what are we to use
+            if self.null_dir == 'LAST':
+                # we should use the last known direction, see if we can get it
+                # from our buffer
+                try:
+                    _dir = self.buffer['windDir'].last
+                except KeyError:
+                    # could not get last known direction from the buffer so use
+                    # our default
+                    _dir = RealtimeClientrawThread.DEFAULT_DIR
+            else:
+                # we have a user specified default to use so use it
+                _dir = self.null_dir
+        else:
+            # we have a direction in the packet so use it
+            _dir = packet_wx['windDir']
+        data[3] = _dir
         # 004 - outTemp (Celsius)
         data[4] = packet_wx['outTemp'] if packet_wx['outTemp'] is not None else 0.0
         # 005 - outHumidity
