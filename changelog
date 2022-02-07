@@ -5,6 +5,7 @@ v0.1.3
     options in rtcr.py to control logging of HTTP POST results
 -   user can now specify wind direction output to be used in clientraw.txt
     when wind direction is null/None
+-   fixed incorrect wind vector direction tag in WEEWXtags.php.tmpl
 v0.1.2
 -   fixed bug when obtaining average values from scalar buffers
 -   better handle WeeWX-Saratoga xtypes used in WEEWXtags.php and clientraw
