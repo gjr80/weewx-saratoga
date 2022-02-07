@@ -77,7 +77,7 @@ Installing or Upgrading using the wee_extension utility
 releases page (https://github.com/gjr80/weewx-saratoga/releases) into a 
 directory accessible from the WeeWX machine:
 
-    $ wget -P /var/tmp https://github.com/gjr80/weewx-saratoga/releases/download/v0.1.2/ws-0.1.2.tar.gz
+    $ wget -P /var/tmp https://github.com/gjr80/weewx-saratoga/releases/download/v0.1.3/ws-0.1.3.tar.gz
 
 	in this case the extension will be downloaded to directory /var/tmp.
 
@@ -96,7 +96,7 @@ directory accessible from the WeeWX machine:
 3.  Install the WeeWX-Saratoga extension downloaded at step 1 using the WeeWX 
 wee_extension utility:
 
-    $ wee_extension --install=/var/tmp/ws-0.1.2.tar.gz
+    $ wee_extension --install=/var/tmp/ws-0.1.3.tar.gz
 
     Note: Depending on your system/installation the above command may need to 
           be prefixed with *sudo*.
@@ -108,11 +108,11 @@ wee_extension utility:
 
     This will result in output similar to the following:
 
-		Request to install '/var/tmp/ws-0.1.2.tar.gz'
-		Extracting from tar archive /var/tmp/ws-0.1.2.tar.gz
+		Request to install '/var/tmp/ws-0.1.3.tar.gz'
+		Extracting from tar archive /var/tmp/ws-0.1.3.tar.gz
 		Saving installer file to /home/weewx/bin/user/installer/WeeWX-Saratoga
 		Saved configuration dictionary. Backup copy at /home/weewx/weewx.conf.20210403130000
-		Finished installing extension '/var/tmp/ws-0.1.2.tar.gz'
+		Finished installing extension '/var/tmp/ws-0.1.3.tar.gz'
 
     Note: If upgrading an existing WeeWX-Saratoga extension installation any 
           previous WeeWX-Saratoga extension configuration information in 
@@ -149,13 +149,13 @@ Installing or upgrading manually
 releases page (https://github.com/gjr80/weewx-saratoga/releases) into a 
 directory accessible from the WeeWX machine.
 
-    $ wget -P /var/tmp https://github.com/gjr80/weewx-saratoga/releases/download/v0.1.2/ws-0.1.2.tar.gz
+    $ wget -P /var/tmp https://github.com/gjr80/weewx-saratoga/releases/download/v0.1.3/ws-0.1.3.tar.gz
 
 	in this case the extension will be downloaded to directory /var/tmp.
 
 2.  Unpack the extension as follows:
 
-    $ tar xvfz /var/tmp/ws-0.1.2.tar.gz
+    $ tar xvfz /var/tmp/ws-0.1.3.tar.gz
 
 3.  Copy files from within the resulting ws directory as follows:
 

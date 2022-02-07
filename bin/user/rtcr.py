@@ -17,10 +17,10 @@ PARTICULAR PURPOSE.  See the GNU General Public License for more details.
 You should have received a copy of the GNU General Public License along with
 this program.  If not, see https://www.gnu.org/licenses/.
 
-Version: 0.3.3                                          Date: ?? November 2021
+Version: 0.3.3                                          Date: 7 February 2022
 
 Revision History
-    ?? November 2021    v0.3.3
+    7 February 2022     v0.3.3
         - introduced support for hierarchical log_success and log_failure
           config options to control logging of HTTP POST results
         - user can now specify wind direction output when wind direction is
@@ -297,7 +297,7 @@ except ImportError:
 
 
 # version number of this script
-RTCR_VERSION = '0.3.2'
+RTCR_VERSION = '0.3.3'
 
 # the obs that we will buffer
 MANIFEST = ['outTemp', 'barometer', 'outHumidity', 'rain', 'rainRate',
