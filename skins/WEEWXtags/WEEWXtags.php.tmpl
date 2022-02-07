@@ -385,7 +385,7 @@ if ( isset($_REQUEST['sce']) && strtolower($_REQUEST['sce']) == 'view' ) {
 #raw $dirlabel = #end raw '$_dirlabel';   // wind direction (NNE etc)
 #raw $maxgustlastimediatehourtime =  #end raw '$span($hour_delta=1).windGust.maxtime.format($timeFormat)';  //   time that the max gust last prior 1 hour occurred
 #raw $avwindlastimediate10 = #end raw '$span($time_delta=600).windSpeed.avg.format(add_label=False, localize=$localize_num)';  // Average wind for the last immediate 10 minute period
-#set $avdir10 = int(round($span($time_delta=600).windvec.last.polar.raw[1], 0))
+#set $avdir10 = int(round($span($time_delta=600).windvec.last.direction.raw, 0))
 #raw $avdir10minute =  #end raw '$avdir10';    // average ten minute wind direction (degrees)
 
 #raw $beaufortnum = #end raw '$current.windSpeed.beaufort'; //Beaufort wind force number
