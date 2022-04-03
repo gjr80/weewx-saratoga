@@ -1,3 +1,7 @@
+v0.1.4
+-   ensure calc_air_density returns a 'None' ValueTuple if the air density
+    pre-requisites exist but at least one is None
+-   remove unnecessary unit conversion from calc_abs_humidity
 v0.1.3
 -   refactored TimespanTags() SLE to work with revised SLE load order in
     WeeWX v4.6.0

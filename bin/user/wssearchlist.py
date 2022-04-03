@@ -12,10 +12,12 @@ This program is distributed in the hope that it will be useful, but WITHOUT ANY
 WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
 PARTICULAR PURPOSE.  See the GNU General Public License for more details.
 
-Version: 0.1.3                                          Date: 7 February 2022
+Version: 0.1.4                                          Date: 3 April 2022
 
 Revision History
-    ?7 February 2022    v0.1.3
+    3 April 20200       v0.1.4
+        - version number change only
+    7 February 2022     v0.1.3
         - refactored TimespanTags() SLE to work with revised SLE load order in
           WeeWX v4.6.0
     25 November 2021    v0.1.2
@@ -79,7 +81,7 @@ except ImportError:
     def logdbg(msg):
         logmsg(syslog.LOG_DEBUG, msg)
 
-WS_SLE_VERSION = '0.1.3'
+WS_SLE_VERSION = '0.1.4'
 
 
 def get_first_day(dt, d_years=0, d_months=0):

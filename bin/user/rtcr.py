@@ -17,9 +17,11 @@ PARTICULAR PURPOSE.  See the GNU General Public License for more details.
 You should have received a copy of the GNU General Public License along with
 this program.  If not, see https://www.gnu.org/licenses/.
 
-Version: 0.3.3                                          Date: 7 February 2022
+Version: 0.3.4                                          Date: 3 April 2022
 
 Revision History
+    3 April 20200       v0.3.4
+        - version number change only
     7 February 2022     v0.3.3
         - introduced support for hierarchical log_success and log_failure
           config options to control logging of HTTP POST results
@@ -297,7 +299,7 @@ except ImportError:
 
 
 # version number of this script
-RTCR_VERSION = '0.3.3'
+RTCR_VERSION = '0.3.4'
 
 # the obs that we will buffer
 MANIFEST = ['outTemp', 'barometer', 'outHumidity', 'rain', 'rainRate',
