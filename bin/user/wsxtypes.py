@@ -13,9 +13,13 @@ This program is distributed in the hope that it will be useful, but WITHOUT ANY
 WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
 PARTICULAR PURPOSE.  See the GNU General Public License for more details.
 
-Version: 0.1.2                                          Date: 7 February 2022
+Version: 0.1.4                                          Date: 3 April 2022
 
 Revision History
+    3 April 2022        v0.1.4
+        - ensure calc_air_density returns a 'None' ValueTuple if the air
+          density pre-requisites exist but at least one is None
+        - remove unnecessary unit conversion from calc_abs_humidity
     7 February 2022     v0.1.3
         - version number change only
     25 November 2021    v0.1.2
@@ -37,7 +41,7 @@ import time
 import weewx.engine
 import weewx.xtypes
 
-WS_XTYPES_VERSION = '0.1.3'
+WS_XTYPES_VERSION = '0.1.4'
 
 
 # ==============================================================================
@@ -187,9 +191,12 @@ class WSXTypes(weewx.xtypes.XType):
             p_d = phpa * 100 - p_v
             # calculate air density in kg/meter cubed
             rho = p_d / (287.058 * (tc + 273.15)) + p_v / (461.495 * (tc + 273.15))
-            # return the result as a ValueTuple, no unit conversion needed as
-            # there is only one unit
-            return weewx.units.ValueTuple(rho, 'kg_per_meter_cubed', 'group_density')
+        else:
+            # we could not calculate so save our result as a 'None'
+            rho = None
+        # return the result as a ValueTuple, no unit conversion needed as there
+        # is only one unit
+        return weewx.units.ValueTuple(rho, 'kg_per_meter_cubed', 'group_density')
 
     def calc_abs_humidity(self, obs_type, record, db_manager):
         """Calculate absolute humidity.
@@ -228,10 +235,9 @@ class WSXTypes(weewx.xtypes.XType):
         else:
             # we could not calculate so save our result as a 'None'
             d = None
-        # finally return our absolute humidity ValueTuple converting to the
-        # units used in 'record'
-        return weewx.units.convertStd(weewx.units.ValueTuple(d, 'kg_per_meter_cubed', 'group_density'),
-                                      record['usUnits'])
+        # return the result as a ValueTuple, no unit conversion is needed as
+        # there is only one unit
+        return weewx.units.ValueTuple(d, 'kg_per_meter_cubed', 'group_density')
 
     def calc_cbi(self, obs_type, record, db_manager):
         """Calculate Chandler Burning index."""
