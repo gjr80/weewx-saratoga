@@ -82,14 +82,34 @@ template
         #set $dayornight = "N"
     #end if
 #elif $sunrise.raw is None and $sunset.raw is None
-    #set $dayLength = "NA"
-    #set $dayornight = "NA"
+    #if $almanac.hasExtras
+        #if $almanac.sun.alt + $almanac.sun.radius > 0
+            # top edge of the Sun is above the horizon
+            #set $dayornight = "Day"
+            #set $dayLength = $time.gmtime(86400)
+        #else
+            # top edge of the Sun is below the horizon
+            #set $dayornight = "Night"
+            #set $dayLength = $time.gmtime(0)
+        #end if
+    #else
+        #set $dayornight = $naString
+        #set $dayLength = $naString
+    #end if
 #elif $sunrise.raw is not None
     #set $dayLength = "NA"
-    #set $dayornight = "NA"
+    #if $now > $sunrise.raw
+        #set $dayornight = "Day"
+    #else
+        #set $dayornight = "Night"
+    #end if
 #elif $sunset.raw is not None
     #set $dayLength = "NA"
-    #set $dayornight = "NA"
+    #if $now < $sunset.raw
+        #set $dayornight = "Day"
+    #else
+        #set $dayornight = "Night"
+    #end if
 #end if
 ##
 ## set day of week rain values

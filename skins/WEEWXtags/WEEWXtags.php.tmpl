@@ -102,10 +102,26 @@ Astronomical tags/calculations
     #end if
     #set $dayLength = $time.gmtime($sunset.raw - $sunrise.raw)
 #elif $sunrise.raw is None and $sunset.raw is None
-    #set $changeInDay = $naString
+    #if $yest_sunrise.raw is None and $yest_sunset.raw is None
+        #set $changeInDay = $time.gmtime(0)
+    #else
+        #set $changeInDay = $naString
+    #end if
     #set $cidSign=""
-    #set $dayornight = $naString
-    #set $dayLength = $naString
+    #if $almanac.hasExtras
+        #if $almanac.sun.alt + $almanac.sun.radius > 0
+            # top edge of the Sun is above the horizon
+            #set $dayornight = "Day"
+            #set $dayLength = $time.gmtime(86400)
+        #else
+            # top edge of the Sun is below the horizon
+            #set $dayornight = "Night"
+            #set $dayLength = $time.gmtime(0)
+        #end if
+    #else
+        #set $dayornight = $naString
+        #set $dayLength = $naString
+    #end if
 #elif $sunrise.raw is not None
     #set $changeInDay = $naString
     #set $cidSign=""
