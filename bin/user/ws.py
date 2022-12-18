@@ -13,9 +13,11 @@ ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
 FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
 details.
 
-Version: 0.1.4                                          Date: 3 April 2022
+Version: 0.1.5                                          Date: 18 December 2022
 
 Revision History
+    18 December 2022        v0.1.5
+        - version number change only
     3 April 20200       v0.1.4
         - version number change only
     7 February 2022     v0.1.3

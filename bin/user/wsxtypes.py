@@ -13,9 +13,11 @@ This program is distributed in the hope that it will be useful, but WITHOUT ANY
 WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
 PARTICULAR PURPOSE.  See the GNU General Public License for more details.
 
-Version: 0.1.4                                          Date: 3 April 2022
+Version: 0.1.5                                          Date: 18 December 2022
 
 Revision History
+    18 December 2022        v0.1.5
+        - version number change only
     3 April 2022        v0.1.4
         - ensure calc_air_density returns a 'None' ValueTuple if the air
           density pre-requisites exist but at least one is None
