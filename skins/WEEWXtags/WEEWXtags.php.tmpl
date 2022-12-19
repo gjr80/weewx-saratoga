@@ -110,11 +110,9 @@ Astronomical tags/calculations
     #set $cidSign=""
     #if $almanac.hasExtras
         #if $almanac.sun.alt + $almanac.sun.radius > 0
-            # top edge of the Sun is above the horizon
             #set $dayornight = "Day"
             #set $dayLength = $time.gmtime(86400)
         #else
-            # top edge of the Sun is below the horizon
             #set $dayornight = "Night"
             #set $dayLength = $time.gmtime(0)
         #end if
