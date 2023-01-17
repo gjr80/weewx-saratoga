@@ -3,7 +3,7 @@ rtcr.py
 
 A WeeWX service to generate a loop based clientraw.txt.
 
-Copyright (C) 2017-2021 Gary Roderick                gjroderick<at>gmail.com
+Copyright (C) 2017-2022 Gary Roderick                gjroderick<at>gmail.com
 
 This program is free software: you can redistribute it and/or modify it under
 the terms of the GNU General Public License as published by the Free Software
@@ -20,7 +20,7 @@ this program.  If not, see https://www.gnu.org/licenses/.
 Version: 0.3.4                                          Date: 3 April 2022
 
 Revision History
-    3 April 20200       v0.3.4
+    3 April 2022        v0.3.4
         - version number change only
     7 February 2022     v0.3.3
         - introduced support for hierarchical log_success and log_failure
@@ -427,9 +427,9 @@ class RealtimeClientraw(StdService):
 
         # make sure our db_manager is in sync with anything the main WeeWX
         # db_manager has changed, this is mainly for when an empty database is
-        # first populated but it is good practise anyway
+        # first populated, but it is good practise anyway
         self.db_manager._sync()
-        # get yesterdays rainfall and put in the queue
+        # get yesterday's rainfall and put in the queue
         _rain_data = self.get_historical_rain(ts)
         # if we have anything to send then package the data in a dict since
         # this is not the only data we send via the queue
@@ -496,14 +496,14 @@ class RealtimeClientraw(StdService):
                     logdbg("Shut down %s thread." % self.rtcr_thread.name)
 
     def get_historical_rain(self, ts):
-        """Obtain yesterdays total rainfall and return as a ValueTuple."""
+        """Obtain yesterday's total rainfall and return as a ValueTuple."""
 
         result = {}
         (unit, group) = weewx.units.getStandardUnitType(self.db_manager.std_unit_system,
                                                         'rain',
                                                         agg_type='sum')
         # Yesterday's rain
-        # get a TimeSpan object for yesterdays archive day
+        # get a TimeSpan object for yesterday's archive day
         yest_tspan = weeutil.weeutil.archiveDaysAgoSpan(ts, days_ago=1)
         # create an interpolation dict
         inter_dict = {'table_name': self.db_manager.table_name,
@@ -557,7 +557,7 @@ class RealtimeClientraw(StdService):
                                                         'windrun',
                                                         agg_type='sum')
         # Yesterday's windrun
-        # get a TimeSpan object for yesterdays archive day
+        # get a TimeSpan object for yesterday's archive day
         yest_tspan = weeutil.weeutil.archiveDaysAgoSpan(ts, days_ago=1)
         # create an interpolation dict
         inter_dict = {'table_name': self.db_manager.table_name,
@@ -816,7 +816,7 @@ class RealtimeClientrawThread(threading.Thread):
         155: 1,  # - hour wind direction 10 - will not implement
         156: 1,  # - leaf wetness
         157: 1,  # - soil moisture
-        158: 1,  # - 10 minute average wind speed
+        158: 1,  # - 10-minute average wind speed
         159: 1,  # - wet bulb temperature
         160: None,  # - latitude
         161: None,  # - longitude
@@ -834,12 +834,12 @@ class RealtimeClientrawThread(threading.Thread):
         173: 1,  # - day windrun
         174: None,  # - time of daily max temp
         175: None,  # - time of daily min temp
-        176: 0,  # - 10 minute average wind direction
+        176: 0,  # - 10-minute average wind direction
         177: None,  # - record end
     }
     # default direction if no other non-None value can be found
     DEFAULT_DIR = 0
-    # intercardinal to degrees lookup:
+    # inter-cardinal to degrees lookup:
     ic_to_degrees = {'N': '0', 'NNE': '22.5', 'NE': '45', 'ENE': '67.5',
                      'E': '90', 'ESE': '112.5', 'SE': '135', 'SSE': '157.5',
                      'S': '180', 'SSW': '202.5', 'SW': '225', 'WSW': '247.5',
@@ -1044,15 +1044,15 @@ class RealtimeClientrawThread(threading.Thread):
     def run(self):
         """Collect packets from the rtcr queue and manage their processing.
 
-        Now that we are in a thread get a manager for our db so we can
+        Now that we are in a thread get a manager for our db, so we can
         initialise our forecast and day stats. Once this is done we wait for
         something in the rtcr queue.
         """
 
-        # since we are running in a thread wrap in a try..except so we can trap
+        # since we are running in a thread wrap in a try..except, so we can trap
         # and log any errors rather than the thread silently dying
         try:
-            # would normally do this in our objects __init__ but since we are are
+            # would normally do this in our objects __init__ but since we are
             # running in a thread we need to wait until the thread is actually
             # running before getting db managers
             # get a db manager
@@ -1209,7 +1209,7 @@ class RealtimeClientrawThread(threading.Thread):
                 setattr(self, key, value)
 
     def new_archive_record(self, record):
-        """Control processing when new a archive record is presented.
+        """Control processing when a new archive record is presented.
 
         When a new archive record is available our interest is in the updated
         daily summaries.
@@ -1227,7 +1227,7 @@ class RealtimeClientrawThread(threading.Thread):
     def post_data(self, data):
         """Post data to a remote URL via HTTP POST.
 
-        This code is modelled on the WeeWX RESTful API, but rather then
+        This code is modelled on the WeeWX RESTful API, but rather than
         retrying a failed post the failure is logged and then ignored. If
         remote posts are not working then the user should set debug=1 and
         restart WeeWX to see what the log says.
@@ -1242,7 +1242,7 @@ class RealtimeClientrawThread(threading.Thread):
         req = urllib.request.Request(self.remote_server_url)
         # set our content type to plain text
         req.add_header('Content-Type', 'text/plain')
-        # POST the data but wrap in a try..except so we can trap any errors
+        # POST the data but wrap in a try..except, so we can trap any errors
         try:
             response = self.post_request(req, data)
             if 200 <= response.code <= 299:
@@ -1541,7 +1541,7 @@ class RealtimeClientrawThread(threading.Thread):
             try:
                 percent = 100.0 * packet_wx['radiation'] / packet_wx['maxSolarRad']
             except (ZeroDivisionError, TypeError):
-                # Perhaps it's night time, or one or both of radiation and
+                # Perhaps it's nighttime, or one or both of radiation and
                 # maxSolarRad are None. We can ignore as percent will
                 # remain None
                 pass
@@ -2228,7 +2228,7 @@ class VectorBuffer(object):
         """Trim an old data from the history list."""
 
         if len(self.history) > 0:
-            # calc ts of oldest sample we want to retain
+            # calc ts of the oldest sample we want to retain
             oldest_ts = ts - MAX_AGE
             # set history_full
             self.history_full = min([a.ts for a in self.history if a.ts is not None]) <= oldest_ts
@@ -2281,7 +2281,7 @@ class VectorBuffer(object):
             return None
 
     def history_vec_avg(self, ts, age=MAX_AGE):
-        """Return the my history vector average.
+        """Return the history vector average.
 
         Search the last 'age' seconds of my history and calculate the vector
         average of my values.
@@ -2397,7 +2397,7 @@ class ScalarBuffer(object):
     def trim_history(self, ts):
         """Trim an old data from the history list."""
 
-        # calc ts of oldest sample we want to retain
+        # calc ts of the oldest sample we want to retain
         oldest_ts = ts - MAX_AGE
         # set history_full
         self.history_full = min([a.ts for a in self.history if a.ts is not None]) <= oldest_ts
@@ -2636,8 +2636,8 @@ class CachedPacket(object):
     def __init__(self, rec):
         """Initialise our cache object.
 
-        The cache needs to be initialised to include all of the fields required
-        by method calculate(). We could initialise all field values to None
+        The cache needs to be initialised to include all the fields required by
+        method calculate(). We could initialise all field values to None
         (method calculate() will interpret the None values to be '0' in most
         cases). The results may be misleading. We can get ballpark values for
         all fields by priming them with values from the last archive record.
