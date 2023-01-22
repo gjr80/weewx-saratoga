@@ -3,7 +3,7 @@ rtcr.py
 
 A WeeWX service to generate a loop based clientraw.txt.
 
-Copyright (C) 2017-2022 Gary Roderick                gjroderick<at>gmail.com
+Copyright (C) 2017-2023 Gary Roderick                gjroderick<at>gmail.com
 
 This program is free software: you can redistribute it and/or modify it under
 the terms of the GNU General Public License as published by the Free Software
@@ -17,9 +17,11 @@ PARTICULAR PURPOSE.  See the GNU General Public License for more details.
 You should have received a copy of the GNU General Public License along with
 this program.  If not, see https://www.gnu.org/licenses/.
 
-Version: 0.3.4                                          Date: 3 April 2022
+Version: 0.3.5                                          Date: 22 January 2023
 
 Revision History
+    22 January 2023     v0.3.5
+        - improved support for extraTemp and extraHumid in a default install
     3 April 2022        v0.3.4
         - version number change only
     7 February 2022     v0.3.3
