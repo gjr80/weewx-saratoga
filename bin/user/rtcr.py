@@ -299,7 +299,7 @@ except ImportError:
 
 
 # version number of this script
-RTCR_VERSION = '0.3.4'
+RTCR_VERSION = '0.3.5'
 
 # the obs that we will buffer
 MANIFEST = ['outTemp', 'barometer', 'outHumidity', 'rain', 'rainRate',
@@ -933,30 +933,29 @@ class RealtimeClientrawThread(threading.Thread):
         # extra sensors
         extra_sensor_config_dict = rtcr_config_dict.get('ExtraSensors', {})
         # temperature
-        self.extra_temp1 = extra_sensor_config_dict.get('extraTempSensor1', None)
-        self.extra_temp2 = extra_sensor_config_dict.get('extraTempSensor2', None)
-        self.extra_temp3 = extra_sensor_config_dict.get('extraTempSensor3', None)
-        self.extra_temp4 = extra_sensor_config_dict.get('extraTempSensor4', None)
-        self.extra_temp5 = extra_sensor_config_dict.get('extraTempSensor5', None)
-        self.extra_temp6 = extra_sensor_config_dict.get('extraTempSensor6', None)
-        self.extra_temp7 = extra_sensor_config_dict.get('extraTempSensor7', None)
-        self.extra_temp8 = extra_sensor_config_dict.get('extraTempSensor8', None)
+        self.extra_temp1 = extra_sensor_config_dict.get('extraTempSensor1', 'extraTemp1')
+        self.extra_temp2 = extra_sensor_config_dict.get('extraTempSensor2', 'extraTemp2')
+        self.extra_temp3 = extra_sensor_config_dict.get('extraTempSensor3', 'extraTemp3')
+        self.extra_temp4 = extra_sensor_config_dict.get('extraTempSensor4', 'extraTemp4')
+        self.extra_temp5 = extra_sensor_config_dict.get('extraTempSensor5', 'extraTemp5')
+        self.extra_temp6 = extra_sensor_config_dict.get('extraTempSensor6', 'extraTemp6')
+        self.extra_temp7 = extra_sensor_config_dict.get('extraTempSensor7', 'extraTemp7')
+        self.extra_temp8 = extra_sensor_config_dict.get('extraTempSensor8', 'extraTemp8')
         # humidity
-        self.extra_hum1 = extra_sensor_config_dict.get('extraHumSensor1', None)
-        self.extra_hum2 = extra_sensor_config_dict.get('extraHumSensor2', None)
-        self.extra_hum3 = extra_sensor_config_dict.get('extraHumSensor3', None)
-        self.extra_hum4 = extra_sensor_config_dict.get('extraHumSensor4', None)
-        self.extra_hum5 = extra_sensor_config_dict.get('extraHumSensor5', None)
-        self.extra_hum6 = extra_sensor_config_dict.get('extraHumSensor6', None)
-        self.extra_hum7 = extra_sensor_config_dict.get('extraHumSensor7', None)
-        self.extra_hum8 = extra_sensor_config_dict.get('extraHumSensor8', None)
+        self.extra_hum1 = extra_sensor_config_dict.get('extraHumSensor1', 'extraHumid1')
+        self.extra_hum2 = extra_sensor_config_dict.get('extraHumSensor2', 'extraHumid2')
+        self.extra_hum3 = extra_sensor_config_dict.get('extraHumSensor3', 'extraHumid3')
+        self.extra_hum4 = extra_sensor_config_dict.get('extraHumSensor4', 'extraHumid4')
+        self.extra_hum5 = extra_sensor_config_dict.get('extraHumSensor5', 'extraHumid5')
+        self.extra_hum6 = extra_sensor_config_dict.get('extraHumSensor6', 'extraHumid6')
+        self.extra_hum7 = extra_sensor_config_dict.get('extraHumSensor7', 'extraHumid7')
+        self.extra_hum8 = extra_sensor_config_dict.get('extraHumSensor8', 'extraHumid8')
         # soil moisture
-        self.soil_moist = extra_sensor_config_dict.get('soilMoist', None)
+        self.soil_moist = extra_sensor_config_dict.get('soilMoistSensor', 'soilMoist')
         # soil temp
-        self.soil_temp = extra_sensor_config_dict.get('soilTemp', None)
+        self.soil_temp = extra_sensor_config_dict.get('soilTempSensor', 'soilTemp')
         # leaf wetness
-        self.leaf_wet = extra_sensor_config_dict.get('leafWet', None)
-
+        self.leaf_wet = extra_sensor_config_dict.get('leafWetSensor', 'leafWet')
         # set trend periods
         self.baro_trend_period = to_int(rtcr_config_dict.get('baro_trend_period',
                                                              DEFAULT_TREND_PERIOD))
