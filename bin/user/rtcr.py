@@ -953,11 +953,11 @@ class RealtimeClientrawThread(threading.Thread):
         self.extra_hum7 = extra_sensor_config_dict.get('extraHumSensor7', 'extraHumid7')
         self.extra_hum8 = extra_sensor_config_dict.get('extraHumSensor8', 'extraHumid8')
         # soil moisture
-        self.soil_moist = extra_sensor_config_dict.get('soilMoistSensor', 'soilMoist')
+        self.soil_moist = extra_sensor_config_dict.get('soilMoistSensor', 'soilMoist1')
         # soil temp
-        self.soil_temp = extra_sensor_config_dict.get('soilTempSensor', 'soilTemp')
+        self.soil_temp = extra_sensor_config_dict.get('soilTempSensor', 'soilTemp1')
         # leaf wetness
-        self.leaf_wet = extra_sensor_config_dict.get('leafWetSensor', 'leafWet')
+        self.leaf_wet = extra_sensor_config_dict.get('leafWetSensor', 'leafWet1')
         # set trend periods
         self.baro_trend_period = to_int(rtcr_config_dict.get('baro_trend_period',
                                                              DEFAULT_TREND_PERIOD))
