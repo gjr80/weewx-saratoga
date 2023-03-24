@@ -1,3 +1,9 @@
+v0.1.6
+-   fix incorrect default source fields for soil moisture, soil temperature
+    and leaf wetness fields in the RealtimeClientraw service
+-   fix incorrect tag syntax in clientrawextra.txt.tmpl
+-   improved support for default source fields for extra temperature and extra
+    humidity fields in the RealtimeClientraw service
 v0.1.5
 -   fixed template issues when sun never rises or never sets during a day,
     addresses issue #17

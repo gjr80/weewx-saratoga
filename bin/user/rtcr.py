@@ -17,9 +17,12 @@ PARTICULAR PURPOSE.  See the GNU General Public License for more details.
 You should have received a copy of the GNU General Public License along with
 this program.  If not, see https://www.gnu.org/licenses/.
 
-Version: 0.3.5                                          Date: 22 January 2023
+Version: 0.3.6                                          Date: 24 March 2023
 
 Revision History
+    24 March 2023       v0.3.6
+        - fix incorrect default source fields for soil moisture, soil
+          temperature and leaf wetness
     22 January 2023     v0.3.5
         - improved support for extraTemp and extraHumid in a default install
     3 April 2022        v0.3.4
@@ -301,7 +304,7 @@ except ImportError:
 
 
 # version number of this script
-RTCR_VERSION = '0.3.5'
+RTCR_VERSION = '0.3.6'
 
 # the obs that we will buffer
 MANIFEST = ['outTemp', 'barometer', 'outHumidity', 'rain', 'rainRate',

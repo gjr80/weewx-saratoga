@@ -4,6 +4,8 @@ wsxtypes.py
 
 XTypes used to support WeeWX-Saratoga.
 
+Copyright (C) 2021-2023 Gary Roderick                gjroderick<at>gmail.com
+
 This program is free software; you can redistribute it and/or modify it under
 the terms of the GNU General Public License as published by the Free Software
 Foundation; either version 3 of the License, or (at your option) any later
@@ -13,9 +15,11 @@ This program is distributed in the hope that it will be useful, but WITHOUT ANY
 WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
 PARTICULAR PURPOSE.  See the GNU General Public License for more details.
 
-Version: 0.1.5                                          Date: 17 January 2023
+Version: 0.1.6                                          Date: 24 March 2023
 
 Revision History
+    24 March 2023       v0.1.6
+        - version number change only
     17 January 2023     v0.1.5
         - version number change only
     3 April 2022        v0.1.4
@@ -43,7 +47,7 @@ import time
 import weewx.engine
 import weewx.xtypes
 
-WS_XTYPES_VERSION = '0.1.5'
+WS_XTYPES_VERSION = '0.1.6'
 
 
 # ==============================================================================
