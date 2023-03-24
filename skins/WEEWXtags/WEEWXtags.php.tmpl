@@ -2,7 +2,7 @@
 #*
 A template to generate WEEWXtags.php for the Saratoga Weather Website templates.
 
-Copyright (C) 2021-22 Gary Roderick                  gjroderick<at>gmail.com
+Copyright (C) 2021-23 Gary Roderick                  gjroderick<at>gmail.com
 
 This program is free software: you can redistribute it and/or modify it under
 the terms of the GNU General Public License as published by the Free Software
@@ -27,7 +27,7 @@ Pre-Requisites
 - WeeWX-Saratoga WeeWX extension
 - PyEphem for inclusion of ephemeris and insolation data
 
-Version: 0.1.4                                      Date: 3 April 2022
+Version: 0.1.5                                      Date: 17 January 2023
 *#
 #*
 Inline python code to setup/initialise a number of variables for use in the
@@ -77,34 +77,71 @@ Localize numbers (decimal point)
 Astronomical tags/calculations
 *#
 #if $almanac.hasExtras
-    #set $changeInDaySeconds = ($almanac.sun.set.raw - $almanac.sun.rise.raw) - ($yest_almanac.sun.set.raw - $yest_almanac.sun.rise.raw)
+    #set $sunrise = $almanac.sun.rise
+    #set $sunset = $almanac.sun.set
+    #set $yest_sunrise = $yest_almanac.sun.rise
+    #set $yest_sunset = $yest_almanac.sun.set
+#else
+    #set $sunrise = $almanac.sunrise
+    #set $sunset = $almanac.sunset
+    #set $yest_sunrise = $yest_almanac.sunrise
+    #set $yest_sunset = $yest_almanac.sunset
+#end if
+#if $sunrise.raw is not None and $sunset.raw is not None
+    #set $changeInDaySeconds = ($sunset.raw - $sunrise.raw) - ($yest_sunset.raw - $yest_sunrise.raw)
     #set $changeInDay = $time.gmtime(round(abs($changeInDaySeconds), 1))
     #if $changeInDaySeconds < 0
         #set $cidSign="-"
     #else
         #set $cidSign=""
     #end if
-    #if ($now > $almanac.sun.rise.raw) and ($now < $almanac.sun.set.raw)
+    #if ($now > $sunrise.raw) and ($now < $sunset.raw)
         #set $dayornight = "Day"
     #else
         #set $dayornight = "Night"
     #end if
-    #set $dayLength = $time.gmtime($almanac.sun.set.raw - $almanac.sun.rise.raw)
+    #set $dayLength = $time.gmtime($sunset.raw - $sunrise.raw)
+#elif $sunrise.raw is None and $sunset.raw is None
+    #if $yest_sunrise.raw is None and $yest_sunset.raw is None
+        #set $changeInDay = $time.gmtime(0)
+    #else
+        #set $changeInDay = $naString
+    #end if
+    #set $cidSign=""
+    #if $almanac.hasExtras
+        #if $almanac.sun.alt + $almanac.sun.radius > 0
+            #set $dayornight = "Day"
+            #set $dayLength = $time.gmtime(86400)
+        #else
+            #set $dayornight = "Night"
+            #set $dayLength = $time.gmtime(0)
+        #end if
+    #else
+        #set $dayornight = $naString
+        #set $dayLength = $naString
+    #end if
+#elif $sunrise.raw is not None
+    #set $changeInDay = $naString
+    #set $cidSign=""
+    #if $now > $sunrise.raw
+        #set $dayornight = "Day"
+    #else
+        #set $dayornight = "Night"
+    #end if
+    #set $dayLength = $naString
+#elif $sunset.raw is not None
+    #set $changeInDay = $naString
+    #set $cidSign=""
+    #if $now < $sunset.raw
+        #set $dayornight = "Day"
+    #else
+        #set $dayornight = "Night"
+    #end if
+    #set $dayLength = $naString
+#end if
+#if $almanac.hasExtras
     #set $moonAge = $time.gmtime($now - $almanac.previous_new_moon.raw)
     #set $moonDays = int(($now - $almanac.previous_new_moon.raw)/86400)
-#else
-    #set $changeInDay = $time.gmtime(($almanac.sunset.raw - $almanac.sunrise.raw) - ($yest_almanac.sunset.raw - $yest_almanac.sunrise.raw))
-    #if int(($almanac.sunset.raw - $almanac.sunrise.raw) - ($yest_almanac.sunset.raw - $yest_almanac.sunrise.raw)) < 0
-        #set $cidSign="-"
-    #else
-        #set $cidSign=""
-    #end if
-    #if ($now > $almanac.sunrise.raw) and ($now < $almanac.sunset.raw)
-        #set $dayornight = "Day"
-    #else
-        #set $dayornight = "Night"
-    #end if
-    #set $dayLength = $time.gmtime($almanac.sunset.raw - $almanac.sunrise.raw)
 #end if
 #if $varExists('$next_perigee_ts')
     #try
@@ -248,10 +285,10 @@ if ( isset($_REQUEST['sce']) && strtolower($_REQUEST['sce']) == 'view' ) {
 // ----------------------------------------
 #raw $time = #end raw '$current.dateTime.format($timeFormat)';
 #raw $date = #end raw '$current.dateTime.format($dateFormat)';
-#if $almanac.hasExtras
-#raw $sunrise = #end raw '$almanac.sun.rise.format($timeFormat)';
+#if $sunrise.raw is not None
+#raw $sunrise = #end raw '$sunrise.format($timeFormat)';
 #else
-#raw $sunrise = #end raw '$almanac.sunrise.format($timeFormat)';
+#raw $sunrise = #end raw '$naString';
 #end if
 #raw $time_minute = #end raw '$current.dateTime.format($minuteFormat)';
 #raw $time_hour = #end raw '$current.dateTime.format($hourFormat)';
@@ -260,8 +297,12 @@ if ( isset($_REQUEST['sce']) && strtolower($_REQUEST['sce']) == 'view' ) {
 #raw $date_year = #end raw '$current.dateTime.format($yearFormat)';
 #raw $monthname = #end raw '$current.dateTime.format($monthNameFormat)';    // Current month name
 #raw $dayname = #end raw '$current.dateTime.format($dayNameFormat)';    // Current day name
+#if $sunset.raw is not None
+#raw $sunset = #end raw '$sunset.format($timeFormat)';// sunset time
+#else
+#raw $sunset = #end raw '$naString';// sunset time
+#end if
 #if $almanac.hasExtras
-#raw $sunset = #end raw '$almanac.sun.set.format($timeFormat)';// sunset time
 #raw $moonrisedate = #end raw '$almanac.moon.next_rising.format($dateFormat)';// moon rise date
 #raw $moonrise = #end raw '$almanac.moon.next_rising.format($timeFormat)';// moon rise time
 #raw $moonsetdate = #end raw '$almanac.moon.next_setting.format($dateFormat)';// moon set date
@@ -284,7 +325,6 @@ if ( isset($_REQUEST['sce']) && strtolower($_REQUEST['sce']) == 'view' ) {
 #raw $fullmoon = #end raw '$time.strftime($ephemFormat, $moonPhase.full_moon)';// Date/time of the next/last full moon
 #raw $fullmoondate = #end raw '$time.strftime($ephemDateFormat, $moonPhase.full_moon)';// Date of the next/last full moon (date only)
 #else
-#raw $sunset = #end raw '$almanac.sunset.format($timeFormat)';// sunset time
 #raw $moonphase = #end raw '$almanac.moon_fullness%';// Moon phase %
 #raw $moonphasename = #end raw '$almanac.moon_phase'; // 10.36z addition
 #end if
@@ -302,7 +342,11 @@ if ( isset($_REQUEST['sce']) && strtolower($_REQUEST['sce']) == 'view' ) {
 #raw $suntransittime = #end raw '$almanac.sun.transit.format($timeFormat)';
 #raw $moontransit = #end raw '$almanac.moon.transit.format(' '.join([$timeFormat, $dateFormat]))';
 #end if
+#try
 #raw $hoursofpossibledaylight = #end raw '$time.strftime($timeFormat, $dayLength)';// Total hours/minutes of possible daylight for today
+#except TypeError
+#raw $hoursofpossibledaylight = #end raw '$naString';// Total hours/minutes of possible daylight for today
+#end try
 #raw $stationaltitude = #end raw '$station.altitude.foot.format(add_label=False, localize=$localize_num)';   // Station altitude, feet, as set in the units setup
 #raw $stationlatitude = #end raw '$lat_dms'; // Latitude (from the sun moon rise/set setup)
 #raw $stationlongitude = #end raw '$long_dms';   // Longitude (from the sun moon rise/set setup)
@@ -1201,7 +1245,11 @@ $lighteningcountlast30minutesnextstorm = '0';
 #end if
 #if $almanac.hasExtras
 #raw $solarnoon = #end raw '$almanac.sun.transit.format($timeFormat)'; // Solar noon
+#try
 #raw $changeinday = #end raw '$cidSign$time.strftime($hourFormat+":"+$minuteFormat+":"+$secondFormat, $changeInDay)';  // change in day length since yesterday
+#except TypeError
+#raw $changeinday = #end raw '$changeInDay';  // change in day length since yesterday
+#end try
 #end if
 #raw $etcurrentweek = #end raw '$seven_day.ET.sum.format(add_label=False, localize=$localize_num)'; // ET total for the last 7 days
 #raw $sunshinehourstodateday = #end raw '$today_sunshine_hours';

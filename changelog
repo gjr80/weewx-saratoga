@@ -1,3 +1,7 @@
+v0.1.5
+-   fixed template issues when sun never rises or never sets during a day,
+    addresses issue #17
+-   removed some unused imports
 v0.1.4
 -   ensure calc_air_density returns a 'None' ValueTuple if the air density
     pre-requisites exist but at least one is None

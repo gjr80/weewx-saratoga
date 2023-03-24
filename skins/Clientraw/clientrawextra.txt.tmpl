@@ -2,7 +2,7 @@
 #*
 A template to generate clientrawextra.txt for the Saratoga Weather Website templates.
 
-Copyright (C) 2021-22 Gary Roderick                 gjroderick<at>gmail.com
+Copyright (C) 2021-23 Gary Roderick                 gjroderick<at>gmail.com
 
 This program is free software: you can redistribute it and/or modify it under
 the terms of the GNU General Public License as published by the Free Software
@@ -28,7 +28,7 @@ Pre-Requisites
 - WeeWX-Saratoga WeeWX extension
 - PyEphem for inclusion of ephemeris and insolation data
 
-Version: 0.1.4                                      Date: 3 April 2022
+Version: 0.1.5                                      Date: 17 January 2023
 
 *#
 #*
@@ -64,21 +64,49 @@ template
 #set $dateTimeHourArray = $onehour.dateTime.datetimeQuery
 ##
 ## set day/night flag
-#set $timereport = $current.dateTime.raw
+#set $now = $current.dateTime.raw
 #if $almanac.hasExtras
-    #set $dayLength = $time.gmtime($almanac.sun.set.raw - $almanac.sun.rise.raw)
-    #if ($timereport > $almanac.sun.rise.raw) and ($timereport < $almanac.sun.set.raw)
+    #set $sunrise = $almanac.sun.rise
+    #set $sunset = $almanac.sun.set
+    #set $moonDays = int(round(($current.dateTime.raw - $almanac.previous_new_moon.raw)/86400,0))
+#else
+    #set $sunrise = $almanac.sunrise
+    #set $sunset = $almanac.sunset
+    #set $moonDays = "NA"
+#end if
+#if $sunrise.raw is not None and $sunset.raw is not None
+    #set $dayLength = $time.gmtime($sunset.raw - $sunrise.raw)
+    #if ($now > $sunrise.raw) and ($now < $sunset.raw)
         #set $dayornight = "D"
     #else
         #set $dayornight = "N"
     #end if
-    #set $moonDays = int(round(($current.dateTime.raw - $almanac.previous_new_moon.raw)/86400,0))
-#else
-    #set $dayLength = $time.gmtime($almanac.sunset.raw - $almanac.sunrise.raw)
-    #if ($timereport > $almanac.sunrise.raw) and ($timereport < $almanac.sunset.raw)
-        #set $dayornight = "D"
+#elif $sunrise.raw is None and $sunset.raw is None
+    #if $almanac.hasExtras
+        #if $almanac.sun.alt + $almanac.sun.radius > 0
+            #set $dayornight = "Day"
+            #set $dayLength = $time.gmtime(86400)
+        #else
+            #set $dayornight = "Night"
+            #set $dayLength = $time.gmtime(0)
+        #end if
     #else
-        #set $dayornight = "N"
+        #set $dayornight = $naString
+        #set $dayLength = $naString
+    #end if
+#elif $sunrise.raw is not None
+    #set $dayLength = "NA"
+    #if $now > $sunrise.raw
+        #set $dayornight = "Day"
+    #else
+        #set $dayornight = "Night"
+    #end if
+#elif $sunset.raw is not None
+    #set $dayLength = "NA"
+    #if $now < $sunset.raw
+        #set $dayornight = "Day"
+    #else
+        #set $dayornight = "Night"
     #end if
 #end if
 ##
@@ -736,15 +764,14 @@ $windDirHourArray[$i].format(format_string="%.0f", add_label=False, localize=Fal
 #*558*#$almanac.moon.rise.format("%H:%M") #slurp
 #*559*#$almanac.moon.set.format("%H:%M") #slurp
 #*560*#$almanac.moon_fullness #slurp
-#*561*#$moonDays #slurp
 #else
 #*556*#$almanac.sunrise.format("%H:%M") #slurp
 #*557*#$almanac.sunset.format("%H:%M") #slurp
 #*558*#NA #slurp
 #*559*#NA #slurp
 #*560*#$almanac.moon_fullness #slurp
-#*561*#NA #slurp
 #end if
+#*561*#$moonDays #slurp
 #*562*##*WindSpeed Hour 21 to 24. Hour 24=most recent*##slurp
 #for $i in range (20,24):
 #try

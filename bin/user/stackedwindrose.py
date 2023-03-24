@@ -78,7 +78,7 @@ import weewx.reportengine
 import weewx.units
 
 from weeplot.utilities import get_font_handle
-# search_up was moved from weeutil.weeutil to weeutil.config in v3.9.0 so we
+# search_up was moved from weeutil.weeutil to weeutil.config in v3.9.0, so we
 # need to try each until we find it
 try:
     from weeutil.config import search_up
@@ -109,10 +109,10 @@ STACKED_WINDROSE_VERSION = '3.0.1'
 DEFAULT_PETAL_COLORS = ['lightblue', 'blue', 'midnightblue', 'forestgreen',
                         'limegreen', 'green', 'greenyellow']
 
+
 # ==============================================================================
 #                      Class StackedWindRoseImageGenerator
 # ==============================================================================
-
 
 class StackedWindRoseImageGenerator(weewx.reportengine.ReportGenerator):
     """Generate a polar wind rose plot image."""
@@ -831,7 +831,7 @@ def parse_color(color, default=None):
     the value. The string may be:
     -   a supported color word eg 'red'
     -   in the format #RRGGBB where RR, GG and BB are hexadecimal values from
-        00-FF inclusive representing the the red, green and blue values
+        00-FF inclusive representing the red, green and blue values
         respectively, eg #FF8800
     -   in the format rgb(R,G,B) where R,G,B are numbers from 0 to 255 or
         percentages from 0% to 100% representing the red green and blue values

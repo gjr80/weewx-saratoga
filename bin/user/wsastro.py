@@ -12,10 +12,12 @@ This program is distributed in the hope that it will be useful, but WITHOUT ANY
 WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
 PARTICULAR PURPOSE.  See the GNU General Public License for more details.
 
-Version: 0.1.4                                          Date: 3 April 2022
+Version: 0.1.5                                          Date: 17 January 2023
 
 Revision History
-    3 April 20200       v0.1.4
+    17 January 2023     v0.1.5
+        - version number change only
+    3 April 2022        v0.1.4
         - version number change only
     7 February 2022     v0.1.3
         - version number change only
@@ -63,7 +65,7 @@ except ImportError:
     def logdbg(msg):
         logmsg(syslog.LOG_DEBUG, msg)
 
-WS_ASTRO_VERSION = '0.1.4'
+WS_ASTRO_VERSION = '0.1.5'
 
 
 class MoonApsis(SearchList):
@@ -329,11 +331,11 @@ class MoonApsis(SearchList):
         _tt = time.localtime(timespan.stop)
         _ts = time.mktime((_tt.tm_year, 1, 1, 0, 0, 0, 0, 0, -1))
         _ts_y = time.mktime((_tt.tm_year + 1, 1, 1, 0, 0, 0, 0, 0, -1))
-        # get max apogee for the year (ie greatest distance to moon)
+        # get max apogee for the year (ie the greatest distance to moon)
         max_apogee = max(apsis_list,
                          key=lambda ap: ap[2] if _ts <= ap[1].raw < _ts_y else 0)
         max_apogee = (max_apogee[1], max_apogee[2])
-        # get min perigee for the year (ie least distance to moon)
+        # get min perigee for the year (ie the least distance to moon)
         min_perigee = min(apsis_list,
                           key=lambda ap: ap[2] if _ts <= ap[1].raw < _ts_y else 1000000)
         min_perigee = (min_perigee[1], min_perigee[2])
@@ -341,7 +343,7 @@ class MoonApsis(SearchList):
         # split our apsis list into individual components so we can find the
         # next apogee and perigee
         apsis_type_list, apsis_ts_vh_list, apsis_dist_list = list(zip(*apsis_list))
-        # ts list elements are ValueHelpers so we need to break it down further
+        # ts list elements are ValueHelpers, so we need to break it down further
         apsis_ts_list = [ts_vh.raw for ts_vh in apsis_ts_vh_list]
         try:
             # find the index of the next apogee or perigee
@@ -498,7 +500,7 @@ class Eclipse(SearchList):
 
            Details provided include epoch timestamp of the eclipse as well as
            the type. Note that the dictionary of eclipses is all eclipses, not
-           just eclipses visible at the stations location, so the eclipse
+           just eclipses visible at the station's location, so the eclipse
            returned may not be visible to the user. Eclipse data is based upon
            NASA Solar and Lunar eclipse tables at the following sites:
 
@@ -716,7 +718,7 @@ class ChineseNewYear(SearchList):
             # a ValueTuple
             cny_ts = time.mktime(cny_d.timetuple())
             cny_vt = ValueTuple(cny_ts, 'unix_epoch', 'group_time')
-        # get our result as a ValueHelper so we can easily format our tag in 
+        # get our result as a ValueHelper, so we can easily format our tag in
         # reports
         cny_vh = ValueHelper(cny_vt,
                              'current',
