@@ -669,7 +669,7 @@ $rain_accum_formatted #slurp
 #*439*##*barometer Hour 01 to 20. Hour 01=24 hours ago*##slurp
 #for $i in range (20):
 #try
-$barometerHourArray[$i].hPaformat(format_string="%.1f", add_label=False, localize=False) #slurp
+$barometerHourArray[$i].hPa.format(format_string="%.1f", add_label=False, localize=False) #slurp
 #except
 0 #slurp
 #end try
