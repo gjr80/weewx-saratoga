@@ -101,7 +101,7 @@ except ImportError:
 # ============================================================================
 
 class OpenWeatherConditions(weewx.engine.StdService):
-    """Service to obtain current conditions data via the OpenWeather API.
+    """'Data' service to obtain current conditions data via the OpenWeather API.
 
     Description
 
@@ -138,56 +138,63 @@ class OpenWeatherConditions(weewx.engine.StdService):
         # initialise our superclass
         super(OpenWeatherConditions, self).__init__(engine, config_dict)
 
-        wapi_config = config_dict.get('WeatherApi', {})
-        ow_config = wapi_config.get('OpenWeather', {})
+        weather_api_config = config_dict.get('WeatherApi', {})
+        self.ow_config = weather_api_config.get('OpenWeather', {})
+        # add the code for our source to our config dict, but only if it does
+        # not exist or is None
+        if 'source' not in self.ow_config or self.ow_config['source'] is None:
+            self.ow_config['source'] = 'OpenWeather'
         # are we enabled
-        if weeutil.weeutil.to_bool(ow_config.get('enable', False)):
-            # we are enabled, set up the control and data queues
+        if weeutil.weeutil.to_bool(self.ow_config.get('enable', False)):
+            # we are enabled, set up the control and response queues
             self.control_queue = six.moves.queue.Queue()
             self.response_queue = six.moves.queue.Queue()
             # and get an appropriate threaded source object
-            self.openweather_thread = OpenWeatherApiThreadedSource(ow_config,
-                                                                  self.control_queue,
-                                                                  self.response_queue,
-                                                                  engine)
-            self.openweather_thread.start()
+            self.thread = OpenWeatherApiThreadedSource(self.ow_config,
+                                                       self.control_queue,
+                                                       self.response_queue,
+                                                       engine)
+            self.thread.start()
+            # bind our self to the NEW_LOOP_PACKET event
+            self.bind(weewx.NEW_LOOP_PACKET, self.new_loop_packet)
         else:
-            # we are not enabled but still listed as a service to be run, log
-            # the fact and exit
-            loginf("Source '%s' ignored" % aw_config['source'])
+            # we are not enabled or have no config stanza, but still listed as
+            # a service to be run, log the fact and exit
+            loginf("Source '%s' ignored" % self.ow_config['source'])
 
     def shutDown(self):
         """Shut down any threads."""
 
-        # we only need do something if a thread is alive
-        if self.openweather_thread.is_alive():
+        # we only need do something if we have a live thread
+        if self.thread.is_alive():
             # if we have a control queue put None in the queue to signal the
             # thread to stop
             if self.control_queue:
                 self.control_queue.put(None)
             # attempt to terminate the thread with a suitable timeout
-            self.openweather_thread.join(5.0)
+            self.thread.join(5.0)
             # if the thread is still alive we timed out and the thread may not
             # have been terminated, either way log the outcome
-            if self.openweather_thread.is_alive():
-                logerr("Unable to shut down OpenWeather thread")
+            if self.thread.is_alive():
+                logerr("Unable to shut down '%s' thread" % self.ow_config['source'])
             else:
-                loginf("AerisWeatherMap thread has been terminated")
+                loginf("'%s' thread has been terminated" % self.ow_config['source'])
         # we are finished with the thread so lose our reference and our queues
-        self.openweather_thread = None
+        self.thread = None
         self.control_queue = None
         self.response_queue = None
 
-    def new_loop_packet(self):
+    def new_loop_packet(self, event):
         """Check our thread to see if it needs to close.
 
         We don't need to process any loop packet data, but we do need to
         regularly check on our thread to see if it needed to close. Checking
-        upon arrival of each loop packet is a convenient time."""
+        upon arrival of each loop packet is a convenient time.
+        """
 
-        # Try to get data from the queue, block for up to 60
-        # seconds. If nothing is there an empty queue exception
-        # will be thrown after 60 seconds
+        # Try to get data from the queue but don't block. If nothing is in the
+        # queue an empty queue exception will be thrown. If we have already
+        # shut our thread we will have no response queue.
         try:
             _package = self.response_queue.get_nowait()
         except (queue.Empty, AttributeError):
@@ -196,7 +203,7 @@ class OpenWeatherConditions(weewx.engine.StdService):
             pass
         else:
             # something was in the queue, if it is the shutdown signal (None)
-            # then return otherwise continue
+            # call out shut down method
             if _package is None:
                 # we have a shutdown signal so call our shutDown method
                 self.shutDown()
@@ -841,8 +848,8 @@ class AerisWeatherMapThreadedSource(ThreadedSource):
 
 KNOWN_SOURCES = {'AWM': {'name': 'AerisWeatherMapSource',
                          'class': AerisWeatherMapThreadedSource
-                         }
-                 'OW': {'name': 'OpenWeatherAPISource',
-                        'class': OpenWeatherApiThreadedSource
+                         },
+                 'OpenWeather': {'name': 'OpenWeatherAPISource',
+                                 'class': OpenWeatherApiThreadedSource
                         }
                  }
