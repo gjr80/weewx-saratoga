@@ -697,6 +697,26 @@ class OpenWeatherApiThreadedSource(ThreadedSource):
     QUALIFIER = 'data/2.5'
     # available data 'blocks' we may obtain from the API
     DATA_TYPES = ('weather', 'forecast', 'air_pollution')
+    # map OpenWeather icon codes to clientraw icon codes
+    ICON_MAP = {'1d': 0,
+                '1n': 1,
+                '2d': 2,
+                '2n': 4,
+                '3d': 0,
+                '3n': 0,
+                '4d': 18,
+                '4n': 13,
+                '9d': 22,
+                '9n': 15,
+                '10d': 20,
+                '10n': 14,
+                '11d': 31,
+                '11n': 17,
+                '13d': 25,
+                '13n': 16,
+                '50d': 10,
+                '50n': 10
+                }
 
     def __init__(self, ow_config_dict, control_queue, response_queue, engine):
         # initialise a OpenWeatherAPI object
@@ -792,7 +812,7 @@ class OpenWeatherApiThreadedSource(ThreadedSource):
             if len(_weather) > 0:
                 _ts = _weather[0].get('dt')
                 _description = _weather[0].get('description')
-                _icon = _weather[0].get('icon')
+                _icon = self.ICON_MAP.get(_weather[0].get('icon'), 0)
                 if _description is not None:
                     _parsed_data['description'] = _description
                 if _icon is not None:
