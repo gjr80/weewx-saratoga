@@ -21,6 +21,7 @@ Revision History
 """
 
 # python imports
+import json
 import os
 import os.path
 import queue
@@ -30,6 +31,7 @@ import time
 
 # python 2/3 compatibility shims
 import six
+from six.moves import urllib
 
 # WeeWX imports
 import weewx
@@ -97,7 +99,7 @@ except ImportError:
 
 
 # ============================================================================
-#                           class AerisWeatherMap
+#                        class OpenWeatherConditions
 # ============================================================================
 
 class OpenWeatherConditions(weewx.engine.StdService):
@@ -117,19 +119,24 @@ class OpenWeatherConditions(weewx.engine.StdService):
 
     [WeatherApi]
         [[OpenWeather]]
-            enabled = True
+            enable = True
 
-            # OpenWeather key
-            key =
+            # OpenWeather api_key
+            api_key = <your API key>
 
-            # Aeris Weather client secret
-            client_secret =
-
-            # Extract from the single image URL produced by the Single Image
-            # Map Wizard. Consists of all characters after
-            # [CLIENT_ID]_[CLIENT_SECRET]/
-            # eg: flat,radar,states/600x500/Mytown, state,4/current.png
-            url_extract = "flat,radar,states/600x500/Brisbane,qld,4/current.png"
+            # Define a mapping to map OpenWeather API fields to WeeWX fields.
+            # Format is:
+            #
+            #     weewx_field = OpenWeather_API_field
+            #
+            # where:
+            #     weewx_field is the loop packet field to be populated.
+            #     OpenWeather_API_field is a OpenWeather API field name. Child
+            #     groups in the OpenWeather API response accessed using 'dotted notation', eg:
+            #     weather.icon or main.feels_like
+            [[[field_map]]]
+                current_conditions = weather.description
+                icon = weather.icon
 
     4. restart WeeWX
     """
@@ -146,7 +153,9 @@ class OpenWeatherConditions(weewx.engine.StdService):
             self.ow_config['source'] = 'OpenWeather'
         # are we enabled
         if weeutil.weeutil.to_bool(self.ow_config.get('enable', False)):
-            # we are enabled, set up the control and response queues
+            # we are enabled, log that we are enabling our thread
+            loginf("Enabling Weather API source '%s'..." % self.ow_config['source'])
+            # set up the control and response queues
             self.control_queue = six.moves.queue.Queue()
             self.response_queue = six.moves.queue.Queue()
             # and get an appropriate threaded source object
@@ -154,13 +163,15 @@ class OpenWeatherConditions(weewx.engine.StdService):
                                                        self.control_queue,
                                                        self.response_queue,
                                                        engine)
+            # start our thread
             self.thread.start()
             # bind our self to the NEW_LOOP_PACKET event
             self.bind(weewx.NEW_LOOP_PACKET, self.new_loop_packet)
+            self.cached_data = {}
         else:
             # we are not enabled or have no config stanza, but still listed as
             # a service to be run, log the fact and exit
-            loginf("Source '%s' ignored" % self.ow_config['source'])
+            loginf("Weather API source '%s' ignored" % self.ow_config['source'])
 
     def shutDown(self):
         """Shut down any threads."""
@@ -202,12 +213,28 @@ class OpenWeatherConditions(weewx.engine.StdService):
             # closed. Either way just continue.
             pass
         else:
-            # something was in the queue, if it is the shutdown signal (None)
-            # call out shut down method
+            # something was in the queue, what we do depends on what it is
+            # if it is the shutdown signal (None) call our shut down method
             if _package is None:
                 # we have a shutdown signal so call our shutDown method
                 self.shutDown()
+            # if the package has a 'keys' attribute it is a dict so it could be
+            # data
+            if hasattr(_package, 'keys'):
+                # it could be data, so look at the payload
+                _payload = _package.get('payload')
+                # if the payload is not None and it is a dict then we have some
+                # data that we need to add to our loop packets
+                if _payload is not None and hasattr(_payload, 'keys'):
+                    # we have data for loop packets, so update our cache
+                    self.update_cache(_payload)
 
+    def update_cache(self, data):
+        """Update our cache with data from a dict."""
+
+        for key, data in six.iteritems(data):
+            if key is not in event.packet:
+                event.packt =
 
 # ============================================================================
 #                           class AerisWeatherMap
@@ -331,7 +358,7 @@ class ThreadedSource(threading.Thread):
         source_config_dict: a ConfigObj config dictionary for the source
         control_queue:      a Queue object used by our parent to control
                             (shutdown) this thread
-        result_queue:       a Queue object used to pass results to our parent
+        response_queue:       a Queue object used to pass results to our parent
         engine:             an instance of weewx.engine.StdEngine (or a
                             reasonable facsimile)
 
@@ -349,13 +376,13 @@ class ThreadedSource(threading.Thread):
         process_data():    Process the parsed data, this may involve packaging
                            and placing the data in the result queue or saving
                            the data locally.
-        obfuscated_key():  Obfuscate a key.
+        obfuscated_key():  Obfuscate a api_key.
     """
 
-    def __init__(self, source_config_dict, control_queue, result_queue, engine):
+    def __init__(self, source_config_dict, control_queue, response_queue, engine):
 
         # initialize my superclass
-        super(ThreadedSource, self).__init__(self)
+        threading.Thread.__init__(self)
 
         # set up some thread things
         self.setDaemon(True)
@@ -365,11 +392,14 @@ class ThreadedSource(threading.Thread):
 
         # save the queues we will use
         self.control_queue = control_queue
-        self.result_queue = result_queue
+        self.response_queue = response_queue
         # keep a reference to the WeeWX engine
         self.engine = engine
+        # keep a track of the time of our last call
+        self.last_call_ts = None
         # set our (not WeeWX) debug level
         self.debug = weeutil.weeutil.to_int(source_config_dict.get('debug', 0))
+        self.interval = 1800
 
     def run(self):
         """Entry point for the thread."""
@@ -384,24 +414,25 @@ class ThreadedSource(threading.Thread):
             # the control queue for the shutdown signal. Only break out if we
             # receive the shutdown signal (None) from our parent.
             while True:
-                # run an inner loop obtaining, parsing and dispatching the data
-                # and checking for the shutdown signal
-                # first up get the raw data
-                _raw_data = self.get_raw_data()
-                # if we have a non-None response then we have data so parse it,
-                # gather the required data and put it in the result queue
-                if _raw_data is not None:
-                    # parse the raw data response and extract the required data
-                    _data = self.parse_raw_data(_raw_data)
-                    if self.debug > 0:
-                        loginf("Parsed data=%s" % _data)
-                    # now process the parsed data
-                    self.process_data(_data)
+                if self.time_to_make_call(time.time()):
+                    # run an inner loop obtaining, parsing and dispatching the data
+                    # and checking for the shutdown signal
+                    # first up get the raw data
+                    _raw_data = self.get_raw_data()
+                    # if we have a non-None response then we have data so parse it,
+                    # gather the required data and put it in the result queue
+                    if _raw_data is not None:
+                        # parse the raw data response and extract the required data
+                        _data = self.parse_raw_data(_raw_data)
+                        if self.debug > 0:
+                            loginf("Parsed data=%s" % _data)
+                        # now process the parsed data
+                        self.process_data(_data)
                 # now check to see if we have a shutdown signal
                 try:
-                    # Try to get data from the queue, block for up to 60
+                    # Try to get data from the queue, block for up to 10
                     # seconds. If nothing is there an empty queue exception
-                    # will be thrown after 60 seconds
+                    # will be thrown after 10 seconds
                     _package = self.control_queue.get(block=True, timeout=10)
                 except six.moves.queue.Empty:
                     # nothing in the queue so continue
@@ -428,7 +459,7 @@ class ThreadedSource(threading.Thread):
 
         pass
 
-    def get_raw_data(self):
+    def get_raw_data(self, **kwargs):
         """Obtain the raw block data.
 
         This method must be defined for each child class.
@@ -459,7 +490,7 @@ class ThreadedSource(threading.Thread):
                 log.error("Failed to get API response on attempt %d" % (count + 1,))
                 log.error("   **** %s" % err)
                 if err.code == 401:
-                    log.error("   **** Possible incorrect API key or user credentials")
+                    log.error("   **** Possible incorrect API api_key or user credentials")
                     break
                 elif err.code == 429:
                     log.error("   **** Possible too many API calls per minute")
@@ -468,11 +499,14 @@ class ThreadedSource(threading.Thread):
                 log.error("Failed to get API response on attempt %d" % (count + 1,))
                 log.error("   **** %s" % e)
             else:
-                # We have a response, but it could be character set encoded.
-                # Get the charset used so we can decode the stream correctly.
-                # Unfortunately the way to get the charset depends on whether
-                # we are running under python2 or python3. Assume python3 but
-                # be prepared to catch the error if python2.
+                # we have a response, first set the timestamp of the last
+                # successful call
+                self.last_call_ts = time.time()
+                # The response could be character set encoded. Get the charset
+                # used so we can decode the stream correctly. Unfortunately the
+                # way to get the charset depends on whether we are running
+                # under python2 or python3. Assume python3 but be prepared to
+                # catch the error if python2.
                 try:
                     char_set = w.headers.get_content_charset()
                 except AttributeError:
@@ -518,17 +552,28 @@ class ThreadedSource(threading.Thread):
             # construct our data dict for the queue
             _package = {'type': 'data',
                         'payload': data}
-            self.result_queue.put(_package)
+            loginf("putting:%s" % (_package,))
+            # self.response_queue.put(_package)
+
+    def time_to_make_call(self, now_ts):
+        """Is it time to make another call via the API?"""
+
+        if self.last_call_ts is None:
+            return True
+        elif now_ts >= self.last_call_ts + self.interval:
+            return True
+        else:
+            return False
 
     @staticmethod
     def obfuscated_key(key):
-        """Produce an obfuscated copy of a key.
+        """Produce an obfuscated copy of a api_key.
 
-        Obfuscates a number of the leftmost characters in a key leaving a
+        Obfuscates a number of the leftmost characters in a api_key leaving a
         number of the rightmost characters as is. For keys of length eight
         characters or fewer at least half of the characters are obfuscated. For
         keys longer than eight characters in length all except the rightmost
-        four characters are obfuscated. If key is None or the length of the key
+        four characters are obfuscated. If api_key is None or the length of the api_key
         is less than 2 then None is returned.
         """
 
@@ -553,14 +598,14 @@ class OpenWeatherApiThreadedSource(ThreadedSource):
         source_config_dict: a ConfigObj config dictionary for the source
         control_queue:      a Queue object used by our parent to control
                             (shutdown) this thread
-        result_queue:       a Queue object used to pass results to our parent
+        response_queue:       a Queue object used to pass results to our parent
         engine:             an instance of weewx.engine.StdEngine (or a
                             reasonable facsimile)
-        kwargs:             optional key word arguments that may include:
+        kwargs:             optional api_key word arguments that may include:
                             debug: log additional debug info when querying the
                                    OpenWeather API
         ow_config_dict: dictionary with (at least) the following keys:
-            key:       OpenWeather API key to be used
+            api_key:       OpenWeather API api_key to be used
             latitude:  Latitude of the location concerned
             longitude: Longitude of the location concerned
 
@@ -589,41 +634,48 @@ class OpenWeatherApiThreadedSource(ThreadedSource):
     # available data 'blocks' we may obtain from the API
     DATA_TYPES = ('weather', 'forecast', 'air_pollution')
 
-    def __init__(self, ow_config_dict, control_queue, result_queue, engine):
+    def __init__(self, ow_config_dict, control_queue, response_queue, engine):
         # initialise a OpenWeatherAPI object
 
         # initialize my base class
-        super(OpenWeatherApiThreadedSource).__init__(ow_config_dict,
-                                                     control_queue,
-                                                     result_queue,
-                                                     engine)
+        super(OpenWeatherApiThreadedSource, self).__init__(ow_config_dict,
+                                                           control_queue,
+                                                           response_queue,
+                                                           engine)
 
         # obtain various config items from our config dict
-        # first we cannot do anything without a key, if we have no key then
-        # notify the user and return
+        # first we cannot do anything without an API key, if we have no key
+        # then notify the user and return
         try:
-            self.key = ow_config_dict['key']
+            self.api_key = ow_config_dict['api_key']
         except KeyError:
-            # we have no key, we cannot continue
+            # we have no api_key, we cannot continue
             # first log the error
-            log.error('%s: OpenWeather API key not found, %s will close' % (self.name,
-                                                                            self.name))
+            log.error('%s: OpenWeather API api_key not found, %s will close' % (self.name,
+                                                                                self.name))
             # now put None in the result queue to indicate to our service that
             # we need to close
-            self.result_queue.put(None)
+            self.response_queue.put(None)
+            return
         else:
-            self.latitude = ow_config_dict.get('latitude',
-                                               self.engine.stn_info.latitude_f)
-            self.longitude = ow_config_dict.get('longitude',
-                                                self.engine.stn_info.longitude_f)
+            self.latitude = weeutil.weeutil.to_float(ow_config_dict.get('latitude',
+                                                                        self.engine.stn_info.latitude_f))
+            self.longitude = weeutil.weeutil.to_float(ow_config_dict.get('longitude',
+                                                                         self.engine.stn_info.longitude_f))
             self.language = ow_config_dict.get('language', 'en').lower()
             self.units = ow_config_dict.get('units', 'metric').lower()
             self.max_tries = weeutil.weeutil.to_int(ow_config_dict.get('max_tries',
                                                                        3))
-            self.block = ow_config_dict['block'].lower()
+            self.block = ow_config_dict.get('block', 'weather').lower()
+        loginf("Weather API source '%s' enabled" % ow_config_dict['source'])
+        loginf("     api_key=%s interval=%d" % (self.obfuscated_key(self.api_key),
+                                                self.interval))
+        loginf("     language=%s units=%s block=%s max_tries=%d" % (self.language,
+                                                                    self.units,
+                                                                    self.block,
+                                                                    self.max_tries))
 
-    def get_data(self, data_type='weather', language='en', units='metric',
-                 max_tries=3):
+    def get_raw_data(self, **kwargs):
         """Make a data request via the API and return the response.
 
         Construct the URL used to contact the API, contact the API and return
@@ -640,29 +692,44 @@ class OpenWeatherApiThreadedSource(ThreadedSource):
         # first construct the base URL
         base_url = '/'.join([self.END_POINT,
                              self.QUALIFIER,
-                             data_type])
+                             kwargs.get('data_type', 'weather')])
         # now construct the parameters dict
         param_dict = {'lat': self.latitude,
                       'lon': self.longitude,
-                      'lang': language,
-                      'units': units,
-                      'appid': self.key
+                      'lang': kwargs.get('language', 'en'),
+                      'units': kwargs.get('units', 'metric'),
+                      'appid': self.api_key
                       }
         # obtain the params as a URL encoded string
         params = urllib.parse.urlencode(param_dict)
         # construct the URL, it is a concatenation of the base URL and the
         # url-encoded parameters using a '?' as the joining character
         url = '?'.join([base_url, params])
-        # if debug >= 1 log the URL used but obfuscate the key
+        # if debug >= 1 log the URL used but obfuscate the api_key
         if weewx.debug > 0 or self.debug > 0:
-            _obfuscated_url = url.replace(self.key, self.obfuscated_key(self.key))
-            print("Submitting API call using URL: %s" % (_obfuscated_url,))
+            _obfuscated_url = url.replace(self.api_key, self.obfuscated_key(self.api_key))
+            # print("Submitting API call using URL: %s" % (_obfuscated_url,))
+            loginf("Submitting API call using URL: %s" % (_obfuscated_url,))
         # make the API call and obtain the response
-        _response = self.submit_request(url, max_tries=max_tries)
+        _response = self.submit_request(url)
         # if we have a response we need to de-serialise it
         json_response = json.loads(_response) if _response is not None else None
         # return the response
         return json_response
+
+    def parse_raw_data(self, response):
+        """Parse our raw data."""
+
+        _parsed_data = {}
+        _weather = response.get('weather', [])
+        if len(_weather) > 0:
+            _description = _weather[0].get('description')
+            _icon = _weather[0].get('icon')
+            if _description is not None:
+                _parsed_data['description'] = _description
+            if _icon is not None:
+                _parsed_data['icon'] = _icon
+        return _parsed_data
 
 
 # ============================================================================
@@ -675,7 +742,7 @@ class AerisWeatherMapThreadedSource(ThreadedSource):
     # Aeris Weather map API end point
     END_POINT = 'https://maps.aerisapi.com'
 
-    def __init__(self, config_dict, control_queue, result_queue, engine, **kwargs):
+    def __init__(self, config_dict, control_queue, response_queue, engine, **kwargs):
 
         # get the Aeris Weather config
         wm_config = config_dict.get('WeatherMap')
@@ -683,7 +750,7 @@ class AerisWeatherMapThreadedSource(ThreadedSource):
         # initialize my base class
         super(AerisWeatherMapThreadedSource, self).__init__(aw_config,
                                                             control_queue,
-                                                            result_queue,
+                                                            response_queue,
                                                             engine)
 
         # obtain our client ID and secret, wrap in try..except so we can catch
@@ -696,7 +763,7 @@ class AerisWeatherMapThreadedSource(ThreadedSource):
                       'Exiting.' % self.name)
             # we cannot continue, place None in the result queue to signal we
             # need to close then return
-            self.result_queue.put(None)
+            self.response_queue.put(None)
             return
         else:
             # we have a client ID and secret, continue with the rest of our
