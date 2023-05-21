@@ -101,6 +101,8 @@ except ImportError:
 DEFAULT_API_CALL_INTERVAL = 3600
 # default number of tries to contact the API before giving up
 DEFAULT_MAX_TRIES = 3
+# default maximum cache age in seconds
+DEFAULT_MAX_CACHE_AGE = 7200
 
 
 # ============================================================================
@@ -160,6 +162,9 @@ class OpenWeatherConditions(weewx.engine.StdService):
         if weeutil.weeutil.to_bool(self.ow_config.get('enable', False)):
             # we are enabled, log that we are enabling our thread
             loginf("Enabling Weather API source '%s'..." % self.ow_config['source'])
+            # set max age for cache entries
+            self.max_cache_age = weeutil.weeutil.to_int(self.ow_config.get('max_cache-age',
+                                                                           DEFAULT_MAX_CACHE_AGE))
             # set up the control and response queues
             self.control_queue = six.moves.queue.Queue()
             self.response_queue = six.moves.queue.Queue()
@@ -251,11 +256,11 @@ class OpenWeatherConditions(weewx.engine.StdService):
         """Update our cache with data from a dict."""
 
         # first get the timestamp of our data
-        _packet_ts = data_packet.get('ts')
+        _packet_ts = data_packet.get('timestamp')
         # now iterate over the key, data pairs and update the cache
         for key, data in six.iteritems(data_packet):
             # we can skip the timestamp
-            if key == 'ts':
+            if key == 'timestamp':
                 continue
             # update the cache if we have not cached key before or if the
             # cached data for key is stale
@@ -264,9 +269,11 @@ class OpenWeatherConditions(weewx.engine.StdService):
         # now remove any stale data from the cache
         now = time.time()
         for key in six.iterkeys(self.cache):
-            if self.cache[key]['timestamp'] + self.max_cache_age < now:
-                del self.cache[key]
-
+            try:
+                if self.cache[key]['timestamp'] + self.max_cache_age < now:
+                    del self.cache[key]
+            except:
+                loginf("self.cache=%s key=%s" % (self.cache, key))
 
 # ============================================================================
 #                           class AerisWeatherMap
@@ -812,6 +819,8 @@ class OpenWeatherApiThreadedSource(ThreadedSource):
             if len(_weather) > 0:
                 _ts = _weather[0].get('dt')
                 _description = _weather[0].get('description')
+                # TODO. Needs to be better
+                _description = _description.capitalize()
                 _icon = self.ICON_MAP.get(_weather[0].get('icon'), 0)
                 if _description is not None:
                     _parsed_data['description'] = _description
