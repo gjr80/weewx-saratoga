@@ -578,8 +578,9 @@ class ThreadedSource(threading.Thread):
             # construct our data dict for the queue
             _package = {'type': 'data',
                         'payload': data}
-            loginf("putting:%s" % (_package,))
-            # self.response_queue.put(_package)
+            if weewx.debug >= 2 or self.debug >= 2:
+                logdbg("%s: queued package: %s" % (self.name, _package))
+            self.response_queue.put(_package)
 
     def time_to_make_call(self, now_ts):
         """Is it time to make another call via the API?"""
