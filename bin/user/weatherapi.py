@@ -747,14 +747,18 @@ class OpenWeatherApiThreadedSource(ThreadedSource):
         """Parse our raw data."""
 
         _parsed_data = {}
-        _weather = response.get('weather', [])
-        if len(_weather) > 0:
-            _description = _weather[0].get('description')
-            _icon = _weather[0].get('icon')
-            if _description is not None:
-                _parsed_data['description'] = _description
-            if _icon is not None:
-                _parsed_data['icon'] = _icon
+        _ts = response.get('dt')
+        if _ts is not None:
+            _parsed_data['timestamp'] = _ts
+            _weather = response.get('weather', [])
+            if len(_weather) > 0:
+                _ts = _weather[0].get('dt')
+                _description = _weather[0].get('description')
+                _icon = _weather[0].get('icon')
+                if _description is not None:
+                    _parsed_data['description'] = _description
+                if _icon is not None:
+                    _parsed_data['icon'] = _icon
         return _parsed_data
 
 
