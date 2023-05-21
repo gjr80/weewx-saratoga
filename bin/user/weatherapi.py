@@ -97,6 +97,11 @@ except ImportError:
     def log_traceback_error(prefix=''):
         log_traceback(prefix=prefix, loglevel=syslog.LOG_ERR)
 
+# default API call interval in seconds
+DEFAULT_API_CALL_INTERVAL = 3600
+# default number of tries to contact the API before giving up
+DEFAULT_MAX_TRIES = 3
+
 
 # ============================================================================
 #                        class OpenWeatherConditions
@@ -262,6 +267,7 @@ class OpenWeatherConditions(weewx.engine.StdService):
             if self.cache[key]['timestamp'] + self.max_cache_age < now:
                 del self.cache[key]
 
+
 # ============================================================================
 #                           class AerisWeatherMap
 # ============================================================================
@@ -421,11 +427,17 @@ class ThreadedSource(threading.Thread):
         self.response_queue = response_queue
         # keep a reference to the WeeWX engine
         self.engine = engine
+        # get our API call interval using a suitable default
+        self.interval = weeutil.weeutil.to_int(source_config_dict.get('interval',
+                                                                      DEFAULT_API_CALL_INTERVAL))
+        # get the number of attempts to contact the API before giving up
+        self.max_tries = weeutil.weeutil.to_int(source_config_dict.get('max_tries',
+                                                                       DEFAULT_MAX_TRIES))
+        # get our (not WeeWX) debug level
+        self.debug = weeutil.weeutil.to_int(source_config_dict.get('debug', 0))
+
         # keep a track of the time of our last call
         self.last_call_ts = None
-        # set our (not WeeWX) debug level
-        self.debug = weeutil.weeutil.to_int(source_config_dict.get('debug', 0))
-        self.interval = 1800
 
     def run(self):
         """Entry point for the thread."""
@@ -558,7 +570,10 @@ class ThreadedSource(threading.Thread):
         """Parse the block response and return the required data.
 
         This method must be defined if the raw data from the block must be
-        further processed to extract the final scroller text.
+        further processed/parsed to extract the data to be used.
+
+        The action of base class version of this method is to return the raw
+        data unchanged.
         """
 
         return response
@@ -566,8 +581,13 @@ class ThreadedSource(threading.Thread):
     def process_data(self, data):
         """Process the parsed data.
 
-        The default action of this method is to package the data into a dict
-        and place it in the queue for our parent Service to process further.
+        The action of base class version of this method is to package the data
+        into a dict and place it in the queue for our parent Service to process
+        further. The dict structure is:
+        'type': the string 'data'
+        'payload': the data to be packaged
+
+        If data is None nothing is queued.
 
         This method may be overridden if other tasks must be performed with the
         data.
@@ -578,30 +598,47 @@ class ThreadedSource(threading.Thread):
             # construct our data dict for the queue
             _package = {'type': 'data',
                         'payload': data}
+            # if required log the package to be queued
             if weewx.debug >= 2 or self.debug >= 2:
-                logdbg("%s: queued package: %s" % (self.name, _package))
+                loginf("%s: queued package: %s" % (self.name, _package))
+            # queue the package
             self.response_queue.put(_package)
 
     def time_to_make_call(self, now_ts):
-        """Is it time to make another call via the API?"""
+        """Is it time to make another call via the API?
 
+        Given a timestamp is it time to make and API call or not? Look at the
+        time of last call and the call interval to decide if a call should be
+        made. Return True if:
+        - no call has ever been made
+        - a previous call has been made and self.interval seconds have elapsed
+          since the call
+        otherwise returns False
+
+        Returns true or False only.
+        """
+
+        # have we ever made a call
         if self.last_call_ts is None:
+            # no previous call so return True
             return True
+        # has interval seconds passed since the last call
         elif now_ts >= self.last_call_ts + self.interval:
             return True
+        # default to False
         else:
             return False
 
     @staticmethod
     def obfuscated_key(key):
-        """Produce an obfuscated copy of a api_key.
+        """Produce an obfuscated copy of a key.
 
-        Obfuscates a number of the leftmost characters in a api_key leaving a
+        Obfuscates a number of the leftmost characters in a key leaving a
         number of the rightmost characters as is. For keys of length eight
         characters or fewer at least half of the characters are obfuscated. For
         keys longer than eight characters in length all except the rightmost
-        four characters are obfuscated. If api_key is None or the length of the api_key
-        is less than 2 then None is returned.
+        four characters are obfuscated. If the key is None or the length of the
+        key is less than 2 then None is returned.
         """
 
         if key is None or len(key) < 2:
