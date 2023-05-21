@@ -167,7 +167,7 @@ class OpenWeatherConditions(weewx.engine.StdService):
             self.thread.start()
             # bind our self to the NEW_LOOP_PACKET event
             self.bind(weewx.NEW_LOOP_PACKET, self.new_loop_packet)
-            self.cached_data = {}
+            self.cache = {}
         else:
             # we are not enabled or have no config stanza, but still listed as
             # a service to be run, log the fact and exit
@@ -196,11 +196,12 @@ class OpenWeatherConditions(weewx.engine.StdService):
         self.response_queue = None
 
     def new_loop_packet(self, event):
-        """Check our thread to see if it needs to close.
+        """Check for and process any data from pur thread.
 
-        We don't need to process any loop packet data, but we do need to
-        regularly check on our thread to see if it needed to close. Checking
-        upon arrival of each loop packet is a convenient time.
+        Check if our thread has sent anything via the queue. If it has sent
+        None that is the signal the thread needs to close. If it has sent data
+        from the API cache the data and augment the loop packet with the cached
+        data.
         """
 
         # Try to get data from the queue but don't block. If nothing is in the
@@ -214,27 +215,52 @@ class OpenWeatherConditions(weewx.engine.StdService):
             pass
         else:
             # something was in the queue, what we do depends on what it is
-            # if it is the shutdown signal (None) call our shut down method
-            if _package is None:
-                # we have a shutdown signal so call our shutDown method
-                self.shutDown()
-            # if the package has a 'keys' attribute it is a dict so it could be
-            # data
+
+            # most likely we have API data from our thread, is this is the case
+            # the package will be a dict with a 'keys' attribute
             if hasattr(_package, 'keys'):
-                # it could be data, so look at the payload
+                # it is a dict and could be data, so look at the payload
                 _payload = _package.get('payload')
                 # if the payload is not None and it is a dict then we have some
                 # data that we need to add to our loop packets
                 if _payload is not None and hasattr(_payload, 'keys'):
-                    # we have data for loop packets, so update our cache
+                    # we have data for loop packets, first update our cache
                     self.update_cache(_payload)
+                    # now augment the loop packet, but only fields not already
+                    # in the loop packet
+                    # iterate over the keys in the cache
+                    for key in six.iterkeys(self.cache):
+                        # if the key is not in the loop packet add the cached
+                        # data to th eloop packet
+                        if key not in event.packet:
+                            event.packet[key] = self.cache[key]['data']
+            # if it is not a dict then it may be the shutdown signal (None)
+            elif _package is None:
+                # we have a shutdown signal so call our shutDown method
+                self.shutDown()
+            # if it is something else again we can safely ignore it
+            else:
+                pass
 
-    def update_cache(self, data):
+    def update_cache(self, data_packet):
         """Update our cache with data from a dict."""
 
-        for key, data in six.iteritems(data):
-            if key is not in event.packet:
-                event.packt =
+        # first get the timestamp of our data
+        _packet_ts = data_packet.get('ts')
+        # now iterate over the key, data pairs and update the cache
+        for key, data in six.iteritems(data_packet):
+            # we can skip the timestamp
+            if key == 'ts':
+                continue
+            # update the cache if we have not cached key before or if the
+            # cached data for key is stale
+            elif key not in self.cache or _packet_ts > self.cache[key]['timestamp']:
+                self.cache[key] = {'data': data, 'timestamp': _packet_ts}
+        # now remove any stale data from the cache
+        now = time.time()
+        for key in six.iterkeys(self.cache):
+            if self.cache[key]['timestamp'] + self.max_cache_age < now:
+                del self.cache[key]
 
 # ============================================================================
 #                           class AerisWeatherMap
