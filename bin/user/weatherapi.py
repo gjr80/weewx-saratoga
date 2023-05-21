@@ -818,9 +818,13 @@ class OpenWeatherApiThreadedSource(ThreadedSource):
             _weather = response.get('weather', [])
             if len(_weather) > 0:
                 _ts = _weather[0].get('dt')
-                _description = _weather[0].get('description')
-                # TODO. Needs to be better
-                _description = _description.capitalize()
+                _desc = _weather[0].get('description')
+                # capitalise the first character and only the first character
+                # of the description
+                try:
+                    _description = _desc[0].capitalize() + _desc[1:]
+                except (IndexError, TypeError):
+                    _description = _desc
                 _icon = self.ICON_MAP.get(_weather[0].get('icon'), 0)
                 if _description is not None:
                     _parsed_data['description'] = _description
