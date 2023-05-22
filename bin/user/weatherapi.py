@@ -13,10 +13,10 @@ ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
 FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
 details.
 
-Version: 0.1.0                                      Date: 13 April 2023
+Version: 0.1.0                                      Date: 23 May 2023
 
 Revision History
-    13 April 2023       v0.1.0
+    23 May 2023        v0.1.0
         - initial implementation
 """
 
@@ -217,12 +217,15 @@ class OpenWeatherConditions(weewx.engine.StdService):
         self.response_queue = None
 
     def new_loop_packet(self, event):
-        """Check for and process any data from pur thread.
+        """Process our thread response queue and augment the loop packet.
 
         Check if our thread has sent anything via the queue. If it has sent
         None that is the signal the thread needs to close. If it has sent data
         from the API cache the data and augment the loop packet with the cached
         data.
+
+        Augment the loop packet with any data in the cache that is not already
+        in the loop packet.
         """
 
         # Try to get data from the queue but don't block. If nothing is in the
@@ -257,14 +260,8 @@ class OpenWeatherConditions(weewx.engine.StdService):
             # if it is something else again we can safely ignore it
             else:
                 pass
-        # now augment the loop packet, but only fields not already
-        # in the loop packet
-        # first, iterate over the keys in the cache
-        for key in six.iterkeys(self.cache):
-            # if the key is not in the loop packet add the cached
-            # data to the loop packet
-            if key not in event.packet:
-                event.packet[key] = self.cache[key]['data']
+        # now augment the loop packet
+        self.augment_loop_packet(event)
 
     def update_cache(self, data_packet):
         """Update our cache with data from a dict."""
@@ -285,6 +282,20 @@ class OpenWeatherConditions(weewx.engine.StdService):
         for key in six.iterkeys(self.cache):
             if self.cache[key]['timestamp'] + self.max_cache_age < now:
                 del self.cache[key]
+
+        def augment_loop_packet(self, event):
+            """Augment a loop packet from the cache.
+
+            Only fields that do not already exist in the loop packet are added
+            from the cache.
+            """
+
+            # iterate over the keys in the cache
+            for key in six.iterkeys(self.cache):
+                # if the key is not in the loop packet add the cached data to
+                # the loop packet
+                if key not in event.packet:
+                    event.packet[key] = self.cache[key]['data']
 
 
 # ============================================================================
