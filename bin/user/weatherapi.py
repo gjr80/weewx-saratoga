@@ -161,9 +161,11 @@ class OpenWeatherConditions(weewx.engine.StdService):
         # are we enabled
         if weeutil.weeutil.to_bool(self.ow_config.get('enable', False)):
             # we are enabled, log that we are enabling our thread
-            loginf("Enabling Weather API source '%s'..." % self.ow_config['source'])
+            loginf("OpenWeatherConditions enabling source '%s'" % self.ow_config['source'])
+            # create a dict for our cache
+            self.cache = {}
             # set max age for cache entries
-            self.max_cache_age = weeutil.weeutil.to_int(self.ow_config.get('max_cache-age',
+            self.max_cache_age = weeutil.weeutil.to_int(self.ow_config.get('max_cache_age',
                                                                            DEFAULT_MAX_CACHE_AGE))
             # set up the control and response queues
             self.control_queue = six.moves.queue.Queue()
@@ -177,11 +179,12 @@ class OpenWeatherConditions(weewx.engine.StdService):
             self.thread.start()
             # bind our self to the NEW_LOOP_PACKET event
             self.bind(weewx.NEW_LOOP_PACKET, self.new_loop_packet)
-            self.cache = {}
+            # log important config info
+            loginf("OpenWeatherConditions max_cache_age is %d seconds" % self.max_cache_age)
         else:
             # we are not enabled or have no config stanza, but still listed as
             # a service to be run, log the fact and exit
-            loginf("Weather API source '%s' ignored" % self.ow_config['source'])
+            loginf("OpenWeatherConditions source '%s' ignored" % self.ow_config['source'])
 
     def shutDown(self):
         """Shut down any threads."""
@@ -228,6 +231,7 @@ class OpenWeatherConditions(weewx.engine.StdService):
 
             # most likely we have API data from our thread, is this is the case
             # the package will be a dict with a 'keys' attribute
+            # TODO. This logic needs reworking to use field 'type'
             if hasattr(_package, 'keys'):
                 # it is a dict and could be data, so look at the payload
                 _payload = _package.get('payload')
@@ -754,14 +758,12 @@ class OpenWeatherApiThreadedSource(ThreadedSource):
             self.units = ow_config_dict.get('units', 'metric').lower()
             self.max_tries = weeutil.weeutil.to_int(ow_config_dict.get('max_tries',
                                                                        3))
-            self.block = ow_config_dict.get('block', 'weather').lower()
-        loginf("Weather API source '%s' enabled" % ow_config_dict['source'])
+        loginf("OpenWeatherConditions source '%s' enabled" % ow_config_dict['source'])
         loginf("     api_key=%s interval=%d" % (self.obfuscated_key(self.api_key),
                                                 self.interval))
-        loginf("     language=%s units=%s block=%s max_tries=%d" % (self.language,
-                                                                    self.units,
-                                                                    self.block,
-                                                                    self.max_tries))
+        loginf("     language=%s units=%s max_tries=%d" % (self.language,
+                                                           self.units,
+                                                           self.max_tries))
 
     def get_raw_data(self, **kwargs):
         """Make a data request via the API and return the response.
