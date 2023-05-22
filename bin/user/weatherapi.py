@@ -239,15 +239,17 @@ class OpenWeatherConditions(weewx.engine.StdService):
 
             # most likely we have API data from our thread, is this is the case
             # the package will be a dict with a 'keys' attribute
-            # TODO. This logic needs reworking to use field 'type'
             if hasattr(_package, 'keys'):
-                # it is a dict and could be data, so look at the payload
-                _payload = _package.get('payload')
-                # if the payload is not None and it is a dict then we have some
-                # data that we need to add to our loop packets
-                if _payload is not None and hasattr(_payload, 'keys'):
-                    # we have data for loop packets so update our cache
-                    self.update_cache(_payload)
+                # it is a dict, if it's data it will have a field 'type' with a
+                # value of 'data'
+                if _package.get('type') == 'data':
+                    # we have a data package, so get the payload
+                    _payload = _package.get('payload')
+                    # if the payload is not None and it is a dict then we have
+                    # some data that we need to add to our loop packets
+                    if _payload is not None and hasattr(_payload, 'keys'):
+                        # we have data for loop packets so update our cache
+                        self.update_cache(_payload)
             # if it is not a dict then it may be the shutdown signal (None)
             elif _package is None:
                 # we have a shutdown signal so call our shutDown method
@@ -257,10 +259,10 @@ class OpenWeatherConditions(weewx.engine.StdService):
                 pass
         # now augment the loop packet, but only fields not already
         # in the loop packet
-        # iterate over the keys in the cache
+        # first, iterate over the keys in the cache
         for key in six.iterkeys(self.cache):
             # if the key is not in the loop packet add the cached
-            # data to th eloop packet
+            # data to the loop packet
             if key not in event.packet:
                 event.packet[key] = self.cache[key]['data']
 
