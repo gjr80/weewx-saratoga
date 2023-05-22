@@ -234,16 +234,8 @@ class OpenWeatherConditions(weewx.engine.StdService):
                 # if the payload is not None and it is a dict then we have some
                 # data that we need to add to our loop packets
                 if _payload is not None and hasattr(_payload, 'keys'):
-                    # we have data for loop packets, first update our cache
+                    # we have data for loop packets so update our cache
                     self.update_cache(_payload)
-                    # now augment the loop packet, but only fields not already
-                    # in the loop packet
-                    # iterate over the keys in the cache
-                    for key in six.iterkeys(self.cache):
-                        # if the key is not in the loop packet add the cached
-                        # data to th eloop packet
-                        if key not in event.packet:
-                            event.packet[key] = self.cache[key]['data']
             # if it is not a dict then it may be the shutdown signal (None)
             elif _package is None:
                 # we have a shutdown signal so call our shutDown method
@@ -251,6 +243,14 @@ class OpenWeatherConditions(weewx.engine.StdService):
             # if it is something else again we can safely ignore it
             else:
                 pass
+        # now augment the loop packet, but only fields not already
+        # in the loop packet
+        # iterate over the keys in the cache
+        for key in six.iterkeys(self.cache):
+            # if the key is not in the loop packet add the cached
+            # data to th eloop packet
+            if key not in event.packet:
+                event.packet[key] = self.cache[key]['data']
 
     def update_cache(self, data_packet):
         """Update our cache with data from a dict."""
@@ -269,11 +269,8 @@ class OpenWeatherConditions(weewx.engine.StdService):
         # now remove any stale data from the cache
         now = time.time()
         for key in six.iterkeys(self.cache):
-            try:
-                if self.cache[key]['timestamp'] + self.max_cache_age < now:
-                    del self.cache[key]
-            except:
-                loginf("self.cache=%s key=%s" % (self.cache, key))
+            if self.cache[key]['timestamp'] + self.max_cache_age < now:
+                del self.cache[key]
 
 # ============================================================================
 #                           class AerisWeatherMap
@@ -825,7 +822,7 @@ class OpenWeatherApiThreadedSource(ThreadedSource):
                     _description = _desc[0].capitalize() + _desc[1:]
                 except (IndexError, TypeError):
                     _description = _desc
-                _icon = self.ICON_MAP.get(_weather[0].get('icon'), 0)
+                _icon = self.ICON_MAP.get(_weather[0].get('icon', 0), 0)
                 if _description is not None:
                     _parsed_data['description'] = _description
                 if _icon is not None:
