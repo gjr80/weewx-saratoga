@@ -17,9 +17,12 @@ PARTICULAR PURPOSE.  See the GNU General Public License for more details.
 You should have received a copy of the GNU General Public License along with
 this program.  If not, see https://www.gnu.org/licenses/.
 
-Version: 0.3.6                                          Date: 24 March 2023
+Version: 0.3.7                                          Date: 23 May 2023
 
 Revision History
+    23 May 2023         v0.3.7
+        - implemented support fields 48 (current conditions icon code) and
+          49 (current conditions description)
     24 March 2023       v0.3.6
         - fix incorrect default source fields for soil moisture, soil
           temperature and leaf wetness
@@ -212,13 +215,13 @@ Saratoga Dashboard
         45, 46, 47, 48, 49, 50, 71, 72, 73, 74, 75, 76, 77, 78, 79, 90, 110,
         111, 112, 113, 127, 130, 131, 132, 135, 136, 137, 138, 139, 140, 141
     - fields to be implemented/finalised in order to support:
-        48, 49
+        none
 
 Alternative Dashboard
     - fields required (Saratoga fields plus)(#=will not implement):
         1, 12, 13, #114, #115, #116, #118, #119, 156, 159, 160, 173
     - fields to be implemented/finalised in order to support:
-        48, 49
+        none
 """
 # TODO. seed RtcrBuffer day stats properties with values from daily summaries on startup and perhaps again on the next archive record
 
@@ -304,7 +307,7 @@ except ImportError:
 
 
 # version number of this script
-RTCR_VERSION = '0.3.6'
+RTCR_VERSION = '0.3.7'
 
 # the obs that we will buffer
 MANIFEST = ['outTemp', 'barometer', 'outHumidity', 'rain', 'rainRate',
@@ -1597,12 +1600,10 @@ class RealtimeClientrawThread(threading.Thread):
             temp_tl_vt = ValueTuple(None, temp_unit, temp_group)
         temp_tl = convert(temp_tl_vt, 'degree_C').value
         data[47] = temp_tl if temp_tl is not None else 0.0
-        # TODO. Need to implement field 48
         # 048 - icon type
-        data[48] = 0
-        # TODO. Need to implement field 49
+        data[48] = packet_wx['icon'] if 'icon' in packet_wx else 0
         # 049 - weather description
-        data[49] = '---'
+        data[49] = packet_wx['description'] if 'description' in packet_wx else '---'
         # 050 - barometer trend (hPa)
         baro_vt = ValueTuple(packet_wx['barometer'], 'hPa', 'group_pressure')
         baro_trend = calc_trend('barometer', baro_vt, self.db_manager,
