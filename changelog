@@ -1,3 +1,5 @@
+v0.1.7
+-   introduced support for clientraw.txt fields 48 and 49
 v0.1.6
 -   fix incorrect default source fields for soil moisture, soil temperature
     and leaf wetness fields in the RealtimeClientraw service
