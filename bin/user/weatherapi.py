@@ -112,12 +112,11 @@ DEFAULT_MAX_CACHE_AGE = 7200
 class OpenWeatherConditions(weewx.engine.StdService):
     """'Data' service to obtain current conditions data via the OpenWeather API.
 
-    This service collects weather data via the OpenWeather API and makes the
-    data available in a WeeWX loop packet. The service was designed to collect
-    the current conditions description and icon code for use in the generation
-    of clientraw.txt and tag files support the Saratoga Weather website
-    templates. However, this functionality can be extended to other data
-    through use of a field_map stanza.
+    This service collects current conditions description and icon code via the
+    OpenWeather API and makes the data available in a WeeWX loop packet. The
+    service was designed to collect the current conditions description and icon
+    code for use in the generation of clientraw.txt and tag files supporting
+    the Saratoga Weather website templates.
 
     To use this service:
 
@@ -127,28 +126,15 @@ class OpenWeatherConditions(weewx.engine.StdService):
     2. add user.weatherapi.OpenWeatherConditions to the [Engine] [[Services]]
     data_services setting in weewx.conf
 
-    3. Add a [WeatherApi] [[OpenWeather]] stanza to weewx.conf as follows:
+    3. Add an [[OpenWeather]] stanza to the [WeatherApi] stanza (create stanza
+    if required) in weewx.conf as follows:
 
     [WeatherApi]
         [[OpenWeather]]
             enable = True
 
-            # OpenWeather api_key
+            # OpenWeather API key
             api_key = <your API key>
-
-            # Define a mapping to map OpenWeather API fields to WeeWX fields.
-            # Format is:
-            #
-            #     weewx_field = OpenWeather_API_field
-            #
-            # where:
-            #     weewx_field is the loop packet field to be populated.
-            #     OpenWeather_API_field is a OpenWeather API field name. Child
-            #     groups in the OpenWeather API response accessed using 'dotted notation', eg:
-            #     weather.icon or main.feels_like
-            [[[field_map]]]
-                current_conditions = weather.description
-                icon = weather.icon
 
     4. restart WeeWX
     """
@@ -426,21 +412,24 @@ class ThreadedSource(threading.Thread):
 
     ThreadedSource methods:
 
-        setup():             Method to be called after object initialisation
-                             but before run() starts proper.
         run():               Thread entry point, controls data fetching,
                              parsing and dispatch. Monitors the control queue.
+        setup():             Method to be called after object initialisation
+                             but before run() starts proper.
         get_raw_data():      Obtain the raw data. This method must be written
                              for each child class.
         submit_request():    Make a HTTP GET request to the API.
-        parse_data():        Parse the raw data and return the final format
+        extended_http_error_logging(): Method to provide optional source
+                                       specific HTTP error logging. This method
+                                       must be written for each child class.
+        parse_raw_data():    Parse the raw data and return the final format
                              data. This method must be written for each child
                              class.
         process_data():      Process the parsed data, this may involve
                              packaging and placing the data in the result queue
                              or saving the data locally.
         time_to_make_call(): Determine whether an API call is due.
-        obfuscated_key():    Obfuscate a api_key.
+        obfuscated_key():    Obfuscate an API key.
     """
 
     def __init__(self, source_config_dict, control_queue, response_queue, engine):
@@ -727,11 +716,11 @@ class OpenWeatherApiThreadedSource(ThreadedSource):
         response_queue:       a Queue object used to pass results to our parent
         engine:             an instance of weewx.engine.StdEngine (or a
                             reasonable facsimile)
-        kwargs:             optional api_key word arguments that may include:
+        kwargs:             optional key word arguments that may include:
                             debug: log additional debug info when querying the
                                    OpenWeather API
         ow_config_dict: dictionary with (at least) the following keys:
-            api_key:       OpenWeather API api_key to be used
+            api_key:   OpenWeather API key to be used
             latitude:  Latitude of the location concerned
             longitude: Longitude of the location concerned
 
@@ -795,10 +784,10 @@ class OpenWeatherApiThreadedSource(ThreadedSource):
         try:
             self.api_key = ow_config_dict['api_key']
         except KeyError:
-            # we have no api_key, we cannot continue
+            # we have no API key, we cannot continue
             # first log the error
-            log.error('%s: OpenWeather API api_key not found, %s will close' % (self.name,
-                                                                                self.name))
+            log.error('%s: OpenWeather API key not found, %s will close' % (self.name,
+                                                                            self.name))
             # now put None in the result queue to indicate to our service that
             # we need to close
             self.response_queue.put(None)
@@ -851,7 +840,7 @@ class OpenWeatherApiThreadedSource(ThreadedSource):
         # construct the URL, it is a concatenation of the base URL and the
         # url-encoded parameters using a '?' as the joining character
         url = '?'.join([base_url, params])
-        # if debug >= 1 log the URL used but obfuscate the api_key
+        # if debug >= 1 log the URL used but obfuscate the API key
         if weewx.debug >= 2 or self.debug >= 2:
             _obfuscated_url = url.replace(self.api_key, self.obfuscated_key(self.api_key))
             loginf("%s: submitting API call using URL: %s" % (self.name, _obfuscated_url))
