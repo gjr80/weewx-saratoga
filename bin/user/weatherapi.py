@@ -768,6 +768,10 @@ class OpenWeatherApiThreadedSource(ThreadedSource):
                 '50d': 10,
                 '50n': 10
                 }
+    # default current conditions text field name
+    DEFAULT_COND_TEXT_FIELD = 'current_text'
+    # default current conditions icon field name
+    DEFAULT_COND_ICON_FIELD = 'current_icon'
 
     def __init__(self, ow_config_dict, control_queue, response_queue, engine):
         # initialise a OpenWeatherAPI object
@@ -799,6 +803,10 @@ class OpenWeatherApiThreadedSource(ThreadedSource):
                                                                          self.engine.stn_info.longitude_f))
             self.language = ow_config_dict.get('language', 'en').lower()
             self.units = ow_config_dict.get('units', 'metric').lower()
+            self.cond_text_field = ow_config_dict.get('current_cond_text_field',
+                                                      OpenWeatherApiThreadedSource.DEFAULT_COND_TEXT_FIELD).lower()
+            self.cond_icon_field =ow_config_dict.get('current_cond_icon_field',
+                                                     OpenWeatherApiThreadedSource.DEFAULT_COND_ICON_FIELD).lower()
             self.map_icon_code = weeutil.weeutil.to_bool(ow_config_dict.get('map_icon_code',
                                                                             True))
             self.max_tries = weeutil.weeutil.to_int(ow_config_dict.get('max_tries',
