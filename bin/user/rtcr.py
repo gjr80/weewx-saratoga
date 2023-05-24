@@ -23,6 +23,8 @@ Revision History
     23 May 2023         v0.3.7
         - implemented support fields 48 (current conditions icon code) and
           49 (current conditions description)
+        - loop packet field names for clientraw.txt current conditions text and
+          icon fields can now be be specified in weewx.conf
     24 March 2023       v0.3.6
         - fix incorrect default source fields for soil moisture, soil
           temperature and leaf wetness
