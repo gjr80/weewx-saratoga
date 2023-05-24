@@ -378,19 +378,19 @@ class RealtimeClientraw(StdService):
                                                    altitude=convert(engine.stn_info.altitude_vt, 'meter').value)
         self.rtcr_thread.start()
 
-        # forecast and current conditions fields
-        self.forecast_binding = rtcr_config_dict.get('forecast_binding', None)
-        if self.forecast_binding:
-            try:
-                self.forecast_manager = weewx.manager.open_manager_with_config(config_dict,
-                                                                               self.forecast_binding)
-            except weewx.UnknownBinding:
-                self.forecast_manager = None
-            if self.forecast_binding:
-                self.forecast_text_field = rtcr_config_dict.get('forecast_text_field', None)
-                self.forecast_icon_field = rtcr_config_dict.get('forecast_icon_field', None)
-                self.current_text_field = rtcr_config_dict.get('current_text_field', None)
-
+        # # forecast and current conditions fields
+        # self.forecast_binding = rtcr_config_dict.get('forecast_binding', None)
+        # if self.forecast_binding:
+        #     try:
+        #         self.forecast_manager = weewx.manager.open_manager_with_config(config_dict,
+        #                                                                        self.forecast_binding)
+        #     except weewx.UnknownBinding:
+        #         self.forecast_manager = None
+        #     if self.forecast_binding:
+        #         self.forecast_text_field = rtcr_config_dict.get('forecast_text_field', None)
+        #         self.forecast_icon_field = rtcr_config_dict.get('forecast_icon_field', None)
+        #         self.current_text_field = rtcr_config_dict.get('current_text_field', None)
+        #
         # grace
         self.grace = to_int(rtcr_config_dict.get('grace', DEFAULT_GRACE))
 
@@ -663,6 +663,12 @@ class RealtimeClientraw(StdService):
 class RealtimeClientrawThread(threading.Thread):
     """Thread that generates clientraw.txt in near realtime."""
 
+    # default current conditions text field name
+    DEFAULT_COND_TEXT_FIELD = 'current_text'
+    # default current conditions icon field name
+    DEFAULT_COND_ICON_FIELD = 'current_icon'
+    # default direction if no other non-None value can be found
+    DEFAULT_DIR = 0
     # Format dict for clientraw.txt fields. None = no change, 0 = integer (no
     # decimal places), numeric = format to this many decimal places.
     field_formats = {
@@ -845,8 +851,6 @@ class RealtimeClientrawThread(threading.Thread):
         176: 0,  # - 10-minute average wind direction
         177: None,  # - record end
     }
-    # default direction if no other non-None value can be found
-    DEFAULT_DIR = 0
     # inter-cardinal to degrees lookup:
     ic_to_degrees = {'N': '0', 'NNE': '22.5', 'NE': '45', 'ENE': '67.5',
                      'E': '90', 'ESE': '112.5', 'SE': '135', 'SSE': '157.5',
@@ -938,32 +942,56 @@ class RealtimeClientrawThread(threading.Thread):
         self.windrun_loop = to_bool(rtcr_config_dict.get('windrun_loop',
                                                          'False'))
 
+        # current conditions text and icon
+        self.curr_cond_text_field = rtcr_config_dict.get('current_cond_text_field',
+                                                         DEFAULT_COND_TEXT_FIELD)
+        self.curr_cond_icon_field = rtcr_config_dict.get('current_cond_icon_field',
+                                                         DEFAULT_COND_ICON_FIELD)
         # extra sensors
         extra_sensor_config_dict = rtcr_config_dict.get('ExtraSensors', {})
         # temperature
-        self.extra_temp1 = extra_sensor_config_dict.get('extraTempSensor1', 'extraTemp1')
-        self.extra_temp2 = extra_sensor_config_dict.get('extraTempSensor2', 'extraTemp2')
-        self.extra_temp3 = extra_sensor_config_dict.get('extraTempSensor3', 'extraTemp3')
-        self.extra_temp4 = extra_sensor_config_dict.get('extraTempSensor4', 'extraTemp4')
-        self.extra_temp5 = extra_sensor_config_dict.get('extraTempSensor5', 'extraTemp5')
-        self.extra_temp6 = extra_sensor_config_dict.get('extraTempSensor6', 'extraTemp6')
-        self.extra_temp7 = extra_sensor_config_dict.get('extraTempSensor7', 'extraTemp7')
-        self.extra_temp8 = extra_sensor_config_dict.get('extraTempSensor8', 'extraTemp8')
+        self.extra_temp1 = extra_sensor_config_dict.get('extraTempSensor1',
+                                                        'extraTemp1')
+        self.extra_temp2 = extra_sensor_config_dict.get('extraTempSensor2',
+                                                        'extraTemp2')
+        self.extra_temp3 = extra_sensor_config_dict.get('extraTempSensor3',
+                                                        'extraTemp3')
+        self.extra_temp4 = extra_sensor_config_dict.get('extraTempSensor4',
+                                                        'extraTemp4')
+        self.extra_temp5 = extra_sensor_config_dict.get('extraTempSensor5',
+                                                        'extraTemp5')
+        self.extra_temp6 = extra_sensor_config_dict.get('extraTempSensor6',
+                                                        'extraTemp6')
+        self.extra_temp7 = extra_sensor_config_dict.get('extraTempSensor7',
+                                                        'extraTemp7')
+        self.extra_temp8 = extra_sensor_config_dict.get('extraTempSensor8',
+                                                        'extraTemp8')
         # humidity
-        self.extra_hum1 = extra_sensor_config_dict.get('extraHumSensor1', 'extraHumid1')
-        self.extra_hum2 = extra_sensor_config_dict.get('extraHumSensor2', 'extraHumid2')
-        self.extra_hum3 = extra_sensor_config_dict.get('extraHumSensor3', 'extraHumid3')
-        self.extra_hum4 = extra_sensor_config_dict.get('extraHumSensor4', 'extraHumid4')
-        self.extra_hum5 = extra_sensor_config_dict.get('extraHumSensor5', 'extraHumid5')
-        self.extra_hum6 = extra_sensor_config_dict.get('extraHumSensor6', 'extraHumid6')
-        self.extra_hum7 = extra_sensor_config_dict.get('extraHumSensor7', 'extraHumid7')
-        self.extra_hum8 = extra_sensor_config_dict.get('extraHumSensor8', 'extraHumid8')
+        self.extra_hum1 = extra_sensor_config_dict.get('extraHumSensor1',
+                                                       'extraHumid1')
+        self.extra_hum2 = extra_sensor_config_dict.get('extraHumSensor2',
+                                                       'extraHumid2')
+        self.extra_hum3 = extra_sensor_config_dict.get('extraHumSensor3',
+                                                       'extraHumid3')
+        self.extra_hum4 = extra_sensor_config_dict.get('extraHumSensor4',
+                                                       'extraHumid4')
+        self.extra_hum5 = extra_sensor_config_dict.get('extraHumSensor5',
+                                                       'extraHumid5')
+        self.extra_hum6 = extra_sensor_config_dict.get('extraHumSensor6',
+                                                       'extraHumid6')
+        self.extra_hum7 = extra_sensor_config_dict.get('extraHumSensor7',
+                                                       'extraHumid7')
+        self.extra_hum8 = extra_sensor_config_dict.get('extraHumSensor8',
+                                                       'extraHumid8')
         # soil moisture
-        self.soil_moist = extra_sensor_config_dict.get('soilMoistSensor', 'soilMoist1')
+        self.soil_moist = extra_sensor_config_dict.get('soilMoistSensor',
+                                                       'soilMoist1')
         # soil temp
-        self.soil_temp = extra_sensor_config_dict.get('soilTempSensor', 'soilTemp1')
+        self.soil_temp = extra_sensor_config_dict.get('soilTempSensor',
+                                                      'soilTemp1')
         # leaf wetness
-        self.leaf_wet = extra_sensor_config_dict.get('leafWetSensor', 'leafWet1')
+        self.leaf_wet = extra_sensor_config_dict.get('leafWetSensor',
+                                                     'leafWet1')
         # set trend periods
         self.baro_trend_period = to_int(rtcr_config_dict.get('baro_trend_period',
                                                              DEFAULT_TREND_PERIOD))
@@ -1601,9 +1629,9 @@ class RealtimeClientrawThread(threading.Thread):
         temp_tl = convert(temp_tl_vt, 'degree_C').value
         data[47] = temp_tl if temp_tl is not None else 0.0
         # 048 - icon type
-        data[48] = packet_wx['icon'] if 'icon' in packet_wx else 0
+        data[48] = packet_wx[self.curr_cond_icon_field] if self.curr_cond_icon_field in packet_wx else 0
         # 049 - weather description
-        data[49] = packet_wx['description'] if 'description' in packet_wx else '---'
+        data[49] = packet_wx[self.curr_cond_text_field] if self.curr_cond_text_field in packet_wx else '---'
         # 050 - barometer trend (hPa)
         baro_vt = ValueTuple(packet_wx['barometer'], 'hPa', 'group_pressure')
         baro_trend = calc_trend('barometer', baro_vt, self.db_manager,
