@@ -269,19 +269,19 @@ class OpenWeatherConditions(weewx.engine.StdService):
             if self.cache[key]['timestamp'] + self.max_cache_age < now:
                 del self.cache[key]
 
-        def augment_loop_packet(self, event):
-            """Augment a loop packet from the cache.
+    def augment_loop_packet(self, event):
+        """Augment a loop packet from the cache.
 
-            Only fields that do not already exist in the loop packet are added
-            from the cache.
-            """
+        Only fields that do not already exist in the loop packet are added
+        from the cache.
+        """
 
-            # iterate over the keys in the cache
-            for key in six.iterkeys(self.cache):
-                # if the key is not in the loop packet add the cached data to
-                # the loop packet
-                if key not in event.packet:
-                    event.packet[key] = self.cache[key]['data']
+        # iterate over the keys in the cache
+        for key in six.iterkeys(self.cache):
+            # if the key is not in the loop packet add the cached data to
+            # the loop packet
+            if key not in event.packet:
+                event.packet[key] = self.cache[key]['data']
 
 
 # ============================================================================
