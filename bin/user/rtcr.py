@@ -946,9 +946,9 @@ class RealtimeClientrawThread(threading.Thread):
 
         # current conditions text and icon
         self.curr_cond_text_field = rtcr_config_dict.get('current_cond_text_field',
-                                                         DEFAULT_COND_TEXT_FIELD)
+                                                         RealtimeClientrawThread.DEFAULT_COND_TEXT_FIELD)
         self.curr_cond_icon_field = rtcr_config_dict.get('current_cond_icon_field',
-                                                         DEFAULT_COND_ICON_FIELD)
+                                                         RealtimeClientrawThread.DEFAULT_COND_ICON_FIELD)
         # extra sensors
         extra_sensor_config_dict = rtcr_config_dict.get('ExtraSensors', {})
         # temperature
