@@ -139,6 +139,12 @@ class OpenWeatherConditions(weewx.engine.StdService):
     4. restart WeeWX
     """
 
+    # define the default field map
+    default_field_map = {
+        'current_text': 'description',
+        'current_icon': 'icon'
+    }
+
     def __init__(self, engine, config_dict):
         # initialise our superclass
         super(OpenWeatherConditions, self).__init__(engine, config_dict)
@@ -154,6 +160,44 @@ class OpenWeatherConditions(weewx.engine.StdService):
         if weeutil.weeutil.to_bool(self.ow_config.get('enable', False)):
             # we are enabled, log that we are enabling our thread
             loginf("OpenWeatherConditions: enabling source '%s'" % self.ow_config['source_name'])
+            # construct the field map we are to use, first obtain the field map
+            # from our config
+            field_map = self.ow_config.get('field_map')
+            # obtain any field map extensions from our config
+            extensions = self.ow_config.get('field_map_extensions', {})
+            # if we have no field map then use the default
+            if field_map is None:
+                # obtain the default field map
+                field_map = dict(OpenWeatherConditions.default_field_map)
+            # If a user wishes to map a field differently to that in the
+            # default map they can include an entry in field_map_extensions,
+            # but if we just update the field map dict with the field map
+            # extensions that will leave two entries for that field in the
+            # field map; the original field map entry as well as the entry from
+            # the extended map. So if we have field_map_extensions we need to
+            # first go through the field map and delete any entries that map
+            # fields that are included in the field_map_extensions.
+
+            # we only need process the field_map_extensions if we have any
+            if len(extensions) > 0:
+                # first make a copy of the field map because we will be iterating
+                # over it and changing it
+                field_map_copy = dict(field_map)
+                # iterate over each key, value pair in the copy of the field map
+                for k, v in six.iteritems(field_map_copy):
+                    # TODO. reword this comment
+                    # if the 'value' (ie the field) is in the field map
+                    # extensions we will be mapping that field elsewhere so
+                    # pop that field map entry out of the field map so we don't end
+                    # up with multiple mappings for a field
+                    if v in extensions.values():
+                        # pop the field map entry
+                        _dummy = field_map.pop(k)
+                # now we can update the field map with the extensions
+                field_map.update(extensions)
+            # we now have our final field map
+            self.field_map = field_map
+
             # create a dict for our cache
             self.cache = {}
             # set max age for cache entries
@@ -237,8 +281,10 @@ class OpenWeatherConditions(weewx.engine.StdService):
                     # if the payload is not None and it is a dict then we have
                     # some data that we need to add to our loop packets
                     if _payload is not None and hasattr(_payload, 'keys'):
-                        # we have data for loop packets so update our cache
-                        self.update_cache(_payload)
+                        # we have data for loop packets, first map our data
+                        _mapped_data = self.map_data(_payload)
+                        # now update our cache
+                        self.update_cache(_mapped_data)
             # if it is not a dict then it may be the shutdown signal (None)
             elif _package is None:
                 # we have a shutdown signal so call our shutDown method
@@ -248,6 +294,25 @@ class OpenWeatherConditions(weewx.engine.StdService):
                 pass
         # now augment the loop packet
         self.augment_loop_packet(event)
+
+    def map_data(self, data_packet):
+        """Map any received data as required."""
+
+        # we may be changing our source data so make a copy to work on
+        _response = dict(data_packet)
+        # iterate over each key map entry
+        for dest, source in six.iteritems(self.field_map):
+            # we need to do a mapping if the source field is in our data packet
+            # and provided it is not the timestamp - we can't mess with that
+            if source in data_packet and source != 'datetime':
+                # we have a mapping to do, first pop the source field from our
+                # working data
+                _response.pop(source, None)
+                # now add the data from the source field in our data packet to
+                # the destination field in our working copy
+                _response[dest] = data_packet[source]
+        # we have completed any mappings so return the working copy
+        return _response
 
     def update_cache(self, data_packet):
         """Update our cache with data from a dict."""
@@ -486,13 +551,13 @@ class ThreadedSource(threading.Thread):
                     # gather the required data and put it in the result queue
                     if _raw_data is not None:
                         # parse the raw data response and extract the required data
-                        _data = self.parse_raw_data(_raw_data)
+                        _parsed_data = self.parse_data(_raw_data)
                         if weewx.debug >= 3 or self.debug >= 3:
-                            loginf("%s: parsed data: %s" % (self.name, _data))
+                            loginf("%s: parsed data: %s" % (self.name, _parsed_data))
                         elif weewx.debug >= 2 or self.debug >= 2:
                             loginf("%s: obtained parsed data" % self.name)
                         # now process the parsed data
-                        self.process_data(_data)
+                        self.process_data(_parsed_data)
                         if weewx.debug >= 2 or self.debug >= 2:
                             loginf("%s: parsed data has been processed" % self.name)
                 # now check to see if we have a shutdown signal
@@ -593,6 +658,8 @@ class ThreadedSource(threading.Thread):
                 # log the decoded response if required
                 if weewx.debug >= 3 or self.debug >= 3:
                     loginf("%s: API response: %s" % (self.name, response))
+                elif weewx.debug >= 1 or self.debug >= 1:
+                    loginf("%s: API response received" % self.name)
                 # return the decoded response
                 return response
         else:
@@ -617,7 +684,7 @@ class ThreadedSource(threading.Thread):
 
         return False
 
-    def parse_raw_data(self, response):
+    def parse_data(self, response):
         """Parse the block response and return the required data.
 
         This method must be defined if the raw data from the block must be
@@ -859,7 +926,7 @@ class OpenWeatherApiThreadedSource(ThreadedSource):
         # return the response
         return json_response
 
-    def parse_raw_data(self, response):
+    def parse_data(self, response):
         """Parse our raw data."""
 
         # obtain an empty dict for the parsed data
