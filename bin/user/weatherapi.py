@@ -885,7 +885,7 @@ class OpenWeatherApiThreadedSource(ThreadedSource):
                                                            self.units,
                                                            self.max_tries))
 
-    def get_raw_data(self, **kwargs):
+    def get_raw_data(self):
         """Make a data request via the API and return the response.
 
         Construct the URL used to contact the API, contact the API and return
@@ -902,12 +902,12 @@ class OpenWeatherApiThreadedSource(ThreadedSource):
         # first construct the base URL
         base_url = '/'.join([self.END_POINT,
                              self.QUALIFIER,
-                             kwargs.get('data_type', 'weather')])
+                             'weather'])
         # now construct the parameters dict
         param_dict = {'lat': self.latitude,
                       'lon': self.longitude,
-                      'lang': kwargs.get('language', 'en'),
-                      'units': kwargs.get('units', 'metric'),
+                      'lang': self.language,
+                      'units': self.units,
                       'appid': self.api_key
                       }
         # obtain the params as a URL encoded string
