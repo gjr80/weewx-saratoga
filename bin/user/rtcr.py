@@ -1633,7 +1633,11 @@ class RealtimeClientrawThread(threading.Thread):
         # 048 - icon type
         data[48] = packet_wx[self.curr_cond_icon_field] if self.curr_cond_icon_field in packet_wx else 0
         # 049 - weather description
-        data[49] = packet_wx[self.curr_cond_text_field] if self.curr_cond_text_field in packet_wx else '---'
+        try:
+            _curr_cond_text = packet_wx[self.curr_cond_text_field].replace(" ", "_")
+        except (KeyError, AttributeError):
+            _curr_cond_text = '---'
+        data[49] = _curr_cond_text
         # 050 - barometer trend (hPa)
         baro_vt = ValueTuple(packet_wx['barometer'], 'hPa', 'group_pressure')
         baro_trend = calc_trend('barometer', baro_vt, self.db_manager,
