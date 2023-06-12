@@ -13,10 +13,10 @@ ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
 FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
 details.
 
-Version: 0.1.0                                      Date: 23 May 2023
+Version: 0.1.0                                      Date: 12 June 2023
 
 Revision History
-    23 May 2023        v0.1.0
+    12 June 2023        v0.1.0
         - initial implementation
 """
 
@@ -161,7 +161,7 @@ class OpenWeatherConditions(weewx.engine.StdService):
             # we are enabled, log that we are enabling our thread
             loginf("OpenWeatherConditions: enabling source '%s'" % self.ow_config['source_name'])
             # construct the field map we are to use, first obtain the field map
-            # from our config
+            # from our config if it exists
             field_map = self.ow_config.get('field_map')
             # obtain any field map extensions from our config
             extensions = self.ow_config.get('field_map_extensions', {})
@@ -180,16 +180,16 @@ class OpenWeatherConditions(weewx.engine.StdService):
 
             # we only need process the field_map_extensions if we have any
             if len(extensions) > 0:
-                # first make a copy of the field map because we will be iterating
-                # over it and changing it
+                # first make a copy of the field map because we will be
+                # iterating over it and changing it
                 field_map_copy = dict(field_map)
-                # iterate over each key, value pair in the copy of the field map
+                # iterate over each key, value pair in the copy of the field
+                # map
                 for k, v in six.iteritems(field_map_copy):
-                    # TODO. reword this comment
-                    # if the 'value' (ie the field) is in the field map
-                    # extensions we will be mapping that field elsewhere so
-                    # pop that field map entry out of the field map so we don't end
-                    # up with multiple mappings for a field
+                    # if the source field is in the field map extensions we
+                    # will be mapping that field elsewhere, so pop that field
+                    # map entry out of the field map so we don't end up with
+                    # multiple mappings for the source field
                     if v in extensions.values():
                         # pop the field map entry
                         _dummy = field_map.pop(k)
@@ -219,6 +219,8 @@ class OpenWeatherConditions(weewx.engine.StdService):
             self.debug = weeutil.weeutil.to_int(self.ow_config.get('debug', 0))
             # log important config info
             loginf("OpenWeatherConditions: max_cache_age is %d seconds" % self.max_cache_age)
+            if weewx.debug >= 1 or self.debug >= 1:
+                loginf('OpenWeatherConditions: field map is %s' % natural_sort_dict(self.field_map))
         else:
             # we are not enabled or have no config stanza, but still listed as
             # a service to be run, log the fact and exit
@@ -777,19 +779,15 @@ class OpenWeatherApiThreadedSource(ThreadedSource):
 
     OpenWeatherAPI constructor parameters:
 
-        source_config_dict: a ConfigObj config dictionary for the source
-        control_queue:      a Queue object used by our parent to control
-                            (shutdown) this thread
-        response_queue:       a Queue object used to pass results to our parent
-        engine:             an instance of weewx.engine.StdEngine (or a
-                            reasonable facsimile)
-        kwargs:             optional key word arguments that may include:
-                            debug: log additional debug info when querying the
-                                   OpenWeather API
-        ow_config_dict: dictionary with (at least) the following keys:
-            api_key:   OpenWeather API key to be used
-            latitude:  Latitude of the location concerned
-            longitude: Longitude of the location concerned
+        ow_config_dict: ConfigObj object with (at least) the following keys:
+                        api_key:   OpenWeather API key to be used
+                        latitude:  Latitude of the location concerned
+                        longitude: Longitude of the location concerned
+        control_queue:  a Queue object used by our parent to control
+                        (shutdown) this thread
+        response_queue: a Queue object used to pass results to our parent
+        engine:         an instance of weewx.engine.StdEngine (or a reasonable
+                        facsimile)
 
     OpenWeather API data is accessed by calling the get_raw_data() method. The
     get_raw_data() method expects the following parameters:
@@ -835,10 +833,6 @@ class OpenWeatherApiThreadedSource(ThreadedSource):
                 '50d': 10,
                 '50n': 10
                 }
-    # default current conditions text field name
-    DEFAULT_COND_TEXT_FIELD = 'current_text'
-    # default current conditions icon field name
-    DEFAULT_COND_ICON_FIELD = 'current_icon'
 
     def __init__(self, ow_config_dict, control_queue, response_queue, engine):
         # initialise a OpenWeatherAPI object
@@ -864,26 +858,26 @@ class OpenWeatherApiThreadedSource(ThreadedSource):
             self.response_queue.put(None)
             return
         else:
+            # we have an API key so continue
             self.latitude = weeutil.weeutil.to_float(ow_config_dict.get('latitude',
                                                                         self.engine.stn_info.latitude_f))
             self.longitude = weeutil.weeutil.to_float(ow_config_dict.get('longitude',
                                                                          self.engine.stn_info.longitude_f))
             self.language = ow_config_dict.get('language', 'en').lower()
             self.units = ow_config_dict.get('units', 'metric').lower()
-            self.cond_text_field = ow_config_dict.get('current_cond_text_field',
-                                                      OpenWeatherApiThreadedSource.DEFAULT_COND_TEXT_FIELD).lower()
-            self.cond_icon_field =ow_config_dict.get('current_cond_icon_field',
-                                                     OpenWeatherApiThreadedSource.DEFAULT_COND_ICON_FIELD).lower()
             self.map_icon_code = weeutil.weeutil.to_bool(ow_config_dict.get('map_icon_code',
                                                                             True))
             self.max_tries = weeutil.weeutil.to_int(ow_config_dict.get('max_tries',
                                                                        3))
+        # now log some key config info
         loginf("OpenWeatherConditions source '%s' enabled" % ow_config_dict['source_name'])
         loginf("     api_key=%s interval=%d" % (self.obfuscated_key(self.api_key),
                                                 self.interval))
         loginf("     language=%s units=%s max_tries=%d" % (self.language,
                                                            self.units,
                                                            self.max_tries))
+        if self.map_icon_code:
+            loginf("     OpenWeather icon codes will be mapped to clientraw.txt icon codes")
 
     def get_raw_data(self):
         """Make a data request via the API and return the response.
@@ -1176,6 +1170,54 @@ class AerisWeatherMapThreadedSource(ThreadedSource):
                                                                            self.max_tries))
         # if we made it here we have nothing so return None
         return None
+
+
+# ============================================================================
+#                             Utility functions
+# ============================================================================
+
+def natural_sort_keys(source_dict):
+    """Return a naturally sorted list of keys for a dict."""
+
+    def atoi(text):
+        return int(text) if text.isdigit() else text
+
+    def natural_keys(text):
+        """Natural key sort.
+
+        Allows use of key=natural_keys to sort a list in human order, eg:
+            alist.sort(key=natural_keys)
+
+        https://nedbatchelder.com/blog/200712/human_sorting.html (See
+        Toothy's implementation in the comments)
+        """
+
+        return [atoi(c) for c in re.split(r'(\d+)', text.lower())]
+
+    # create a list of keys in the dict
+    keys_list = list(source_dict.keys())
+    # naturally sort the list of keys where, for example, xxxxx16 appears in the
+    # correct order
+    keys_list.sort(key=natural_keys)
+    # return the sorted list
+    return keys_list
+
+
+def natural_sort_dict(source_dict):
+    """Return a string representation of a dict sorted naturally by key.
+
+    When represented as a string a dict is displayed in the format:
+        {key a:value a, key b: value b ... key z: value z}
+    but the order of the key:value pairs is unlikely to be alphabetical.
+    Displaying dicts of key:value pairs in logs or on the console in
+    alphabetical order by key assists in the analysis of the dict data.
+    Where keys are strings with leading digits a natural sort is useful.
+    """
+
+    # first obtain a list of key:value pairs as string sorted naturally by key
+    sorted_dict_fields = ["'%s': '%s'" % (k, source_dict[k]) for k in natural_sort_keys(source_dict)]
+    # return as a string of comma separated key:value pairs in braces
+    return "{%s}" % ", ".join(sorted_dict_fields)
 
 
 KNOWN_SOURCES = {'AerisWeatherMap': {'long_name': 'AerisWeatherMapSource',
