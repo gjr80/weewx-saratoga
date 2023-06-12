@@ -25,6 +25,7 @@ import json
 import os
 import os.path
 import queue
+import re
 import socket
 import threading
 import time
@@ -658,7 +659,8 @@ class ThreadedSource(threading.Thread):
                 # close the API connection
                 w.close()
                 # log the decoded response if required
-                if weewx.debug >= 3 or self.debug >= 3:
+                # TODO. Change these to 3
+                if weewx.debug >= 2 or self.debug >= 2:
                     loginf("%s: API response: %s" % (self.name, response))
                 elif weewx.debug >= 1 or self.debug >= 1:
                     loginf("%s: API response received" % self.name)
@@ -814,16 +816,16 @@ class OpenWeatherApiThreadedSource(ThreadedSource):
     # available data 'blocks' we may obtain from the API
     DATA_TYPES = ('weather', 'forecast', 'air_pollution')
     # map OpenWeather icon codes to clientraw icon codes
-    ICON_MAP = {'1d': 0,
-                '1n': 1,
-                '2d': 2,
-                '2n': 4,
-                '3d': 0,
-                '3n': 0,
-                '4d': 18,
-                '4n': 13,
-                '9d': 22,
-                '9n': 15,
+    ICON_MAP = {'01d': 0,
+                '01n': 1,
+                '02d': 2,
+                '02n': 4,
+                '03d': 0,
+                '03n': 0,
+                '04d': 18,
+                '04n': 13,
+                '09d': 22,
+                '09n': 15,
                 '10d': 20,
                 '10n': 14,
                 '11d': 31,
