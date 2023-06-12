@@ -17,10 +17,10 @@ PARTICULAR PURPOSE.  See the GNU General Public License for more details.
 You should have received a copy of the GNU General Public License along with
 this program.  If not, see https://www.gnu.org/licenses/.
 
-Version: 0.3.7                                          Date: 23 May 2023
+Version: 0.3.7                                          Date: 12 June 2023
 
 Revision History
-    23 May 2023         v0.3.7
+    12 June 2023        v0.3.7
         - implemented support fields 48 (current conditions icon code) and
           49 (current conditions description)
         - loop packet field names for clientraw.txt current conditions text and
@@ -1633,9 +1633,14 @@ class RealtimeClientrawThread(threading.Thread):
         # 048 - icon type
         data[48] = packet_wx[self.curr_cond_icon_field] if self.curr_cond_icon_field in packet_wx else 0
         # 049 - weather description
+        # ensure the current conditions text is 'underscored spaced', but be
+        # prepared to catch any exceptions if the field does not exist or is
+        # not a string
         try:
             _curr_cond_text = packet_wx[self.curr_cond_text_field].replace(" ", "_")
         except (KeyError, AttributeError):
+            # either the field does not exist or it is not a string, either way
+            # use a default string
             _curr_cond_text = '---'
         data[49] = _curr_cond_text
         # 050 - barometer trend (hPa)
