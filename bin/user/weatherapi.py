@@ -13,9 +13,11 @@ ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
 FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
 details.
 
-Version: 0.1.0                                      Date: 12 June 2023
+Version: 0.2.0                                      Date: 14 June 2023
 
 Revision History
+    14 June 2023        v0.2.0
+        - add support for WU based forecast text
     12 June 2023        v0.1.0
         - initial implementation
 """
@@ -275,17 +277,17 @@ class WeatherUndergroundForecast(StdServiceCachedWeather):
     1. copy this file to /home/weewx/bin/user or /usr/share/weewx/user
     depending on your WeeWX install
 
-    2. add user.weatherapi.OpenWeatherConditions to the [Engine] [[Services]]
+    2. add user.weatherapi.WeatherUndergroundForecast to the [Engine] [[Services]]
     data_services setting in weewx.conf
 
-    3. Add an [[OpenWeather]] stanza to the [WeatherApi] stanza (create stanza
+    3. Add an [[WeatherUnderground]] stanza to the [WeatherApi] stanza (create stanza
     if required) in weewx.conf as follows:
 
     [WeatherApi]
-        [[OpenWeather]]
+        [[WeatherUnderground]]
             enable = True
 
-            # OpenWeather API key
+            # WeatherUnderground API key
             api_key = <your API key>
 
     4. restart WeeWX
