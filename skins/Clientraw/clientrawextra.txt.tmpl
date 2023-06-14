@@ -745,7 +745,19 @@ $UVHourArray[$i].format(format_string="%.1f", add_label=False, localize=False) #
 0 #slurp
 #end try
 #end for
-#*531*#-- #slurp
+#if $current.forecastText.exists
+# set $ft=$current.forecastText.raw
+#elif $current.forecast_text.exists
+#set $ft=$current.forecast_text.raw
+#else
+#set $ft="--"
+#end if
+#try
+#set $ft_under = $ft.replace(" ", "_")
+#except
+#set $ft_under = "--"
+#end try
+#*531*#$ft_under #slurp
 #*532*#$day.ET.sum.format(format_string="%.1f", add_label=False, localize=False) #slurp
 #*533*#0 #slurp
 #*534*#$yesterday.rain.sum.mm.format(format_string="%.1f", add_label=False, localize=False) #slurp

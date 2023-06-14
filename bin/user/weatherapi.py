@@ -21,6 +21,7 @@ Revision History
 """
 
 # python imports
+import datetime
 import json
 import os
 import os.path
@@ -109,6 +110,249 @@ DEFAULT_MAX_CACHE_AGE = 7200
 # ============================================================================
 #                        class OpenWeatherConditions
 # ============================================================================
+
+class WeatherUndergroundForecast(weewx.engine.StdService):
+    """'Data' service to obtain forecast data via the WeatherUnderground API.
+
+    This service collects current conditions description and icon code via the
+    OpenWeather API and makes the data available in a WeeWX loop packet. The
+    service was designed to collect the current conditions description and icon
+    code for use in the generation of clientraw.txt and tag files supporting
+    the Saratoga Weather website templates.
+
+    To use this service:
+
+    1. copy this file to /home/weewx/bin/user or /usr/share/weewx/user
+    depending on your WeeWX install
+
+    2. add user.weatherapi.OpenWeatherConditions to the [Engine] [[Services]]
+    data_services setting in weewx.conf
+
+    3. Add an [[OpenWeather]] stanza to the [WeatherApi] stanza (create stanza
+    if required) in weewx.conf as follows:
+
+    [WeatherApi]
+        [[OpenWeather]]
+            enable = True
+
+            # OpenWeather API key
+            api_key = <your API key>
+
+    4. restart WeeWX
+    """
+
+    # define the default field map
+    default_field_map = {
+        'forecast_text': 'narrative',
+        'forecast_icon': 'forecast_icon'
+    }
+
+    def __init__(self, engine, config_dict):
+        # initialise our superclass
+        super(WeatherUndergroundForecast, self).__init__(engine, config_dict)
+
+        # get our config dict and save for later
+        weather_api_config = config_dict.get('WeatherApi', {})
+        self.wu_config = weather_api_config.get('WeatherUnderground', {})
+        # add the name of our source to our config dict, but only if it does
+        # not exist or is None
+        if 'source_name' not in self.wu_config or self.wu_config['source_name'] is None:
+            self.wu_config['source_name'] = 'WeatherUnderground'
+        # are we enabled
+        if weeutil.weeutil.to_bool(self.wu_config.get('enable', False)):
+            # we are enabled, log that we are enabling our thread
+            loginf("WeatherUndergroundForecast: enabling source '%s'" % self.wu_config['source_name'])
+            # construct the field map we are to use, first obtain the field map
+            # from our config if it exists
+            field_map = self.wu_config.get('field_map')
+            # obtain any field map extensions from our config
+            extensions = self.wu_config.get('field_map_extensions', {})
+            # if we have no field map then use the default
+            if field_map is None:
+                # obtain the default field map
+                field_map = dict(WeatherUndergroundForecast.default_field_map)
+            # If a user wishes to map a field differently to that in the
+            # default map they can include an entry in field_map_extensions,
+            # but if we just update the field map dict with the field map
+            # extensions that will leave two entries for that field in the
+            # field map; the original field map entry as well as the entry from
+            # the extended map. So if we have field_map_extensions we need to
+            # first go through the field map and delete any entries that map
+            # fields that are included in the field_map_extensions.
+
+            # we only need process the field_map_extensions if we have any
+            if len(extensions) > 0:
+                # first make a copy of the field map because we will be
+                # iterating over it and changing it
+                field_map_copy = dict(field_map)
+                # iterate over each key, value pair in the copy of the field
+                # map
+                for k, v in six.iteritems(field_map_copy):
+                    # if the source field is in the field map extensions we
+                    # will be mapping that field elsewhere, so pop that field
+                    # map entry out of the field map so we don't end up with
+                    # multiple mappings for the source field
+                    if v in extensions.values():
+                        # pop the field map entry
+                        _dummy = field_map.pop(k)
+                # now we can update the field map with the extensions
+                field_map.update(extensions)
+            # we now have our final field map
+            self.field_map = field_map
+
+            # create a dict for our cache
+            self.cache = {}
+            # set max age for cache entries
+            self.max_cache_age = weeutil.weeutil.to_int(self.wu_config.get('max_cache_age',
+                                                                           DEFAULT_MAX_CACHE_AGE))
+            # set up the control and response queues
+            self.control_queue = six.moves.queue.Queue()
+            self.response_queue = six.moves.queue.Queue()
+            # and get an appropriate threaded source object
+            self.thread = WuApiThreadedSource(self.wu_config,
+                                              self.control_queue,
+                                              self.response_queue,
+                                              engine)
+            # start our thread
+            self.thread.start()
+            # bind our self to the NEW_LOOP_PACKET event
+            self.bind(weewx.NEW_LOOP_PACKET, self.new_loop_packet)
+            # get our (not WeeWX) debug level
+            self.debug = weeutil.weeutil.to_int(self.wu_config.get('debug', 0))
+            # log important config info
+            loginf("WeatherUndergroundForecast: max_cache_age is %d seconds" % self.max_cache_age)
+            if weewx.debug >= 1 or self.debug >= 1:
+                loginf('WeatherUndergroundForecast: field map is %s' % natural_sort_dict(self.field_map))
+        else:
+            # we are not enabled or have no config stanza, but still listed as
+            # a service to be run, log the fact and exit
+            loginf("WeatherUndergroundForecast: source '%s' ignored" % self.wu_config['source_name'])
+
+    def shutDown(self):
+        """Shut down any threads."""
+
+        # we only need do something if we have a live thread
+        if self.thread.is_alive():
+            # if we have a control queue put None in the queue to signal the
+            # thread to stop
+            if self.control_queue:
+                self.control_queue.put(None)
+            # attempt to terminate the thread with a suitable timeout
+            self.thread.join(5.0)
+            # if the thread is still alive we timed out and the thread may not
+            # have been terminated, either way log the outcome
+            if self.thread.is_alive():
+                logerr("WeatherUndergroundForecast: Unable to shut down '%s' thread" % self.wu_config['source_name'])
+            else:
+                loginf("WeatherUndergroundForecast: '%s' thread has been terminated" % self.wu_config['source_name'])
+        # we are finished with the thread so lose our reference and our queues
+        self.thread = None
+        self.control_queue = None
+        self.response_queue = None
+
+    def new_loop_packet(self, event):
+        """Process our thread response queue and augment the loop packet.
+
+        Check if our thread has sent anything via the queue. If it has sent
+        None that is the signal the thread needs to close. If it has sent data
+        from the API cache the data and augment the loop packet with the cached
+        data.
+
+        Augment the loop packet with any data in the cache that is not already
+        in the loop packet.
+        """
+
+        # Try to get data from the queue but don't block. If nothing is in the
+        # queue an empty queue exception will be thrown. If we have already
+        # shut our thread we will have no response queue.
+        try:
+            _package = self.response_queue.get_nowait()
+        except (queue.Empty, AttributeError):
+            # Nothing in the queue or we were called but our thread has been
+            # closed. Either way just continue.
+            pass
+        else:
+            # something was in the queue, what we do depends on what it is
+
+            # most likely we have API data from our thread, is this is the case
+            # the package will be a dict with a 'keys' attribute
+            if hasattr(_package, 'keys'):
+                # it is a dict, if it's data it will have a field 'type' with a
+                # value of 'data'
+                if _package.get('type') == 'data':
+                    # we have a data package, so get the payload
+                    _payload = _package.get('payload')
+                    # if the payload is not None and it is a dict then we have
+                    # some data that we need to add to our loop packets
+                    if _payload is not None and hasattr(_payload, 'keys'):
+                        # we have data for loop packets, first map our data
+                        _mapped_data = self.map_data(_payload)
+                        # now update our cache
+                        self.update_cache(_mapped_data)
+            # if it is not a dict then it may be the shutdown signal (None)
+            elif _package is None:
+                # we have a shutdown signal so call our shutDown method
+                self.shutDown()
+            # if it is something else again we can safely ignore it
+            else:
+                pass
+        # now augment the loop packet
+        self.augment_loop_packet(event)
+
+    def map_data(self, data_packet):
+        """Map any received data as required."""
+
+        # we may be changing our source data so make a copy to work on
+        _response = dict(data_packet)
+        # iterate over each key map entry
+        for dest, source in six.iteritems(self.field_map):
+            # we need to do a mapping if the source field is in our data packet
+            # and provided it is not the timestamp - we can't mess with that
+            if source in data_packet and source != 'datetime':
+                # we have a mapping to do, first pop the source field from our
+                # working data
+                _response.pop(source, None)
+                # now add the data from the source field in our data packet to
+                # the destination field in our working copy
+                _response[dest] = data_packet[source]
+        # we have completed any mappings so return the working copy
+        return _response
+
+    def update_cache(self, data_packet):
+        """Update our cache with data from a dict."""
+
+        # first get the timestamp of our data
+        _packet_ts = data_packet.get('timestamp')
+        # now iterate over the key, data pairs and update the cache
+        for key, data in six.iteritems(data_packet):
+            # we can skip the timestamp
+            if key == 'timestamp':
+                continue
+            # update the cache if we have not cached key before or if the
+            # cached data for key is stale
+            elif key not in self.cache or _packet_ts > self.cache[key]['timestamp']:
+                self.cache[key] = {'data': data, 'timestamp': _packet_ts}
+        # now remove any stale data from the cache
+        now = time.time()
+        for key in six.iterkeys(self.cache):
+            if self.cache[key]['timestamp'] + self.max_cache_age < now:
+                del self.cache[key]
+
+    def augment_loop_packet(self, event):
+        """Augment a loop packet from the cache.
+
+        Only fields that do not already exist in the loop packet are added
+        from the cache.
+        """
+
+        # iterate over the keys in the cache
+        for key in six.iterkeys(self.cache):
+            # if the key is not in the loop packet add the cached data to
+            # the loop packet
+            if key not in event.packet:
+                event.packet[key] = self.cache[key]['data']
+
+
 
 class OpenWeatherConditions(weewx.engine.StdService):
     """'Data' service to obtain current conditions data via the OpenWeather API.
@@ -772,6 +1016,310 @@ class ThreadedSource(threading.Thread):
         return '*' * (len(key) - clear) + key[-clear:]
 
 
+class WuApiThreadedSource(ThreadedSource):
+    """Thread that obtains WU API forecast text and places it in a queue.
+
+    The WUThread class queries the WU API and places selected forecast text in
+    JSON format in a queue used by the data consumer. The WU API is called at a
+    user selectable frequency. The thread listens for a shutdown signal from
+    its parent.
+
+    WUThread constructor parameters:
+
+        control_queue:  A Queue object used by our parent to control (shutdown)
+                        this thread.
+        result_queue:   A Queue object used to pass forecast data to the
+                        destination
+        engine:         An instance of class weewx.weewx.Engine
+        config_dict:    A WeeWX config dictionary.
+
+    WUThread methods:
+
+        run.               Control querying of the API and monitor the control
+                           queue.
+        query_wu.          Query the API and put selected forecast data in the
+                           result queue.
+        parse_wu_response. Parse a WU API response and return selected data.
+    """
+
+    END_POINT = 'https://api.weather.com/v3/wx/forecast/daily'
+    VALID_FORECASTS = ('3day', '5day', '7day', '10day', '15day')
+    VALID_NARRATIVES = ('day', 'day-night')
+    VALID_LOCATORS = ('geocode', 'iataCode', 'icaoCode', 'placeid', 'postalKey')
+    VALID_UNITS = ('e', 'm', 's', 'h')
+    VALID_LANGUAGES = ('ar-AE', 'az-AZ', 'bg-BG', 'bn-BD', 'bn-IN', 'bs-BA',
+                       'ca-ES', 'cs-CZ', 'da-DK', 'de-DE', 'el-GR', 'en-GB',
+                       'en-IN', 'en-US', 'es-AR', 'es-ES', 'es-LA', 'es-MX',
+                       'es-UN', 'es-US', 'et-EE', 'fa-IR', 'fi-FI', 'fr-CA',
+                       'fr-FR', 'gu-IN', 'he-IL', 'hi-IN', 'hr-HR', 'hu-HU',
+                       'in-ID', 'is-IS', 'it-IT', 'iw-IL', 'ja-JP', 'jv-ID',
+                       'ka-GE', 'kk-KZ', 'kn-IN', 'ko-KR', 'lt-LT', 'lv-LV',
+                       'mk-MK', 'mn-MN', 'ms-MY', 'nl-NL', 'no-NO', 'pl-PL',
+                       'pt-BR', 'pt-PT', 'ro-RO', 'ru-RU', 'si-LK', 'sk-SK',
+                       'sl-SI', 'sq-AL', 'sr-BA', 'sr-ME', 'sr-RS', 'sv-SE',
+                       'sw-KE', 'ta-IN', 'ta-LK', 'te-IN', 'tg-TJ', 'th-TH',
+                       'tk-TM', 'tl-PH', 'tr-TR', 'uk-UA', 'ur-PK', 'uz-UZ',
+                       'vi-VN', 'zh-CN', 'zh-HK', 'zh-TW')
+    VALID_FORMATS = ('json',)
+    # map WeatherUnderground icon codes to clientraw icon codes
+    ICON_MAP = {'01d': 0,
+                '01n': 1,
+                '02d': 2,
+                '02n': 4,
+                '03d': 0,
+                '03n': 0,
+                '04d': 18,
+                '04n': 13,
+                '09d': 22,
+                '09n': 15,
+                '10d': 20,
+                '10n': 14,
+                '11d': 31,
+                '11n': 17,
+                '13d': 25,
+                '13n': 16,
+                '50d': 10,
+                '50n': 10
+                }
+
+
+    def __init__(self, wu_config_dict, control_queue, result_queue, engine):
+
+        # initialize my base class
+        super(WuApiThreadedSource, self).__init__(wu_config_dict,
+                                                  control_queue,
+                                                  result_queue,
+                                                  engine)
+
+        # obtain various config items from our config dict
+        # first we cannot do anything without an API key, if we have no key
+        # then notify the user and return
+        try:
+            self.api_key = wu_config_dict['api_key']
+        except KeyError:
+            # we have no API key, we cannot continue
+            # first log the error
+            log.error('%s: WeatherUnderground API key not found, %s will close' % (self.name,
+                                                                                   self.name))
+            # now put None in the result queue to indicate to our service that
+            # we need to close
+            self.response_queue.put(None)
+            return
+        else:
+            # we have an API key so continue
+            latitude = weeutil.weeutil.to_float(wu_config_dict.get('latitude',
+                                                                   self.engine.stn_info.latitude_f))
+            longitude = weeutil.weeutil.to_float(wu_config_dict.get('longitude',
+                                                                    self.engine.stn_info.longitude_f))
+            # FIXME, Not sure the logic is correct should we get a delinquent location setting
+            # get the locator type and location argument to use for the forecast
+            # first get the
+            _location = wu_config_dict.get('location', 'geocode').split(',', 1)
+            _location_list = [a.strip() for a in _location]
+            # validate the locator type
+            self.locator = _location_list[0] if _location_list[0] in WuApiThreadedSource.VALID_LOCATORS else 'geocode'
+            if len(_location_list) == 2:
+                self.location = _location_list[1]
+            else:
+                self.locator = 'geocode'
+                self.location = '%s,%s' % (latitude, longitude)
+
+            # get units to be used in forecast text
+            _units = wu_config_dict.get('units', 'm').lower()
+            # validate units
+            self.units = _units if _units in self.VALID_UNITS else 'm'
+
+            # get language to be used in forecast text
+            _language = wu_config_dict.get('language', 'en-GB')
+            # validate language
+            self.language = _language if _language in self.VALID_LANGUAGES else 'en-GB'
+
+            # get format of the API response
+            _format = wu_config_dict.get('format', 'json').lower()
+            # validate format
+            self.format = _format if _format in self.VALID_FORMATS else 'json'
+
+            self.map_icon_code = weeutil.weeutil.to_bool(wu_config_dict.get('map_icon_code',
+                                                                            True))
+            # get the forecast type
+            _forecast = wu_config_dict.get('forecast_type', '5day').lower()
+            # validate the forecast type
+            self.forecast = _forecast if _forecast in self.VALID_FORECASTS else '5day'
+
+            # get the forecast text to display
+            _narrative = wu_config_dict.get('forecast_text', 'day-night').lower()
+            # validate the forecast text
+            self.forecast_text = _narrative if _narrative in self.VALID_NARRATIVES else 'day-night'
+
+            # minimum period, in seconds, between successive API calls
+            self.lockout_period = weeutil.weeutil.to_int(wu_config_dict.get('api_lockout_period',
+                                                                            60))
+            # now log some key config info
+            loginf("WeatherUnderground source '%s' enabled" % wu_config_dict['source_name'])
+            loginf("     api_key=%s interval=%d" % (self.obfuscated_key(self.api_key),
+                                                    self.interval))
+            loginf("     language=%s units=%s max_tries=%d" % (self.language,
+                                                               self.units,
+                                                               self.max_tries))
+            if self.map_icon_code:
+                loginf("     WeatherUnderground icon codes will be mapped to clientraw.txt icon codes")
+
+    def get_raw_data(self):
+        """Make a data request via the API and return the response.
+
+        Construct the URL used to contact the API, contact the API and return
+        the decoded response as a JSON formatted object.
+
+        Returns the OpenWeather API response in JSON format or None is no
+        response was received.
+        """
+
+        # construct the URL to be used to contact the API, for a HTTP GET
+        # request this is a combination of the base URL and the url-encoded
+        # parameters start constructing the base URL to be used to contact the
+        # API
+        # first construct the base URL
+        base_url = '/'.join([self.END_POINT,
+                             self.forecast])
+        # now construct the parameters dict
+        param_dict = {'apiKey': self.api_key,
+                      self.locator: self.location,
+                      'language': self.language,
+                      'units': self.units,
+                      'format': self.format
+                      }
+        # obtain the params as a URL encoded string
+        params = urllib.parse.urlencode(param_dict)
+        # construct the URL, it is a concatenation of the base URL and the
+        # url-encoded parameters using a '?' as the joining character
+        url = '?'.join([base_url, params])
+        # if debug >= 1 log the URL used but obfuscate the API key
+        if weewx.debug >= 2 or self.debug >= 2:
+            _obfuscated_url = url.replace(self.api_key, self.obfuscated_key(self.api_key))
+            loginf("%s: submitting API call using URL: %s" % (self.name, _obfuscated_url))
+        # make the API call and obtain the response
+        _response = self.submit_request(url=url)
+        # if we have a response we need to de-serialise it
+        json_response = json.loads(_response) if _response is not None else None
+        # return the response
+        return json_response
+
+    def parse_data(self, response):
+        """Parse our raw data."""
+
+        # obtain an empty dict for the parsed data
+        _parsed_data = {}
+        # save our timestamp
+        _parsed_data['timestamp'] = int(self.last_call_ts)
+
+        """ Parse a WU API forecast response and return the forecast text.
+
+        The WU API forecast response contains a number of forecast texts, the
+        three main ones are:
+
+        - the full day narrative
+        - the day time narrative, and
+        - the nighttime narrative.
+
+        WU claims that nighttime is for 7pm to 7am and day time is for 7am to
+        7pm though anecdotally it appears that the daytime forecast disappears
+        late afternoon and reappears early morning. If day-night forecast text
+        is selected we will look for a daytime forecast up until 7pm with a
+        fallback to the nighttime forecast. From 7pm to midnight the nighttime
+        forecast will be used. If day forecast text is selected then we will
+        use the higher level full day forecast text.
+
+        Input:
+            response: A WU API response in JSON format.
+
+        Returns:
+            The selected forecast text if it exists otherwise None.
+        """
+
+        # forecast data has been deserialized so check which forecast narrative
+        # we are after and locate the appropriate field.
+        if self.forecast_text == 'day':
+            # we want the full day narrative, use a try..except in case the
+            # response is malformed
+            try:
+                return response['narrative'][0]
+            except KeyError:
+                # could not find the narrative so log and return None
+                log.debug("Unable to locate 'narrative' field for "
+                          "'%s' forecast narrative" % self.forecast_text)
+                _narrative = None
+        else:
+            # we want the day time or nighttime narrative, but which, WU
+            # starts dropping the day narrative late in the afternoon and it
+            # does not return until the early hours of the morning. If possible
+            # use day time up until 7pm but be prepared to fall back to night
+            # if the day narrative has disappeared. Use night narrative for 7pm
+            # to 7am but start looking for day again after midnight.
+            # get the current local hour
+            _hour = datetime.datetime.now().hour
+            # helper string for later logging
+            if 7 <= _hour < 19:
+                _period_str = 'daytime'
+            else:
+                _period_str = 'nighttime'
+            # day_index is the index of the daytime forecast for today, it
+            # will either be 0 (ie the first entry) or None if today's day
+            # forecast is not present. If it is None then the nighttime
+            # forecast is used. Start by assuming there is no day forecast.
+            day_index = None
+            if _hour < 19:
+                # it's before 7pm so use day time, first check if it exists
+                try:
+                    day_index = response['daypart'][0]['dayOrNight'].index('D')
+                except KeyError:
+                    # couldn't find a key for one of the fields, log it and
+                    # force use of night index
+                    log.info("Unable to locate 'dayOrNight' field "
+                             "for %s '%s' forecast narrative" % (_period_str, self.forecast_text))
+                    day_index = None
+                except ValueError:
+                    # could not get an index for 'D', log it and force use of
+                    # night index
+                    log.info("Unable to locate 'D' index "
+                             "for %s '%s' forecast narrative" % (_period_str, self.forecast_text))
+                    day_index = None
+            # we have a day_index but is it for today or some later day
+            if day_index is not None and day_index <= 1:
+                # we have a suitable day index so use it
+                _index = day_index
+            else:
+                # no day index for today so try the night index
+                try:
+                    _index = response['daypart'][0]['dayOrNight'].index('N')
+                except KeyError:
+                    # couldn't find a key for one of the fields, log it and
+                    # return None
+                    log.info("Unable to locate 'dayOrNight' field "
+                             "for %s '%s' forecast narrative" % (_period_str, self.forecast_text))
+                    _narrative = None
+                except ValueError:
+                    # could not get an index for 'N', log it and return None
+                    log.info("Unable to locate 'N' index "
+                             "for %s '%s' forecast narrative" % (_period_str, self.forecast_text))
+                    _narrative = None
+            # if we made it here we have an index to use so get the required
+            # narrative
+            try:
+                _narrative = response['daypart'][0]['narrative'][_index]
+            except KeyError:
+                # if we can't find a field log the error and return None
+                log.info("Unable to locate 'narrative' field "
+                         "for '%s' forecast narrative" % self.forecast_text)
+                _narrative = None
+            except ValueError:
+                # if we can't find an index log the error and return None
+                log.info("Unable to locate 'narrative' index "
+                         "for '%s' forecast narrative" % self.forecast_text)
+
+                _narrative = None
+            _parsed_data['narrative'] = _narrative
+        return _parsed_data
+
 # ============================================================================
 #                     class OpenWeatherApiThreadedSource
 # ============================================================================
@@ -869,6 +1417,7 @@ class OpenWeatherApiThreadedSource(ThreadedSource):
             self.units = ow_config_dict.get('units', 'metric').lower()
             self.map_icon_code = weeutil.weeutil.to_bool(ow_config_dict.get('map_icon_code',
                                                                             True))
+            # TODO. Is this duplicated in our parent?
             self.max_tries = weeutil.weeutil.to_int(ow_config_dict.get('max_tries',
                                                                        3))
         # now log some key config info
@@ -1226,6 +1775,10 @@ KNOWN_SOURCES = {'AerisWeatherMap': {'long_name': 'AerisWeatherMapSource',
                                      'short_name': 'AerisWeatherMap',
                                      'class': AerisWeatherMapThreadedSource
                                      },
+                 'WeatherUnderground': {'long_name': 'WeatherUndergroundAPISource',
+                                        'short_name': 'WeatherUnderground',
+                                        'class': WuApiThreadedSource
+                                        },
                  'OpenWeather': {'long_name': 'OpenWeatherAPISource',
                                  'short_name': 'OpenWeather',
                                  'class': OpenWeatherApiThreadedSource
