@@ -838,7 +838,7 @@ class UniDraw(ImageDraw.ImageDraw):
             # first try the new way
             left, top, right, bottom = ImageDraw.ImageDraw.multiline_textbbox(self,
                                                                               xy=(0, 0),
-                                                                              test=string,
+                                                                              text=string,
                                                                               **options)
             return right - left, bottom - top
         except UnicodeEncodeError:
@@ -846,7 +846,7 @@ class UniDraw(ImageDraw.ImageDraw):
             # encoded, try again with utf-8 encoding
             left, top, right, bottom = ImageDraw.ImageDraw.multiline_textbbox(self,
                                                                               xy=(0, 0),
-                                                                              test=string.encode('utf-8'),
+                                                                              text=string.encode('utf-8'),
                                                                               **options)
             return right - left, bottom - top
         except AttributeError:
