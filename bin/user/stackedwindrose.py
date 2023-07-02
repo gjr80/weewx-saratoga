@@ -12,9 +12,11 @@ This program is distributed in the hope that it will be useful, but WITHOUT ANY
 WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
 PARTICULAR PURPOSE.  See the GNU General Public License for more details.
 
-Version: 3.0.1                                          Date: 7 June 2020
+Version: 3.0.2                                          Date: 2 July 2023
 
 Revision History
+  2 July 2023           v3.0.2
+      - fix error due to deprecated PIL.ImageDraw.textsize() method
   7 June 2020           v3.0.1
       - fix issue with changed max() behaviour under python3
   5 June 2020           v3.0.0
@@ -105,7 +107,7 @@ except ImportError:
     def loginf(msg):
         logmsg(syslog.LOG_INFO, msg)
 
-STACKED_WINDROSE_VERSION = '3.0.1'
+STACKED_WINDROSE_VERSION = '3.0.2'
 DEFAULT_PETAL_COLORS = ['lightblue', 'blue', 'midnightblue', 'forestgreen',
                         'limegreen', 'green', 'greenyellow']
 
@@ -806,22 +808,54 @@ class UniDraw(ImageDraw.ImageDraw):
 
     Not all fonts support Unicode characters. These will raise a
     UnicodeEncodeError exception. This class subclasses the regular
-    ImageDraw.Draw class, adding overridden functions to catch these
-    exceptions. It then tries drawing the string again, this time as a UTF8
-    string.
+    ImageDraw.ImageDraw class and overrides selected functions to catch these
+    exceptions. If a UnicodeEncodeError is caught rendering the string is
+    retried, this time using a UTF8 encoded string.
     """
 
     def text(self, position, string, **options):
+        """Draw a string using a Unicode or non-Unicode font."""
+
         try:
             return ImageDraw.ImageDraw.text(self, position, string, **options)
         except UnicodeEncodeError:
+            # our string needs to be properly encoded, try again with utf-8 encoding
             return ImageDraw.ImageDraw.text(self, position, string.encode('utf-8'), **options)
 
     def textsize(self, string, **options):
+        """Obtain the size of a string rendered using a Unicode or non-Unicode font.
+
+        Returns the width and height of the rendered string.
+
+        Unfortunately the ImageDraw.textsize() method was deprecated in PIL
+        v9.2 and removed in v10.0. ImageDraw.textbbox() and
+        ImageDraw.multiline_textbbox() methods should be used instead. In order
+        to support earlier PIL versions we need to first try the new method and
+        if not found then try the old.
+        """
+
         try:
-            return ImageDraw.ImageDraw.textsize(self, string, **options)
+            # first try the new way
+            left, top, right, bottom = ImageDraw.ImageDraw.multiline_textbbox(self,
+                                                                              xy=(0, 0),
+                                                                              test=string,
+                                                                              **options)
+            return right - left, bottom - top
         except UnicodeEncodeError:
-            return ImageDraw.ImageDraw.textsize(self, string.encode('utf-8'), **options)
+            # the new way is available but our string needs to be properly
+            # encoded, try again with utf-8 encoding
+            left, top, right, bottom = ImageDraw.ImageDraw.multiline_textbbox(self,
+                                                                              xy=(0, 0),
+                                                                              test=string.encode('utf-8'),
+                                                                              **options)
+            return right - left, bottom - top
+        except AttributeError:
+            # now try the old way
+            try:
+                return ImageDraw.ImageDraw.textsize(self, string, **options)
+            except UnicodeEncodeError:
+                # our string needs to be properly encoded, try again with utf-8 encoding
+                return ImageDraw.ImageDraw.textsize(self, string.encode('utf-8'), **options)
 
 
 def parse_color(color, default=None):
