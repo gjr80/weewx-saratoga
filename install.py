@@ -69,6 +69,9 @@ ws_config = u"""
     [[ClientrawReport]]
         skin = Clientraw
         enable = True
+        [[[Extras]]]
+            # preferred source for forecast text, options are 'station' or 'api'
+            forecast_priority = station
         [[[Units]]]
             [[[[StringFormats]]]]
                 degree_C = %.1f
