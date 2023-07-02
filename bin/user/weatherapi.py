@@ -381,6 +381,10 @@ class WeatherUndergroundForecast(StdServiceCachedWeather):
             loginf("WeatherUndergroundForecast: source '%s' ignored" % self.source_config['source_name'])
 
 
+# ============================================================================
+#                        class OpenWeatherConditions
+# ============================================================================
+
 class OpenWeatherConditions(StdServiceCachedWeather):
     """'Data' service to obtain current conditions data via the OpenWeather API.
 
@@ -918,6 +922,10 @@ class ThreadedSource(threading.Thread):
             clear = 4
         return '*' * (len(key) - clear) + key[-clear:]
 
+
+# ============================================================================
+#                         class WuApiThreadedSource
+# ============================================================================
 
 class WuApiThreadedSource(ThreadedSource):
     """Thread that obtains WU API forecast text and places it in a queue.
@@ -1679,6 +1687,7 @@ def natural_sort_dict(source_dict):
     return "{%s}" % ", ".join(sorted_dict_fields)
 
 
+# lookup for weather API source I know about
 KNOWN_SOURCES = {'AerisWeatherMap': {'long_name': 'AerisWeatherMapSource',
                                      'short_name': 'AerisWeatherMap',
                                      'class': AerisWeatherMapThreadedSource
