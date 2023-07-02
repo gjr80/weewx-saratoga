@@ -746,12 +746,17 @@ $UVHourArray[$i].format(format_string="%.1f", add_label=False, localize=False) #
 0 #slurp
 #end try
 #end for
-#if $current.forecastText.exists
-# set $ft=$current.forecastText.raw
+#if len($Extras) > 0
+#set $priority=$Extras.forecast_priority if 'forecast_priority' in $Extras else 'station'
+#else
+#set $priority = 'station'
+#end if
+#if $priority == 'station' and $current.forecastText.exists
+#set $ft=$current.forecastText.raw
 #elif $current.forecast_text.exists
 #set $ft=$current.forecast_text.raw
 #else
-#set $ft="--"
+#set $ft="---"
 #end if
 #try
 #set $ft_under = $ft.replace(" ", "_")
