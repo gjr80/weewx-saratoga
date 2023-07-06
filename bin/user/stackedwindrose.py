@@ -446,12 +446,12 @@ class StackedWindRoseImageGenerator(weewx.reportengine.ReportGenerator):
                     self.label_font = get_font_handle(self.windrose_font_path,
                                                       self.windrose_label_font_size)
                     # estimate space required for the legend
-                    text_w, text_h = self.draw.textsize("0 (100%)",
-                                                        font=self.legend_font)
+                    text_w, text_h = self.draw.alt_textsize("0 (100%)",
+                                                            font=self.legend_font)
                     legend_w = int(text_w + 2 * self.windrose_legend_bar_width + 1.5 * self.windrose_plot_border)
                     # estimate space required for label (if required)
-                    text_w, text_h = self.draw.textsize("Wind Rose",
-                                                        font=self.label_font)
+                    text_w, text_h = self.draw.alt_textsize("Wind Rose",
+                                                            font=self.label_font)
                     if self.label:
                         label_h = int(text_w + self.windrose_plot_border)
                     else:
@@ -465,8 +465,8 @@ class StackedWindRoseImageGenerator(weewx.reportengine.ReportGenerator):
                                             int((self.image_width - (2 * self.windrose_plot_border + legend_w)) / 22.0) * 22)
                     if self.image_width > self.image_height:
                         # plot is wider than it is high
-                        text_w, text_h = self.draw.textsize("W",
-                                                            font=self.plot_font)
+                        text_w, text_h = self.draw.alt_textsize("W",
+                                                                font=self.plot_font)
                         # x coord of windrose circle origin(0,0) is top left
                         # corner
                         self.origin_x = self.windrose_plot_border + text_w + 2 + self.rose_max_dia / 2
@@ -519,7 +519,7 @@ class StackedWindRoseImageGenerator(weewx.reportengine.ReportGenerator):
                     # first produce the label
                     label0 = "%d%%" % int(round(100.0 * speed_bin[0]/sum(speed_bin), 0))
                     # work out its size, particularly its width
-                    text_w, text_h = self.draw.textsize(label0, font=self.plot_font)
+                    text_w, text_h = self.draw.alt_textsize(label0, font=self.plot_font)
                     # size the bound box
                     xy = (int(self.origin_x-self.rose_max_dia/22),
                           int(self.origin_y-self.rose_max_dia/22),
@@ -590,19 +590,19 @@ class StackedWindRoseImageGenerator(weewx.reportengine.ReportGenerator):
               (self.origin_x + self.rose_max_dia / 2 + 2, self.origin_y)]
         self.draw.line(xy, fill=self.image_background_range_ring_color)
         # draw N,S,E,W markers
-        text_w, text_h = self.draw.textsize('N', font=self.plot_font)
+        text_w, text_h = self.draw.alt_textsize('N', font=self.plot_font)
         xy = (self.origin_x - text_w / 2,
               self.origin_y - self.rose_max_dia / 2 - 1 - text_h)
         self.draw.text(xy, 'N', fill=self.windrose_plot_font_color, font=self.plot_font)
-        text_w, text_h = self.draw.textsize('S', font=self.plot_font)
+        text_w, text_h = self.draw.alt_textsize('S', font=self.plot_font)
         xy = (self.origin_x - text_w / 2,
               self.origin_y + self.rose_max_dia / 2 + 3)
         self.draw.text(xy, 'S', fill=self.windrose_plot_font_color, font=self.plot_font)
-        text_w, text_h = self.draw.textsize('W', font=self.plot_font)
+        text_w, text_h = self.draw.alt_textsize('W', font=self.plot_font)
         xy = (self.origin_x - self.rose_max_dia / 2 - 1 - text_w,
               self.origin_y - text_h / 2)
         self.draw.text(xy, 'W', fill=self.windrose_plot_font_color, font=self.plot_font)
-        text_w, text_h = self.draw.textsize('E', font=self.plot_font)
+        text_w, text_h = self.draw.alt_textsize('E', font=self.plot_font)
         xy = (self.origin_x + self.rose_max_dia / 2 + 1,
               self.origin_y - text_h / 2)
         self.draw.text(xy, 'E', fill=self.windrose_plot_font_color, font=self.plot_font)
@@ -624,8 +624,8 @@ class StackedWindRoseImageGenerator(weewx.reportengine.ReportGenerator):
         # background colour set to that of the circular plot.
         i = 2
         while i < 5:
-            text_w, text_h = self.draw.textsize(speed_labels[i - 1],
-                                                font=self.plot_font)
+            text_w, text_h = self.draw.alt_textsize(speed_labels[i - 1],
+                                                    font=self.plot_font)
             x0 = self.origin_x + (2 * i + 1) * label_offset_x - text_w / 2
             y0 = self.origin_y + (2 * i + 1) * label_offset_y - text_h / 2
             x1 = self.origin_x + (2 * i + 1) * label_offset_x + text_w / 2
@@ -639,7 +639,7 @@ class StackedWindRoseImageGenerator(weewx.reportengine.ReportGenerator):
                            fill=self.windrose_plot_font_color, font=self.plot_font)
             i += 1
         # draw outside ring label
-        text_w, text_h = self.draw.textsize(speed_labels[i-1], font=self.plot_font)
+        text_w, text_h = self.draw.alt_textsize(speed_labels[i-1], font=self.plot_font)
         xy = (self.origin_x + (2 * i + 1) * label_offset_x - text_w / 2,
               self.origin_y + (2 * i + 1) * label_offset_y - text_h / 2)
         self.draw.text(xy,
@@ -656,7 +656,7 @@ class StackedWindRoseImageGenerator(weewx.reportengine.ReportGenerator):
         """
 
         # set static values
-        text_w, text_h = self.draw.textsize('E', font=self.plot_font)
+        text_w, text_h = self.draw.alt_textsize('E', font=self.plot_font)
         # label_x and label_y = x,y coords of bottom left of stacked bar.
         # Everything else is relative to this point
         label_x = self.origin_x+self.rose_max_dia/2 + text_w + 10
@@ -671,8 +671,8 @@ class StackedWindRoseImageGenerator(weewx.reportengine.ReportGenerator):
             y1 = label_y
             self.draw.rectangle([x0, y0, x1, y1],
                                 fill=speed_list[1][i], outline='black')
-            text_w, text_h = self.draw.textsize(str(speed_list[0][i]),
-                                                font=self.legend_font)
+            text_w, text_h = self.draw.alt_textsize(str(speed_list[0][i]),
+                                                    font=self.legend_font)
             xy = (label_x + 1.5 * self.windrose_legend_bar_width,
                   label_y - text_h / 2 - (0.85 * self.rose_max_dia * self.speed_factor[i]))
             _text = '%d (%d%%)' % (int(round(speed_list[0][i], 0)),
@@ -680,8 +680,8 @@ class StackedWindRoseImageGenerator(weewx.reportengine.ReportGenerator):
             self.draw.text(xy, _text,
                            fill=self.windrose_legend_font_color, font=self.legend_font)
             i -= 1
-        text_w, text_h = self.draw.textsize(str(speed_list[0][0]),
-                                            font=self.legend_font)
+        text_w, text_h = self.draw.alt_textsize(str(speed_list[0][0]),
+                                                font=self.legend_font)
         # draw 'calm' or 0 speed label and %
         xy = (label_x + 1.5 * self.windrose_legend_bar_width,
               label_y - text_h / 2 - (0.85 * self.rose_max_dia * self.speed_factor[0]))
@@ -689,7 +689,7 @@ class StackedWindRoseImageGenerator(weewx.reportengine.ReportGenerator):
                                int(round(100.0 * speed_bin[0]/sum(speed_bin), 0)))
         self.draw.text(xy, _text,
                        fill=self.windrose_legend_font_color, font=self.legend_font)
-        text_w, text_h = self.draw.textsize('Calm', font=self.legend_font)
+        text_w, text_h = self.draw.alt_textsize('Calm', font=self.legend_font)
         xy = (label_x - text_w - 2,
               label_y - text_h / 2 - (0.85 * self.rose_max_dia * self.speed_factor[0]))
         self.draw.text(xy, 'Calm',
@@ -705,14 +705,14 @@ class StackedWindRoseImageGenerator(weewx.reportengine.ReportGenerator):
             title_text = 'Gust Speed'
         else:
             title_text = 'Wind Speed'
-        text_w, text_h = self.draw.textsize(title_text, font=self.legend_font)
+        text_w, text_h = self.draw.alt_textsize(title_text, font=self.legend_font)
         xy = (label_x + self.windrose_legend_bar_width / 2 - text_w / 2,
               label_y - 5 * text_h / 2 - (0.85 * self.rose_max_dia))
         self.draw.text(xy, title_text,
                        fill=self.windrose_legend_font_color, font=self.legend_font)
         # draw legend units label
-        text_w, text_h = self.draw.textsize('(%s)' % self.unit_label.strip(),
-                                            font=self.legend_font)
+        text_w, text_h = self.draw.alt_textsize('(%s)' % self.unit_label.strip(),
+                                                font=self.legend_font)
         xy = (label_x + self.windrose_legend_bar_width / 2 - text_w / 2,
               label_y - 3 * text_h / 2 - (0.85 * self.rose_max_dia))
         self.draw.text(xy, '(%s)' % self.unit_label.strip(),
@@ -720,7 +720,7 @@ class StackedWindRoseImageGenerator(weewx.reportengine.ReportGenerator):
         # draw plot title (label) if any, make sure we convert any unicode that
         # might sneak in
         if self.label:
-            text_w, text_h = self.draw.textsize(self.label, font=self.label_font)
+            text_w, text_h = self.draw.alt_textsize(self.label, font=self.label_font)
             try:
                 self.draw.text((self.origin_x - text_w/2, text_h/2),
                                self.label,
@@ -734,7 +734,7 @@ class StackedWindRoseImageGenerator(weewx.reportengine.ReportGenerator):
         # draw plot timestamp if any
         if self.time_stamp:
             ts_text = datetime.datetime.fromtimestamp(self.plotgen_ts).strftime(self.time_stamp).strip()
-            text_w, text_h = self.draw.textsize(ts_text, font=self.label_font)
+            text_w, text_h = self.draw.alt_textsize(ts_text, font=self.label_font)
             if self.time_stamp_location is not None:
                 if 'TOP' in self.time_stamp_location:
                     ts_y = self.windrose_plot_border + text_h
@@ -822,7 +822,7 @@ class UniDraw(ImageDraw.ImageDraw):
             # our string needs to be properly encoded, try again with utf-8 encoding
             return ImageDraw.ImageDraw.text(self, position, string.encode('utf-8'), **options)
 
-    def textsize(self, string, **options):
+    def alt_textsize(self, string, **options):
         """Obtain the size of a string rendered using a Unicode or non-Unicode font.
 
         Returns the width and height of the rendered string.
