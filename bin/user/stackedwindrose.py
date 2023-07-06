@@ -12,10 +12,10 @@ This program is distributed in the hope that it will be useful, but WITHOUT ANY
 WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
 PARTICULAR PURPOSE.  See the GNU General Public License for more details.
 
-Version: 3.0.2                                          Date: 2 July 2023
+Version: 3.0.2                                          Date: 6 July 2023
 
 Revision History
-  2 July 2023           v3.0.2
+  6 July 2023           v3.0.2
       - fix error due to deprecated PIL.ImageDraw.textsize() method
   7 June 2020           v3.0.1
       - fix issue with changed max() behaviour under python3
