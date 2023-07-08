@@ -448,11 +448,11 @@ class StackedWindRoseImageGenerator(weewx.reportengine.ReportGenerator):
                                                       self.windrose_label_font_size)
                     # estimate space required for the legend
                     text_w, text_h = self.draw.textsize("0 (100%)",
-                                                            font=self.legend_font)
+                                                        font=self.legend_font)
                     legend_w = int(text_w + 2 * self.windrose_legend_bar_width + 1.5 * self.windrose_plot_border)
                     # estimate space required for label (if required)
                     text_w, text_h = self.draw.textsize("Wind Rose",
-                                                            font=self.label_font)
+                                                        font=self.label_font)
                     if self.label:
                         label_h = int(text_w + self.windrose_plot_border)
                     else:
@@ -467,7 +467,7 @@ class StackedWindRoseImageGenerator(weewx.reportengine.ReportGenerator):
                     if self.image_width > self.image_height:
                         # plot is wider than it is high
                         text_w, text_h = self.draw.textsize("W",
-                                                                font=self.plot_font)
+                                                            font=self.plot_font)
                         # x coord of windrose circle origin(0,0) is top left
                         # corner
                         self.origin_x = self.windrose_plot_border + text_w + 2 + self.rose_max_dia / 2
@@ -535,8 +535,8 @@ class StackedWindRoseImageGenerator(weewx.reportengine.ReportGenerator):
                     self.draw.text(xy, label0,
                                    fill=self.windrose_plot_font_color,
                                    font=self.plot_font)
-                    # Setup the legend. Draw label/title (if set), stacked bar,
-                    # bar labels and units
+                    # Set up the legend. Draw label/title (if set), stacked
+                    # bar, bar labels and units
                     self.legend_setup(speed_list, speed_bin)
                 # save the file.
                 image.save(img_file)
@@ -626,7 +626,7 @@ class StackedWindRoseImageGenerator(weewx.reportengine.ReportGenerator):
         i = 2
         while i < 5:
             text_w, text_h = self.draw.textsize(speed_labels[i - 1],
-                                                    font=self.plot_font)
+                                                font=self.plot_font)
             x0 = self.origin_x + (2 * i + 1) * label_offset_x - text_w / 2
             y0 = self.origin_y + (2 * i + 1) * label_offset_y - text_h / 2
             x1 = self.origin_x + (2 * i + 1) * label_offset_x + text_w / 2
@@ -673,7 +673,7 @@ class StackedWindRoseImageGenerator(weewx.reportengine.ReportGenerator):
             self.draw.rectangle([x0, y0, x1, y1],
                                 fill=speed_list[1][i], outline='black')
             text_w, text_h = self.draw.textsize(str(speed_list[0][i]),
-                                                    font=self.legend_font)
+                                                font=self.legend_font)
             xy = (label_x + 1.5 * self.windrose_legend_bar_width,
                   label_y - text_h / 2 - (0.85 * self.rose_max_dia * self.speed_factor[i]))
             _text = '%d (%d%%)' % (int(round(speed_list[0][i], 0)),
@@ -682,7 +682,7 @@ class StackedWindRoseImageGenerator(weewx.reportengine.ReportGenerator):
                            fill=self.windrose_legend_font_color, font=self.legend_font)
             i -= 1
         text_w, text_h = self.draw.textsize(str(speed_list[0][0]),
-                                                font=self.legend_font)
+                                            font=self.legend_font)
         # draw 'calm' or 0 speed label and %
         xy = (label_x + 1.5 * self.windrose_legend_bar_width,
               label_y - text_h / 2 - (0.85 * self.rose_max_dia * self.speed_factor[0]))
@@ -713,7 +713,7 @@ class StackedWindRoseImageGenerator(weewx.reportengine.ReportGenerator):
                        fill=self.windrose_legend_font_color, font=self.legend_font)
         # draw legend units label
         text_w, text_h = self.draw.textsize('(%s)' % self.unit_label.strip(),
-                                                font=self.legend_font)
+                                            font=self.legend_font)
         xy = (label_x + self.windrose_legend_bar_width / 2 - text_w / 2,
               label_y - 3 * text_h / 2 - (0.85 * self.rose_max_dia))
         self.draw.text(xy, '(%s)' % self.unit_label.strip(),
@@ -847,7 +847,7 @@ class UniDraw(ImageDraw.ImageDraw):
         try:
             return ImageDraw.ImageDraw.textsize(self, string, **options)
         except UnicodeEncodeError:
-            # we have PIL < 10.0 but we encountered a UnicodeEncodeError, try 
+            # we have PIL < 10.0, but we encountered a UnicodeEncodeError, try
             # again with utf-8 encoding
             return ImageDraw.ImageDraw.textsize(self, string.encode('utf-8'), **options)
         except AttributeError:
