@@ -16,7 +16,8 @@ Version: 3.0.2                                          Date: 6 July 2023
 
 Revision History
   6 July 2023           v3.0.2
-      - fix error due to deprecated PIL.ImageDraw.textsize() method
+      - fix error due to deprecated PIL.ImageDraw.textsize() method being 
+        removed from PIL 10.0
   7 June 2020           v3.0.1
       - fix issue with changed max() behaviour under python3
   5 June 2020           v3.0.0
@@ -446,11 +447,11 @@ class StackedWindRoseImageGenerator(weewx.reportengine.ReportGenerator):
                     self.label_font = get_font_handle(self.windrose_font_path,
                                                       self.windrose_label_font_size)
                     # estimate space required for the legend
-                    text_w, text_h = self.draw.alt_textsize("0 (100%)",
+                    text_w, text_h = self.draw.textsize("0 (100%)",
                                                             font=self.legend_font)
                     legend_w = int(text_w + 2 * self.windrose_legend_bar_width + 1.5 * self.windrose_plot_border)
                     # estimate space required for label (if required)
-                    text_w, text_h = self.draw.alt_textsize("Wind Rose",
+                    text_w, text_h = self.draw.textsize("Wind Rose",
                                                             font=self.label_font)
                     if self.label:
                         label_h = int(text_w + self.windrose_plot_border)
@@ -465,7 +466,7 @@ class StackedWindRoseImageGenerator(weewx.reportengine.ReportGenerator):
                                             int((self.image_width - (2 * self.windrose_plot_border + legend_w)) / 22.0) * 22)
                     if self.image_width > self.image_height:
                         # plot is wider than it is high
-                        text_w, text_h = self.draw.alt_textsize("W",
+                        text_w, text_h = self.draw.textsize("W",
                                                                 font=self.plot_font)
                         # x coord of windrose circle origin(0,0) is top left
                         # corner
@@ -519,7 +520,7 @@ class StackedWindRoseImageGenerator(weewx.reportengine.ReportGenerator):
                     # first produce the label
                     label0 = "%d%%" % int(round(100.0 * speed_bin[0]/sum(speed_bin), 0))
                     # work out its size, particularly its width
-                    text_w, text_h = self.draw.alt_textsize(label0, font=self.plot_font)
+                    text_w, text_h = self.draw.textsize(label0, font=self.plot_font)
                     # size the bound box
                     xy = (int(self.origin_x-self.rose_max_dia/22),
                           int(self.origin_y-self.rose_max_dia/22),
@@ -590,19 +591,19 @@ class StackedWindRoseImageGenerator(weewx.reportengine.ReportGenerator):
               (self.origin_x + self.rose_max_dia / 2 + 2, self.origin_y)]
         self.draw.line(xy, fill=self.image_background_range_ring_color)
         # draw N,S,E,W markers
-        text_w, text_h = self.draw.alt_textsize('N', font=self.plot_font)
+        text_w, text_h = self.draw.textsize('N', font=self.plot_font)
         xy = (self.origin_x - text_w / 2,
               self.origin_y - self.rose_max_dia / 2 - 1 - text_h)
         self.draw.text(xy, 'N', fill=self.windrose_plot_font_color, font=self.plot_font)
-        text_w, text_h = self.draw.alt_textsize('S', font=self.plot_font)
+        text_w, text_h = self.draw.textsize('S', font=self.plot_font)
         xy = (self.origin_x - text_w / 2,
               self.origin_y + self.rose_max_dia / 2 + 3)
         self.draw.text(xy, 'S', fill=self.windrose_plot_font_color, font=self.plot_font)
-        text_w, text_h = self.draw.alt_textsize('W', font=self.plot_font)
+        text_w, text_h = self.draw.textsize('W', font=self.plot_font)
         xy = (self.origin_x - self.rose_max_dia / 2 - 1 - text_w,
               self.origin_y - text_h / 2)
         self.draw.text(xy, 'W', fill=self.windrose_plot_font_color, font=self.plot_font)
-        text_w, text_h = self.draw.alt_textsize('E', font=self.plot_font)
+        text_w, text_h = self.draw.textsize('E', font=self.plot_font)
         xy = (self.origin_x + self.rose_max_dia / 2 + 1,
               self.origin_y - text_h / 2)
         self.draw.text(xy, 'E', fill=self.windrose_plot_font_color, font=self.plot_font)
@@ -624,7 +625,7 @@ class StackedWindRoseImageGenerator(weewx.reportengine.ReportGenerator):
         # background colour set to that of the circular plot.
         i = 2
         while i < 5:
-            text_w, text_h = self.draw.alt_textsize(speed_labels[i - 1],
+            text_w, text_h = self.draw.textsize(speed_labels[i - 1],
                                                     font=self.plot_font)
             x0 = self.origin_x + (2 * i + 1) * label_offset_x - text_w / 2
             y0 = self.origin_y + (2 * i + 1) * label_offset_y - text_h / 2
@@ -639,7 +640,7 @@ class StackedWindRoseImageGenerator(weewx.reportengine.ReportGenerator):
                            fill=self.windrose_plot_font_color, font=self.plot_font)
             i += 1
         # draw outside ring label
-        text_w, text_h = self.draw.alt_textsize(speed_labels[i-1], font=self.plot_font)
+        text_w, text_h = self.draw.textsize(speed_labels[i-1], font=self.plot_font)
         xy = (self.origin_x + (2 * i + 1) * label_offset_x - text_w / 2,
               self.origin_y + (2 * i + 1) * label_offset_y - text_h / 2)
         self.draw.text(xy,
@@ -656,7 +657,7 @@ class StackedWindRoseImageGenerator(weewx.reportengine.ReportGenerator):
         """
 
         # set static values
-        text_w, text_h = self.draw.alt_textsize('E', font=self.plot_font)
+        text_w, text_h = self.draw.textsize('E', font=self.plot_font)
         # label_x and label_y = x,y coords of bottom left of stacked bar.
         # Everything else is relative to this point
         label_x = self.origin_x+self.rose_max_dia/2 + text_w + 10
@@ -671,7 +672,7 @@ class StackedWindRoseImageGenerator(weewx.reportengine.ReportGenerator):
             y1 = label_y
             self.draw.rectangle([x0, y0, x1, y1],
                                 fill=speed_list[1][i], outline='black')
-            text_w, text_h = self.draw.alt_textsize(str(speed_list[0][i]),
+            text_w, text_h = self.draw.textsize(str(speed_list[0][i]),
                                                     font=self.legend_font)
             xy = (label_x + 1.5 * self.windrose_legend_bar_width,
                   label_y - text_h / 2 - (0.85 * self.rose_max_dia * self.speed_factor[i]))
@@ -680,7 +681,7 @@ class StackedWindRoseImageGenerator(weewx.reportengine.ReportGenerator):
             self.draw.text(xy, _text,
                            fill=self.windrose_legend_font_color, font=self.legend_font)
             i -= 1
-        text_w, text_h = self.draw.alt_textsize(str(speed_list[0][0]),
+        text_w, text_h = self.draw.textsize(str(speed_list[0][0]),
                                                 font=self.legend_font)
         # draw 'calm' or 0 speed label and %
         xy = (label_x + 1.5 * self.windrose_legend_bar_width,
@@ -689,7 +690,7 @@ class StackedWindRoseImageGenerator(weewx.reportengine.ReportGenerator):
                                int(round(100.0 * speed_bin[0]/sum(speed_bin), 0)))
         self.draw.text(xy, _text,
                        fill=self.windrose_legend_font_color, font=self.legend_font)
-        text_w, text_h = self.draw.alt_textsize('Calm', font=self.legend_font)
+        text_w, text_h = self.draw.textsize('Calm', font=self.legend_font)
         xy = (label_x - text_w - 2,
               label_y - text_h / 2 - (0.85 * self.rose_max_dia * self.speed_factor[0]))
         self.draw.text(xy, 'Calm',
@@ -705,13 +706,13 @@ class StackedWindRoseImageGenerator(weewx.reportengine.ReportGenerator):
             title_text = 'Gust Speed'
         else:
             title_text = 'Wind Speed'
-        text_w, text_h = self.draw.alt_textsize(title_text, font=self.legend_font)
+        text_w, text_h = self.draw.textsize(title_text, font=self.legend_font)
         xy = (label_x + self.windrose_legend_bar_width / 2 - text_w / 2,
               label_y - 5 * text_h / 2 - (0.85 * self.rose_max_dia))
         self.draw.text(xy, title_text,
                        fill=self.windrose_legend_font_color, font=self.legend_font)
         # draw legend units label
-        text_w, text_h = self.draw.alt_textsize('(%s)' % self.unit_label.strip(),
+        text_w, text_h = self.draw.textsize('(%s)' % self.unit_label.strip(),
                                                 font=self.legend_font)
         xy = (label_x + self.windrose_legend_bar_width / 2 - text_w / 2,
               label_y - 3 * text_h / 2 - (0.85 * self.rose_max_dia))
@@ -720,7 +721,7 @@ class StackedWindRoseImageGenerator(weewx.reportengine.ReportGenerator):
         # draw plot title (label) if any, make sure we convert any unicode that
         # might sneak in
         if self.label:
-            text_w, text_h = self.draw.alt_textsize(self.label, font=self.label_font)
+            text_w, text_h = self.draw.textsize(self.label, font=self.label_font)
             try:
                 self.draw.text((self.origin_x - text_w/2, text_h/2),
                                self.label,
@@ -734,7 +735,7 @@ class StackedWindRoseImageGenerator(weewx.reportengine.ReportGenerator):
         # draw plot timestamp if any
         if self.time_stamp:
             ts_text = datetime.datetime.fromtimestamp(self.plotgen_ts).strftime(self.time_stamp).strip()
-            text_w, text_h = self.draw.alt_textsize(ts_text, font=self.label_font)
+            text_w, text_h = self.draw.textsize(ts_text, font=self.label_font)
             if self.time_stamp_location is not None:
                 if 'TOP' in self.time_stamp_location:
                     ts_y = self.windrose_plot_border + text_h
@@ -804,13 +805,20 @@ class StackedWindRoseImageGenerator(weewx.reportengine.ReportGenerator):
 
 
 class UniDraw(ImageDraw.ImageDraw):
-    """Supports non-Unicode fonts
+    """Subclassed PIL ImageDraw.ImageDraw that supports non-Unicode fonts.
 
-    Not all fonts support Unicode characters. These will raise a
-    UnicodeEncodeError exception. This class subclasses the regular
-    ImageDraw.ImageDraw class and overrides selected functions to catch these
-    exceptions. If a UnicodeEncodeError is caught rendering the string is
+    Not all fonts support Unicode characters. Those that do not will raise a
+    UnicodeEncodeError exception. This class subclasses the regular PIL
+    ImageDraw.ImageDraw class and overrides/adds selected functions to catch 
+    these exceptions. If a UnicodeEncodeError is caught rendering the string is
     retried, this time using a UTF8 encoded string.
+    
+    The text() method is overriden to catch possible UnicodeEncodeError
+    exceptions and substitute a UTF8 encode string instead.
+    
+    The textsize() method has been added as whilst the textsize() method 
+    has been removed from PIL 10.0 it still remains in earlier PIL versions and 
+    the (now) complex error catching  
     """
 
     def text(self, position, string, **options):
@@ -822,7 +830,7 @@ class UniDraw(ImageDraw.ImageDraw):
             # our string needs to be properly encoded, try again with utf-8 encoding
             return ImageDraw.ImageDraw.text(self, position, string.encode('utf-8'), **options)
 
-    def alt_textsize(self, string, **options):
+    def textsize(self, string, **options):
         """Obtain the size of a string rendered using a Unicode or non-Unicode font.
 
         Returns the width and height of the rendered string.
@@ -834,28 +842,34 @@ class UniDraw(ImageDraw.ImageDraw):
         if not found then try the old.
         """
 
+        # first try to use textsize(), if we have PIL < 10.0 it will either 
+        # work or a UnicodeEncodeError will be raised
         try:
-            # first try the new way
-            left, top, right, bottom = ImageDraw.ImageDraw.multiline_textbbox(self,
-                                                                              xy=(0, 0),
-                                                                              text=string,
-                                                                              **options)
-            return right - left, bottom - top
+            return ImageDraw.ImageDraw.textsize(self, string, **options)
         except UnicodeEncodeError:
-            # the new way is available but our string needs to be properly
-            # encoded, try again with utf-8 encoding
-            left, top, right, bottom = ImageDraw.ImageDraw.multiline_textbbox(self,
-                                                                              xy=(0, 0),
-                                                                              text=string.encode('utf-8'),
-                                                                              **options)
-            return right - left, bottom - top
+            # we have PIL < 10.0 but we encountered a UnicodeEncodeError, try 
+            # again with utf-8 encoding
+            return ImageDraw.ImageDraw.textsize(self, string.encode('utf-8'), **options)
         except AttributeError:
-            # now try the old way
+            # there is no textsize() method so this must be PIL 10.0 or later, 
+            # try again but this time using the PIL 10.0 equivalents
             try:
-                return ImageDraw.ImageDraw.textsize(self, string, **options)
+                # first try the textbox bounds
+                left, top, right, bottom = ImageDraw.ImageDraw.multiline_textbbox(self,
+                                                                                  xy=(0, 0),
+                                                                                  text=string,
+                                                                                  **options)
+                # now calculate and return the width and height we require
+                return right - left, bottom - top
             except UnicodeEncodeError:
-                # our string needs to be properly encoded, try again with utf-8 encoding
-                return ImageDraw.ImageDraw.textsize(self, string.encode('utf-8'), **options)
+                # we encountered a UnicodeEncodeError, try the same call again 
+                # but with utf-8 encoding
+                left, top, right, bottom = ImageDraw.ImageDraw.multiline_textbbox(self,
+                                                                                  xy=(0, 0),
+                                                                                  text=string.encode('utf-8'),
+                                                                                  **options)
+                # now calculate and return the width and height we require
+                return right - left, bottom - top
 
 
 def parse_color(color, default=None):
