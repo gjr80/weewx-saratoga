@@ -1,3 +1,10 @@
+v0.1.7
+-   fix bug where a non-existent destination directory would prevent local
+    saving of clientraw.txt
+-   comment out rtcr_path config option so that default (HTML_ROOT) is used for
+    new installs
+-   fix stackedwindrose generator reliance on deprecated
+    PIL.ImageDraw.textsize() method in PIL v10.0
 v0.1.6
 -   fix incorrect default source fields for soil moisture, soil temperature
     and leaf wetness fields in the RealtimeClientraw service
