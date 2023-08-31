@@ -14,9 +14,11 @@ This program is distributed in the hope that it will be useful, but WITHOUT ANY
 WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
 PARTICULAR PURPOSE.  See the GNU General Public License for more details.
 
-Version: 0.1.6                                          Date: 24 March 2023
+Version: 0.1.7                                          Date: 31 August 2023
 
 Revision History
+    31 August 2023      v0.1.7
+        - version number change only
     24 March 2023       v0.1.6
         - version number change only
     17 January 2023     v0.1.5
@@ -44,7 +46,7 @@ in saving as much space as you may think - most of the space is taken up by the
 primary key indexes (type "dateTime").
 """
 
-WS_SCHEMA_VERSION = '0.1.6'
+WS_SCHEMA_VERSION = '0.1.7'
 
 # define schema for archive table
 ws_schema = [

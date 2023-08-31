@@ -15,9 +15,11 @@ ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
 FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
 details.
 
-Version: 0.1.6                                          Date: 24 March 2023
+Version: 0.1.7                                          Date: 31 August 2023
 
 Revision History
+    31 August 2023      v0.1.7
+        - version number change only
     24 March 2023       v0.1.6
         - version number change only
     17 January 2023     v0.1.5
@@ -88,7 +90,7 @@ except ImportError:
     def logcri(msg):
         logmsg(syslog.LOG_CRIT, msg)
 
-WS_VERSION = '0.1.2'
+WS_VERSION = '0.1.7'
 
 # Default radiation threshold value used for calculating sunshine
 DEFAULT_SUNSHINE_THRESHOLD = 120
