@@ -17,14 +17,17 @@ PARTICULAR PURPOSE.  See the GNU General Public License for more details.
 You should have received a copy of the GNU General Public License along with
 this program.  If not, see https://www.gnu.org/licenses/.
 
-Version: 0.3.7                                          Date: 12 June 2023
+Version: 0.3.8                                          Date: xx September 2023
 
 Revision History
-    12 June 2023        v0.3.7
+    xx September 2023   v0.3.8
         - implemented support fields 48 (current conditions icon code) and
           49 (current conditions description)
         - loop packet field names for clientraw.txt current conditions text and
           icon fields can now be be specified in weewx.conf
+    31 August 2023      v0.3.7
+        - fix bug where a non-existent destination directory would prevent
+          local saving of clientraw.txt
     24 March 2023       v0.3.6
         - fix incorrect default source fields for soil moisture, soil
           temperature and leaf wetness
@@ -63,7 +66,7 @@ Revision History
         - added try..except around the main thread code so that thread
           exceptions can be trapped and logged rather than the thread silently
           dying
-        - changed to python 2/3 compatible fixed except syntax
+        - changed to python 2/3 compatible try..except syntax
         - fixed incorrect instructions for setting additional_binding config
           item when there is no additional binding
     1 March 2020        v0.2.2
@@ -118,76 +121,41 @@ weewx.conf as follows:
 [WeewxSaratoga]
     ....
     [[RealtimeClientraw]]
+
         # Path to clientraw.txt. Can be an absolute or relative path. Relative
         # paths are relative to HTML_ROOT. Optional, default setting is to use
         # HTML_ROOT.
         rtcr_path = /home/weewx/public_html
+
+        # Minimum interval (seconds) before clientraw.txt is re-generated.
+        # Generation will be skipped on arrival of a loop packet if
+        # min_interval seconds have NOT elapsed since the last generation.
+        # If min_interval is 0 or omitted generation will occur on receipt of
+        # every loop packet. Optional, default is 0.
+        min_interval = 0
 
         # Remote URL to which the clientraw.txt data will be posted via HTTP
         # POST. Optional, omit to disable HTTP POST. Format is
         # http://remote/address
         remote_server_url =
 
-        # timeout in seconds for remote URL posts. Optional, default is 2
-        timeout = 2
+        # Python date-time format strings. Format string codes as per
+        # https://docs.python.org/3/library/datetime.html#strftime-and-strptime-format-codes
 
-        # Minimum interval (seconds) between file generation. Ideally
-        # clientraw.txt would be generated on receipt of every loop packet (there
-        # is no point in generating more frequently than this); however, in some
-        # cases the user may wish to generate clientraw.txt less frequently. The
-        # min_interval option sets the minimum time between successive
-        # clientraw.txt generations. Generation will be skipped on arrival of a
-        # loop packet if min_interval seconds have NOT elapsed since the last
-        # generation. If min_interval is 0 or omitted generation will occur on
-        # every loop packet (as will be the case if min_interval < station loop
-        period). Optional, default is 0.
-        min_interval = 0
+        # Date format. Recommended entries are:
+        #   date_format = %-m/%-d/%Y  # recommended for USA users
+        #   date_format = %-d/%-m/%Y  # recommended for non-USA users
+        date_format = %-d/%-m/%Y
 
-        # If using an external website it may be advantageous to disable the
-        # local save of clientraw.txt to prevent contention on the external web
-        # server. The local save of clientraw.txt can be disabled by use of the
-        # disable_local_save option. Set to True to disable or False to enable
-        # the local save of clientraw.txt. Optional, default is False.
-        # disable_local_save = False
+        # Long format times (HMS). Recommended entries are:
+        #   long_time_format = %-I:%M:%S_%p  # recommended for USA users
+        #   long_time_format = %H:%M:%S  # recommended for non-USA users
+        long_time_format = %H:%M:%S
 
-        # Update windrun value each loop period or just on each archive period.
-        # Optional, default is False.
-        windrun_loop = false
-
-        # Stations that provide partial packets are supported through a cache that
-        # caches packet data. max_cache_age is the maximum age  in seconds for
-        # which cached data is retained. Optional, default is 600 seconds.
-        max_cache_age = 600
-
-        # Period in seconds over which average wind speed is calculated.
-        # Optional, default is 300.
-        avgspeed_period = 300
-
-        # Period in seconds over which gust speed is calculated. Optional,
-        # default is 300.
-        gust_period = 300
-
-        # Period in seconds over which to calculate trends. Anecdotally,
-        # clientraw.txt appears to use 1 hour for each but barometer trends are
-        # commonly calculated over a 3 hour period. Optional, default is 3600.
-        baro_trend_period = 3600
-        temp_trend_period = 3600
-        humidity_trend_period = 3600
-        humidex_trend_period = 3600
-
-        # When searching for a previous record the largest difference in time
-        # in seconds for which a record is considered a match. Optional,
-        # default is 200.
-        grace = 200
-
-        # By default WeeWX sets wind direction to None when wind speed is 0
-        # (this behaviour can be overridden using the WeeWX force_null
-        # option [http://weewx.com/docs/usersguide.htm#force_null]. This
-        # behaviour may cause problems with machinery that processes clientraw
-        # data and expects wind direction to always exist.
-        # null_dir = N
-        # null_dir = 0
-        null_dir = last
+        # Short format times (HM). Recommended entries are:
+        #   short_time_format = %-I:%M_%p  # recommended for USA users
+        #   short_time_format = %H:%M  # recommended for non-USA users
+        short_time_format = %H:%M
 
 3.  If this service is not being used as part of the WeeWX-Saratoga extension
 add a [RealtimeClientraw] stanza to weewx.conf containing the settings at
@@ -206,24 +174,32 @@ hierarchical location of the stanza.
 6.  Confirm that clientraw.txt is being generated regularly as per the
     min_interval setting under [RealtimeClientraw] in weewx.conf.
 
+
+Status of clientraw.txt fields
+
 Fields to implemented/finalised:
     - 015 - forecast icon.
-    - *048 - icon type.
-    - *049 - weather description.
 
-Saratoga Dashboard
-    - fields required:
-        0, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 19, 29, 30, 31, 32, 34, 35, 36, 44,
-        45, 46, 47, 48, 49, 50, 71, 72, 73, 74, 75, 76, 77, 78, 79, 90, 110,
-        111, 112, 113, 127, 130, 131, 132, 135, 136, 137, 138, 139, 140, 141
-    - fields to be implemented/finalised in order to support:
-        none
+Fields to support various dashboards/services:
 
-Alternative Dashboard
-    - fields required (Saratoga fields plus)(#=will not implement):
-        1, 12, 13, #114, #115, #116, #118, #119, 156, 159, 160, 173
-    - fields to be implemented/finalised in order to support:
-        none
+    Saratoga Dashboard
+        - fields required:
+            0, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 19, 29, 30, 31, 32, 34, 35, 36,
+            44, 45, 46, 47, 48, 49, 50, 71, 72, 73, 74, 75, 76, 77, 78, 79, 90,
+            110, 111, 112, 113, 127, 130, 131, 132, 135, 136, 137, 138, 139,
+            140, 141
+        - fields yet to be implemented/finalised in order to support:
+            none
+
+    Alternative Dashboard
+        - fields required (Saratoga fields plus)(#=will not implement):
+            0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 19, 29, 30, 31, 32,
+            34, 35, 36, 44, 45, 46, 47, 48, 49, 50, 71, 72, 73, 74, 75, 76, 77,
+            78, 79, 90, 110, 111, 112, 113, #114, #115, #116, #118, #119, 127,
+            130, 131, 132, 135, 136, 137, 138, 139, 140, 141, 156, 159, 160,
+            173
+        - fields yet to be implemented/finalised in order to support:
+            none
 """
 # TODO. seed RtcrBuffer day stats properties with values from daily summaries on startup and perhaps again on the next archive record
 
@@ -309,7 +285,7 @@ except ImportError:
 
 
 # version number of this script
-RTCR_VERSION = '0.3.7'
+RTCR_VERSION = '0.3.8'
 
 # the obs that we will buffer
 MANIFEST = ['outTemp', 'barometer', 'outHumidity', 'rain', 'rainRate',
@@ -379,20 +355,6 @@ class RealtimeClientraw(StdService):
                                                    longitude=engine.stn_info.longitude_f,
                                                    altitude=convert(engine.stn_info.altitude_vt, 'meter').value)
         self.rtcr_thread.start()
-
-        # # forecast and current conditions fields
-        # self.forecast_binding = rtcr_config_dict.get('forecast_binding', None)
-        # if self.forecast_binding:
-        #     try:
-        #         self.forecast_manager = weewx.manager.open_manager_with_config(config_dict,
-        #                                                                        self.forecast_binding)
-        #     except weewx.UnknownBinding:
-        #         self.forecast_manager = None
-        #     if self.forecast_binding:
-        #         self.forecast_text_field = rtcr_config_dict.get('forecast_text_field', None)
-        #         self.forecast_icon_field = rtcr_config_dict.get('forecast_icon_field', None)
-        #         self.current_text_field = rtcr_config_dict.get('current_text_field', None)
-        #
         # grace
         self.grace = to_int(rtcr_config_dict.get('grace', DEFAULT_GRACE))
 
@@ -496,7 +458,7 @@ class RealtimeClientraw(StdService):
 
         if hasattr(self, 'rtcr_queue') and hasattr(self, 'rtcr_thread'):
             if self.rtcr_queue and self.rtcr_thread.is_alive():
-                # Put a None in the queue to signal the thread to shutdown
+                # Put a None in the queue to signal the thread to shut down
                 self.rtcr_queue.put(None)
                 # Wait up to 20 seconds for the thread to exit:
                 self.rtcr_thread.join(20.0)
@@ -882,6 +844,15 @@ class RealtimeClientrawThread(threading.Thread):
         # has local the saving of clientraw.txt been disabled
         self.disable_local_save = to_bool(rtcr_config_dict.get('disable_local_save',
                                                                False))
+        # create the directory that is to receive the generate file, but only
+        # if we are saving the file locally
+        if not self.disable_local_save:
+            # create the directory, if it already exists an exception will be
+            # thrown, so be prepared to catch it
+            try:
+                os.makedirs(rtcr_path)
+            except OSError:
+                pass
         # get the remote server URL if it exists, if it doesn't set it to None
         self.remote_server_url = rtcr_config_dict.get('remote_server_url', None)
         # timeout to be used for remote URL posts
@@ -1098,7 +1069,7 @@ class RealtimeClientrawThread(threading.Thread):
             self.day_stats = self.db_manager._get_day_summary(time.time())
             # create a RtcrBuffer object to hold our loop 'stats'
             self.buffer = RtcrBuffer(day_stats=self.day_stats)
-            # setup our loop cache and set some starting wind values
+            # set up our loop cache and set some starting wind values
             # get the last good record
             _ts = self.db_manager.lastGoodStamp()
             if _ts is not None:
@@ -1192,7 +1163,7 @@ class RealtimeClientrawThread(threading.Thread):
         # if this is the first packet after 9am we need to reset any 9am sums
         # first get the current hour as an int
         _hour = int(time.strftime('%H', time.localtime(conv_packet['dateTime'])))
-        # if its a new day and hour >= 9 we need to reset any 9am sums
+        # if it's a new day and hour >= 9 we need to reset any 9am sums
         if self.new_day and _hour >= 9:
             self.new_day = False
             self.buffer.nineam_reset()
@@ -2012,7 +1983,7 @@ class RealtimeClientrawThread(threading.Thread):
         else:
             soil_moist = None
         data[157] = soil_moist if soil_moist is not None else 255.0
-        # 158 - 10 minute average wind speed (knot)
+        # 158 - 10-minute average wind speed (knot)
         if 'windSpeed' in self.buffer:
             av_speed10 = self.buffer['windSpeed'].history_avg(packet_wx['dateTime'],
                                                               age=600)
@@ -2500,9 +2471,9 @@ class RtcrBuffer(dict):
     then be determined at any time using a combination of archive based and
     loop based stats.
 
-    The loop based stats are maintained over the period since the last archive
-    record was generated. The loop based stats are reset each time an archive
-    record is generated.
+    The loop based stats are maintained over the period since generation of the
+    last archive record. The loop based stats are reset when an archive record
+    is generated.
 
     Selected observations also have a history of loop value, timestamp pairs
     maintained to enable calculation of short term ma/min stats eg 'max
@@ -2621,7 +2592,7 @@ seed_functions = ListOfDicts({'wind': RtcrBuffer.seed_vector})
 class ObsTuple(tuple):
     """Class to represent and observation in time.
 
-    A observation can be uniquely represented by the value of the observation
+    An observation can be uniquely represented by the value of the observation
     and the time at which it was observed. This can be represented in a 2 way
     tuple called an obs tuple. An obs tuple is useful because its contents can
     be accessed using named attributes.
@@ -2634,7 +2605,7 @@ class ObsTuple(tuple):
     It is valid to have an observed value of None.
 
     It is also valid to have a ts of None (meaning there is no information
-    about the time the observation was observed.
+    about the time the observation was observed).
     """
 
     def __new__(cls, *args):
