@@ -58,6 +58,7 @@ WS_VERSION = "0.1.7"
 ws_config = u"""
 [StdReport]
     [[WEEWXtagsReport]]
+        HTML_ROOT = public_html/saratoga
         skin = WEEWXtags
         enable = True
         [[[Units]]]
@@ -67,6 +68,7 @@ ws_config = u"""
                 date_f = %d/%m/%Y
                 date_time_f = %d/%m/%Y %H:%M
     [[ClientrawReport]]
+        HTML_ROOT = public_html/saratoga
         skin = Clientraw
         enable = True
         [[[Units]]]
