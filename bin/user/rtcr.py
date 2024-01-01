@@ -835,7 +835,7 @@ class RealtimeClientrawThread(threading.Thread):
         self.last_write = 0
 
         # get our file paths and names
-        _path = rtcr_config_dict.get('rtcr_path', '')
+        _path = rtcr_config_dict.get('rtcr_path', 'saratoga')
         rtcr_path = os.path.join(html_root, _path)
         rtcr_filename = rtcr_config_dict.get('rtcr_file_name', 'clientraw.txt')
         self.rtcr_path_file = os.path.join(rtcr_path, rtcr_filename)
