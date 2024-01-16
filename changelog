@@ -1,3 +1,6 @@
+v0.1.8
+-   removed distutils.StrictVersion dependency from installer
+-   fix for deprecation of weewx.units.UnknownType in WeeWX v5
 v0.1.7
 -   fix bug where a non-existent destination directory would prevent local
     saving of clientraw.txt
