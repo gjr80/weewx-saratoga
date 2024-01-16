@@ -1,7 +1,9 @@
 """
 stackedwindrose.py
 
-A polar wind rose image generator for WeeWX
+A polar wind rose image generator for WeeWX.
+
+Copyright (C) 2013-2024 Gary Roderick                gjroderick<at>gmail.com
 
 This program is free software; you can redistribute it and/or modify it under
 the terms of the GNU General Public License as published by the Free Software

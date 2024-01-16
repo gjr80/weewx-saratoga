@@ -15,9 +15,11 @@ ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
 FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
 details.
 
-Version: 0.1.7                                          Date: 31 August 2023
+Version: 0.1.8                                          Date: 16 January 2024
 
 Revision History
+    16 January 2024     v0.1.8
+        - version number change only
     31 August 2023      v0.1.7
         - version number change only
     24 March 2023       v0.1.6
@@ -29,7 +31,7 @@ Revision History
     7 February 2022     v0.1.3
         - version number change only
     25 November 2021    v0.1.2
-        - WsWXCalculate now logs pyepehem installation status on startup
+        - WsWXCalculate now logs pyephem installation status on startup
     21 May 2021         v0.1.1
         - version number change only
     13 May 2021         v0.1.0
@@ -90,7 +92,7 @@ except ImportError:
     def logcri(msg):
         logmsg(syslog.LOG_CRIT, msg)
 
-WS_VERSION = '0.1.7'
+WS_VERSION = '0.1.8'
 
 # Default radiation threshold value used for calculating sunshine
 DEFAULT_SUNSHINE_THRESHOLD = 120

@@ -3,7 +3,7 @@ rtcr.py
 
 A WeeWX service to generate a loop based clientraw.txt.
 
-Copyright (C) 2017-2023 Gary Roderick                gjroderick<at>gmail.com
+Copyright (C) 2017-2024 Gary Roderick                gjroderick<at>gmail.com
 
 This program is free software: you can redistribute it and/or modify it under
 the terms of the GNU General Public License as published by the Free Software

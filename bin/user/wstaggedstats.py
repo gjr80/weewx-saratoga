@@ -3,7 +3,7 @@ wstaggedstats.py
 
 Specialised timespan stats for WeeWX-Saratoga
 
-Copyright (C) 2021-2023 Gary Roderick                gjroderick<at>gmail.com
+Copyright (C) 2021-2024 Gary Roderick                gjroderick<at>gmail.com
 
 This program is free software; you can redistribute it and/or modify it under
 the terms of the GNU General Public License as published by the Free Software
@@ -14,9 +14,11 @@ This program is distributed in the hope that it will be useful, but WITHOUT ANY
 WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
 PARTICULAR PURPOSE.  See the GNU General Public License for more details.
 
-Version: 0.1.7                                          Date: 31 August 2023
+Version: 0.1.8                                          Date: 16 January 2024
 
 Revision History
+    16 January 2024     v0.1.8
+        - version number change only
     31 August 2023      v0.1.7
         - version number change only
     24 March 2023       v0.1.6
@@ -44,7 +46,7 @@ import weewx
 import weewx.units
 import weeutil.weeutil
 
-WS_TAGGED_STATS_VERSION = '0.1.7'
+WS_TAGGED_STATS_VERSION = '0.1.8'
 
 
 # ==============================================================================
