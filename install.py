@@ -187,7 +187,7 @@ def loader():
 
 class WSInstaller(ExtensionInstaller):
     def __init__(self):
-        if version_compare(weewx.__version__, REQUIRED_WEEWX_VERSION) >= 0:
+        if version_compare(weewx.__version__, REQUIRED_WEEWX_VERSION) < 0:
             msg = "%s requires WeeWX %s or greater, found %s" % ('WeeWX-Saratoga' + WS_VERSION,
                                                                  REQUIRED_WEEWX_VERSION,
                                                                  weewx.__version__)
