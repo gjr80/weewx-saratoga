@@ -13,9 +13,11 @@ ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
 FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
 details.
 
-Version: 0.1.7                                          Date: 31 August 2023
+Version: 0.1.8                                          Date: 16 January 2024
 
 Revision History
+    16 January 2024     v0.1.8
+        - remove distutils.StrictVersion dependency
     31 August 2023      v0.1.7
         - version number change only
     24 March 2023       v0.1.6
@@ -36,7 +38,6 @@ Revision History
 
 # python imports
 import configobj
-from distutils.version import StrictVersion
 
 try:
     # Python 3
@@ -50,8 +51,8 @@ import weewx
 
 from setup import ExtensionInstaller
 
-REQUIRED_VERSION = "4.5.0"
-WS_VERSION = "0.1.7"
+REQUIRED_WEEWX_VERSION = "4.5.0"
+WS_VERSION = "0.1.8"
 
 # Multi-line config string, makes it easier to include comments. Needs to be
 # explicitly set as unicode or python2 StringIO complains.
@@ -157,15 +158,36 @@ ws_config = u"""
 ws_dict = configobj.ConfigObj(StringIO(ws_config))
 
 
+def version_compare(v1, v2):
+    """Basic 'distutils' and 'packaging' free version comparison.
+
+    v1 and v2 are WeeWX version numbers in string format.
+
+    Returns:
+        0 if v1 and v2 are the same
+        -1 if v1 is less than v2
+        +1 if v1 is greater than v2
+    """
+
+    import itertools
+    mash = itertools.zip_longest(v1.split('.'), v2.split('.'), fillvalue='0')
+    for x1, x2 in mash:
+        if x1 > x2:
+            return 1
+        if x1 < x2:
+            return -1
+    return 0
+
+
 def loader():
     return WSInstaller()
 
 
 class WSInstaller(ExtensionInstaller):
     def __init__(self):
-        if StrictVersion(weewx.__version__) < StrictVersion(REQUIRED_VERSION):
+        if version_compare(weewx.__version__, REQUIRED_WEEWX_VERSION) < 0:
             msg = "%s requires WeeWX %s or greater, found %s" % ('WeeWX-Saratoga' + WS_VERSION,
-                                                                 REQUIRED_VERSION,
+                                                                 REQUIRED_WEEWX_VERSION,
                                                                  weewx.__version__)
             raise weewx.UnsupportedFeature(msg)
         super(WSInstaller, self).__init__(
