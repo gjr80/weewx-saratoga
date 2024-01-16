@@ -1,5 +1,7 @@
 v0.1.8
 -   removed distutils.StrictVersion dependency from installer
+-   fix bug in SLE that calculates one hour of one minute sums when there is
+    less than one hour of data in the archive
 -   fix for deprecation of weewx.units.UnknownType in WeeWX v5
 v0.1.7
 -   fix bug where a non-existent destination directory would prevent local
