@@ -14,9 +14,11 @@ This program is distributed in the hope that it will be useful, but WITHOUT ANY
 WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
 PARTICULAR PURPOSE.  See the GNU General Public License for more details.
 
-Version: 0.1.7                                          Date: 31 August 2023
+Version: 0.1.8                                          Date: 16 January 2024
 
 Revision History
+    16 January 2024     v0.1.8
+        - fix for deprecation of weewx.units.UnknownType in WeeWX 5
     31 August 2023      v0.1.7
         - version number change only
     24 March 2023       v0.1.6
@@ -89,7 +91,16 @@ except ImportError:
     def logdbg(msg):
         logmsg(syslog.LOG_DEBUG, msg)
 
-WS_SLE_VERSION = '0.1.7'
+WS_SLE_VERSION = '0.1.8'
+
+
+# patch to maintain backwards compatibility with WeeWX v4
+try:
+    weewx.units.UnknownObsType = weewx.units.UnknownType
+except AttributeError:
+    # we must be running WeeWX v5 where weewx.units.UnknownObsType already
+    # exists so we can pass
+    pass
 
 
 def get_first_day(dt, d_years=0, d_months=0):
@@ -1566,9 +1577,9 @@ class YestAlmanac(weewx.cheetahgenerator.SearchList):
         if rec is not None:
             temp_vt = weewx.units.as_value_tuple(rec, 'outTemp')
             baro_vt = weewx.units.as_value_tuple(rec, 'barometer')
-            if not isinstance(temp_vt, weewx.units.UnknownType):
+            if not isinstance(temp_vt, weewx.units.UnknownObsType):
                 temp_c = weewx.units.convert(temp_vt, 'degree_C').value
-            if not isinstance(baro_vt, weewx.units.UnknownType):
+            if not isinstance(baro_vt, weewx.units.UnknownObsType):
                 baro_mbar = weewx.units.convert(baro_vt, 'mbar').value
         # if we didn't get temperature or barometer data then use sensible
         # defaults
@@ -1611,9 +1622,9 @@ class YestAlmanac(weewx.cheetahgenerator.SearchList):
         if rec is not None:
             temp_vt = weewx.units.as_value_tuple(rec, 'outTemp')
             baro_vt = weewx.units.as_value_tuple(rec, 'barometer')
-            if not isinstance(temp_vt, weewx.units.UnknownType):
+            if not isinstance(temp_vt, weewx.units.UnknownObsType):
                 temp_c = weewx.units.convert(temp_vt, 'degree_C').value
-            if not isinstance(baro_vt, weewx.units.UnknownType):
+            if not isinstance(baro_vt, weewx.units.UnknownObsType):
                 baro_mbar = weewx.units.convert(baro_vt, 'mbar').value
         # if we didn't get temperature or barometer data then use sensible
         # defaults
