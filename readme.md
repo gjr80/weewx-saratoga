@@ -1,6 +1,6 @@
 # WeeWX-Saratoga #
 
-The *WeeWX-Saratoga extension* is a *WeeWX* extension to support the [*Saratoga Weather Website Templates*](https://saratoga-weather.org/wxtemplates/index.php) using the *WEEWX-plugin*. The extension also supports the *Saratoga Weather Website templates* [Alternative dashboard](https://saratoga-weather.org/scripts-legacy.php#scott) and can also be used to support any scripts that rely on one or more of the [Weather-Display](https://www.weather-display.com/index.php) *clientraw* family of files for operation.
+The *WeeWX-Saratoga extension* is a *WeeWX* extension that supports the [*Saratoga Weather Website Templates*](https://saratoga-weather.org/wxtemplates/index.php) using the *WEEWX-plugin*. The extension also supports the *Saratoga Weather Website templates* [Alternative dashboard](https://saratoga-weather.org/scripts-legacy.php#scott) and can be further used to support any scripts that rely on one or more of the [Weather-Display](https://www.weather-display.com/index.php) *clientraw* family of files for operation.
 
 The *WeeWX-Saratoga extension* consists of a number of [*WeeWX* services](http://weewx.com/docs/customizing.htm#Overall_system_architecture), [Search List Extensions (SLE)](http://weewx.com/docs/customizing.htm#extending_the_list), [XTypes](http://weewx.com/docs/customizing.htm#Adding_new,_derived_types) and [reports/skins](http://weewx.com/docs/customizing.htm#The_standard_reporting_service,_StdReport) that produce the following data files:
 
@@ -23,10 +23,7 @@ The *WeeWX-Saratoga extension* requires:
 
 - *WeeWX* v4.5.0 or later, and
 
-- the *Pyephem* Python library for extended almanac information. The *Pyephem*
-Python library is automatically installed under *WeeWX* v5, but under *WeeWX* v4 the
-*Pyephem* Python library may or may not be installed. If the *Pyephem* Python
-library is not installed refer to [WeeWX: Installation using setup.py](https://weewx.com/docs/4.10/setup.htm) for the commands to install *python3-ephem* (Python 3) or *pyephem* (Python 2) for your system.
+- the *Pyephem* Python library for extended almanac information.
 
 **Note**: Both Python 2 and Python 3 are supported when the *WeeWX-Saratoga extension* is run under *WeeWX* v4. When run under *WeeWX* v5 only Python 3 is supported.
 
