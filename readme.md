@@ -41,9 +41,9 @@ The preferred method of installing or upgrading the *WeeWX-Saratoga extension* i
 
 1.  Download the *WeeWX-Saratoga extension* from the *WeeWX-Saratoga extension* [releases page](https://github.com/gjr80/weewx-saratoga/releases) into a directory accessible from the *WeeWX* machine:
 
-        $ wget -P /var/tmp https://github.com/gjr80/weewx-saratoga/releases/download/v0.1.8/ws-0.1.8.tar.gz
+        wget -P /var/tmp https://github.com/gjr80/weewx-saratoga/releases/download/v0.1.8/ws-0.1.8.tar.gz
 
-	in this case the extension will be downloaded to directory */var/tmp*.
+	in this case the extension will be downloaded to the directory */var/tmp*.
 
 1.  Install the *WeeWX-Saratoga extension* downloaded at step 1 using the applicable *WeeWX* extension utility:
 
@@ -76,15 +76,15 @@ The preferred method of installing or upgrading the *WeeWX-Saratoga extension* i
     
 1.  Restart *WeeWX*:
 
-        $ sudo /etc/init.d/weewx restart
+        sudo /etc/init.d/weewx restart
 
 	or
 
-        $ sudo service weewx restart
+        sudo service weewx restart
 
     or
 
-        $ sudo systemctl restart weewx
+        sudo systemctl restart weewx
 
 1.  This will result in the WeeWX-Saratoga data files being generated as outlined above. The generated files should be located in the *public_html/saratoga* directory.
 
@@ -95,13 +95,13 @@ The preferred method of installing or upgrading the *WeeWX-Saratoga extension* i
 
 1.  Download the *WeeWX-Saratoga extension* from the *WeeWX-Saratoga extension* [releases page](https://github.com/gjr80/weewx-saratoga/releases) into a directory accessible from the *WeeWX* machine.
 
-        $ wget -P /var/tmp https://github.com/gjr80/weewx-saratoga/releases/download/v0.1.8/ws-0.1.8.tar.gz
+        wget -P /var/tmp https://github.com/gjr80/weewx-saratoga/releases/download/v0.1.8/ws-0.1.8.tar.gz
 
 	in this case the extension will be downloaded to the directory */var/tmp*.
 
 1.  Unpack the extension as follows:
 
-        $ tar xvfz /var/tmp/ws-0.1.8.tar.gz
+        tar xvfz /var/tmp/ws-0.1.8.tar.gz
 
 1.  Copy files from within the resulting *ws* directory as follows:
 
@@ -110,18 +110,18 @@ The preferred method of installing or upgrading the *WeeWX-Saratoga extension* i
         cp ws/bin/user/*.py USER_ROOT/user
         cp -R ws/skins/* SKIN_ROOT
 
-    Where *USER_ROOT* is the *User directory* and *SKIN_ROOT* is the *Skins and templates* directory as detailed in the [*WeeWX* v5 *where to find things*](https://weewx.com/docs/5.0/usersguide/where/) section in the [WeeWX User's Guide](https://weewx.com/docs/5.0/usersguide/introduction/).
+    Where *USER_ROOT* is the *User directory* and *SKIN_ROOT* is the *Skins and templates* directory as detailed in the [*WeeWX* v5 *where to find things*](https://weewx.com/docs/5.0/usersguide/where/) section of the [WeeWX User's Guide](https://weewx.com/docs/5.0/usersguide/introduction/).
 
 -   *WeeWX* v4:
 
         cp ws/bin/user/*.py BIN_ROOT/user
         cp -R ws/skins/* SKIN_ROOT
 
-       Where *BIN_ROOT* is the *Executables* directory and *SKIN_ROOT* is the *Skins and templates* directory as detailed in the [*WeeWX* v4 *where to find things*](https://weewx.com/docs/4.10/usersguide.htm#Where_to_find_things) section in the [WeeWX User's Guide](http://weewx.com/docs/4.10/usersguide.htm).
+       Where *BIN_ROOT* is the *Executables* directory and *SKIN_ROOT* is the *Skins and templates* directory as detailed in the [*WeeWX* v4 *where to find things*](https://weewx.com/docs/4.10/usersguide.htm#Where_to_find_things) section of the [WeeWX User's Guide](http://weewx.com/docs/4.10/usersguide.htm).
 
 1.  Edit *weewx.conf*:
 
-        $ vi weewx.conf
+        vi weewx.conf
     
     **Note:** If manually upgrading an existing *WeeWX-Saratoga extension* installation it is the user's responsibility to retain any previous *WeeWX-Saratoga extension* configuration information in *weewx.conf*. It is strongly recommended that a backup copy of *weewx.conf* be made before any upgrade changes are made to *weewx.conf*.
 
@@ -249,15 +249,15 @@ The preferred method of installing or upgrading the *WeeWX-Saratoga extension* i
 
 1. restart *WeeWX*:
 
-        $ sudo /etc/init.d/weewx restart
+        sudo /etc/init.d/weewx restart
 
 	or
 
-        $ sudo service weewx restart
+        sudo service weewx restart
 
     or
 
-        $ sudo systemctl restart weewx
+        sudo systemctl restart weewx
 
 1.  This will result in the WeeWX-Saratoga data files being generated as outlined above. The generated files should be located in the *public_html/saratoga* directory.
 
