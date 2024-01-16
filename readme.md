@@ -2,7 +2,7 @@
 
 The *WeeWX-Saratoga extension* is a *WeeWX* extension that supports the [*Saratoga Weather Website Templates*](https://saratoga-weather.org/wxtemplates/index.php) using the *WEEWX-plugin*. The extension also supports the *Saratoga Weather Website templates* [Alternative dashboard](https://saratoga-weather.org/scripts-legacy.php#scott) and can be further used to support any scripts that rely on one or more of the [Weather-Display](https://www.weather-display.com/index.php) *clientraw* family of files for operation.
 
-The *WeeWX-Saratoga extension* consists of a number of [*WeeWX* services](http://weewx.com/docs/customizing.htm#Overall_system_architecture), [Search List Extensions (SLE)](http://weewx.com/docs/customizing.htm#extending_the_list), [XTypes](http://weewx.com/docs/customizing.htm#Adding_new,_derived_types) and [reports/skins](http://weewx.com/docs/customizing.htm#The_standard_reporting_service,_StdReport) that produce the following data files:
+The *WeeWX-Saratoga extension* consists of a number of [*WeeWX* services](https://weewx.com/docs/5.0/custom/introduction/#overall-system-architecture), [Search List Extensions (SLE)](https://weewx.com/docs/5.0/custom/sle/), [XTypes](https://weewx.com/docs/5.0/custom/derived/) and [reports/skins](https://weewx.com/docs/5.0/custom/custom-reports/) that produce the following data files:
 
 -   clientraw.txt
 -   clientrawextra.txt
@@ -37,7 +37,7 @@ The preferred method of installing or upgrading the *WeeWX-Saratoga extension* i
 **Note**: If installing the *WeeWX-Saratoga extension* in place of *WeeWX-WD* please refer to the [Migrating from *WeeWX-WD*](https://github.com/gjr80/weewx-saratoga/wiki/Migrating-from-WeeWX‐WD) wiki page.
 
 
-### Installing or Upgrading using the *WeeWX* extension utility ###
+### Installing or upgrading using the *WeeWX* extension utility ###
 
 1.  Download the *WeeWX-Saratoga extension* from the *WeeWX-Saratoga extension* [releases page](https://github.com/gjr80/weewx-saratoga/releases) into a directory accessible from the *WeeWX* machine:
 
@@ -110,7 +110,7 @@ The preferred method of installing or upgrading the *WeeWX-Saratoga extension* i
         cp ws/bin/user/*.py USER_ROOT/user
         cp -R ws/skins/* SKIN_ROOT
 
-    Where *USER_ROOT* is the *User directory* and *SKIN_ROOT* is the *Skins and templates* directory as detailed in the [*WeeWX* v5 *where to find things*](https://weewx.com/docs/5.0/usersguide.htm#Where_to_find_things) section in the [WeeWX User's Guide](https://weewx.com/docs/5.0/usersguide/introduction/).
+    Where *USER_ROOT* is the *User directory* and *SKIN_ROOT* is the *Skins and templates* directory as detailed in the [*WeeWX* v5 *where to find things*](https://weewx.com/docs/5.0/usersguide/where/) section in the [WeeWX User's Guide](https://weewx.com/docs/5.0/usersguide/introduction/).
 
 -   *WeeWX* v4:
 
