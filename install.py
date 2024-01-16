@@ -19,7 +19,7 @@ Revision History
     16 January 2024     v0.1.8
         - remove distutils.StrictVersion dependency
     31 August 2023      v0.1.7
-        - version number change only
+        - set HTML_ROOT for each skin to avoid conflict with any existing skins
     24 March 2023       v0.1.6
         - version number change only
     17 January 2023     v0.1.5
@@ -59,6 +59,7 @@ WS_VERSION = "0.1.8"
 ws_config = u"""
 [StdReport]
     [[WEEWXtagsReport]]
+        HTML_ROOT = public_html/saratoga
         skin = WEEWXtags
         enable = True
         [[[Units]]]
@@ -68,6 +69,7 @@ ws_config = u"""
                 date_f = %d/%m/%Y
                 date_time_f = %d/%m/%Y %H:%M
     [[ClientrawReport]]
+        HTML_ROOT = public_html/saratoga
         skin = Clientraw
         enable = True
         [[[Units]]]
