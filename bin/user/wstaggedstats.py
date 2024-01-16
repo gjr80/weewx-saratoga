@@ -18,7 +18,8 @@ Version: 0.1.8                                          Date: 16 January 2024
 
 Revision History
     16 January 2024     v0.1.8
-        - version number change only
+        - fix bug when calculating one hour of one minute sums when there is
+          less than one hour of data in the archive
     31 August 2023      v0.1.7
         - version number change only
     24 March 2023       v0.1.6
@@ -34,7 +35,7 @@ Revision History
     21 May 2021         v0.1.1
         - version number change only
     13 May 2021         v0.1.0
-        -   initial release
+        - initial release
 """
 
 # python imports
@@ -825,7 +826,7 @@ class WsArchiveObservationBinder(object):
                         try:
                             res = result_vt.value[vec_counter] * prop
                             # add our extrapolated result as a ValueHelper
-                        except (IndexError, ValueError):
+                        except (IndexError, ValueError, TypeError):
                             res = 0
                         # add our extrapolated result as a ValueHelper
                         final.append(weewx.units.ValueHelper((res, result_vt.unit, result_vt.group),
