@@ -239,11 +239,11 @@ The preferred method of installing or upgrading the *WeeWX-Saratoga extension* i
 
 1.  In *weewx.conf*, modify the services lists in *[Engine]* as indicated:
 
-	*   process_services. Add user.ws.WsWXCalculate eg:
+	*   *process_services*. Add *user.ws.WsWXCalculate* eg:
 
             process_services = weewx.engine.StdConvert, weewx.engine.StdCalibrate, weewx.engine.StdQC, weewx.wxservices.StdWXCalculate, user.ws.WsWXCalculate
 
-	*   archive_services. Add user.ws.WsArchive AND user.ws.WsSuppArchive eg:
+	*   *archive_services*. Add *user.ws.WsArchive* and *user.ws.WsSuppArchive* eg:
 
             archive_services = weewx.engine.StdArchive, user.ws.WsArchive, user.ws.WsSuppArchive
 
