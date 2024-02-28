@@ -41,7 +41,7 @@ The preferred method of installing or upgrading the *WeeWX-Saratoga extension* i
 
 1.  Download the *WeeWX-Saratoga extension* from the *WeeWX-Saratoga extension* [releases page](https://github.com/gjr80/weewx-saratoga/releases) into a directory accessible from the *WeeWX* machine:
 
-        wget -P /var/tmp https://github.com/gjr80/weewx-saratoga/releases/download/v0.1.8/ws-0.1.8.tar.gz
+        wget -P /var/tmp https://github.com/gjr80/weewx-saratoga/releases/download/v0.1.9/ws-0.1.9.tar.gz
 
 	in this case the extension will be downloaded to the directory */var/tmp*.
 
@@ -49,13 +49,13 @@ The preferred method of installing or upgrading the *WeeWX-Saratoga extension* i
 
 - for *WeeWX* v5:
 
-      weectl extension install /var/tmp/ws-0.1.8.tar.gz
+      weectl extension install /var/tmp/ws-0.1.9.tar.gz
 
     **Note:** Depending on your *WeeWX* installation the path to *weectl* may need to be provided.
 
 - for *WeeWX* v4:
 
-      wee_extension --install /var/tmp/ws-0.1.8.tar.gz
+      wee_extension --install /var/tmp/ws-0.1.9.tar.gz
 
     **Note:** Depending on your system/installation the above command may need to be prefixed with *sudo*.
 
@@ -64,11 +64,11 @@ The preferred method of installing or upgrading the *WeeWX-Saratoga extension* i
     This will result in output similar to the following:
 
       Using configuration file /home/username/weewx-data/weewx.conf
-      Install extension '/var/tmp/ws-0.1.8b1.tar.gz' (y/n)? y
-      Extracting from tar archive /var/tmp/ws-0.1.8b1.tar.gz
+      Install extension '/var/tmp/ws-0.1.9b1.tar.gz' (y/n)? y
+      Extracting from tar archive /var/tmp/ws-0.1.9b1.tar.gz
       Saving installer file to /home/username/weewx-data/bin/user/installer/WeeWX-Saratoga.
       Saved configuration dictionary. Backup copy at /home/username/weewx-data/weewx.conf.20240116142114.
-      Finished installing extension WeeWX-Saratoga from /var/tmp/ws-0.1.8b1.tar.gz.
+      Finished installing extension WeeWX-Saratoga from /var/tmp/ws-0.1.9b1.tar.gz.
 
     **Note:** If upgrading an existing *WeeWX-Saratoga extension* installation any previous *WeeWX-Saratoga extension* configuration information in *weewx.conf* will have been retained and upgraded as required. The *WeeWX* extension utility will save a timestamped backup copy of the pre-upgrade *weewx.conf* as detailed in the extension utility output, eg:
     
@@ -95,13 +95,13 @@ The preferred method of installing or upgrading the *WeeWX-Saratoga extension* i
 
 1.  Download the *WeeWX-Saratoga extension* from the *WeeWX-Saratoga extension* [releases page](https://github.com/gjr80/weewx-saratoga/releases) into a directory accessible from the *WeeWX* machine.
 
-        wget -P /var/tmp https://github.com/gjr80/weewx-saratoga/releases/download/v0.1.8/ws-0.1.8.tar.gz
+        wget -P /var/tmp https://github.com/gjr80/weewx-saratoga/releases/download/v0.1.9/ws-0.1.9.tar.gz
 
 	in this case the extension will be downloaded to the directory */var/tmp*.
 
 1.  Unpack the extension as follows:
 
-        tar xvfz /var/tmp/ws-0.1.8.tar.gz
+        tar xvfz /var/tmp/ws-0.1.9.tar.gz
 
 1.  Copy files from within the resulting *ws* directory as follows:
 

@@ -14,9 +14,11 @@ This program is distributed in the hope that it will be useful, but WITHOUT ANY
 WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
 PARTICULAR PURPOSE.  See the GNU General Public License for more details.
 
-Version: 0.1.8                                          Date: 16 January 2024
+Version: 0.1.9                                          Date: 29 February 2024
 
 Revision History
+    29 February 2024    v0.1.9
+        - fix class ForToday 29 February bug
     16 January 2024     v0.1.8
         - fix for deprecation of weewx.units.UnknownType in WeeWX 5
     31 August 2023      v0.1.7
@@ -91,7 +93,7 @@ except ImportError:
     def logdbg(msg):
         logmsg(syslog.LOG_DEBUG, msg)
 
-WS_SLE_VERSION = '0.1.8'
+WS_SLE_VERSION = '0.1.9'
 
 
 # patch to maintain backwards compatibility with WeeWX v4
@@ -1899,9 +1901,15 @@ class ForToday(weewx.cheetahgenerator.SearchList):
         # get our stop month and day
         _stop_month = _stop_d.month
         _stop_day = _stop_d.day
-        # get a date object for today's day/month in the year of our first
-        # (earliest) record
-        _today_first_year_d = _stop_d.replace(year=_first_good_year)
+        # Get a date object for today's day/month in the year of our first
+        # (earliest) record. Today could be 29 February so wrap in a
+        # try..except to catch the ValueError.
+        try:
+            _today_first_year_d = _stop_d.replace(year=_first_good_year)
+        except ValueError:
+            # today is February 29, go back to February 28 in our first year
+            # of data instead
+            _today_first_year_d = _stop_d.replace(year=_first_good_year, day=28)
         # Get a date object for the first occurrence of current day/month in
         # our recorded data. Need to handle Leap years differently
         # is it a leap year?

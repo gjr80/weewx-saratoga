@@ -1,3 +1,5 @@
+v0.1.9
+-   fix class ForToday 29 February bug
 v0.1.8
 -   removed distutils.StrictVersion dependency from installer
 -   fix bug in SLE that calculates one hour of one minute sums when there is
