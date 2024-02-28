@@ -17,7 +17,7 @@ Version: 0.1.9                                          Date: 29 February 2024
 
 Revision History
     29 February 2024    v0.1.9
-        - version number change only
+        - fix bug in version_compare
     16 January 2024     v0.1.8
         - remove distutils.StrictVersion dependency
     31 August 2023      v0.1.7
@@ -176,9 +176,13 @@ def version_compare(v1, v2):
     import itertools
     mash = itertools.zip_longest(v1.split('.'), v2.split('.'), fillvalue='0')
     for x1, x2 in mash:
-        if x1 > x2:
+        try:
+            y1, y2 = int(x1), int(x2)
+        except ValueError:
+            y1, y2 = x1, x2
+        if y1 > y2:
             return 1
-        if x1 < x2:
+        if y1 < y2:
             return -1
     return 0
 
