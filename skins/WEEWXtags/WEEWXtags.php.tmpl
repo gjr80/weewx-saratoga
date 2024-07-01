@@ -27,7 +27,7 @@ Pre-Requisites
 - WeeWX-Saratoga WeeWX extension
 - PyEphem for inclusion of ephemeris and insolation data
 
-Version: 0.1.9                                      Date: 29 February 2024
+Version: 0.1.10                                     Date: 1 July 2024
 *#
 #*
 Inline python code to setup/initialise a number of variables for use in the
@@ -37,7 +37,7 @@ template
 #import datetime
 #import locale
 #from weeutil.weeutil import to_bool
-#set $version = '0.1.9'
+#set $version = '0.1.10'
 #*
 Setup date-time format strings
 *#
@@ -371,9 +371,25 @@ if ( isset($_REQUEST['sce']) && strtolower($_REQUEST['sce']) == 'view' ) {
 #raw $maxtempt = #end raw '$day.outTemp.maxtime.format($timeFormat)';
 #raw $mintemp = #end raw '$day.outTemp.min.format(add_label=False, localize=$localize_num)';
 #raw $mintempt = #end raw '$day.outTemp.mintime.format($timeFormat)';
-
-#raw $feelslike =  #end raw '$feelsLike.format(add_label=False, localize=$localize_num)';   // Shows heat index or humidex or windchill (if less than 16oC)
-
+#*
+Inline python code to support skin selectable source for 'feelslike' temperature
+*#
+#if 'feelslike' in $Extras and $Extras.feelslike is not None
+#if $Extras.feelslike.lower() in ('heatindex', 'heat index')
+#set $fl = $current.heatindex.format(add_label=False, localize=$localize_num)
+#elif $Extras.feelslike.lower() in ('windchill', 'wind chill')
+#set $fl = $current.windchill.format(add_label=False, localize=$localize_num)
+#elif $Extras.feelslike.lower() == 'humidex'
+#set $fl = $current.humidex.format(add_label=False, localize=$localize_num)
+#elif $Extras.feelslike.lower() in ('apparent', 'apparent temperature', 'apptemp')
+#set $fl = $current.appTemp.format(add_label=False, localize=$localize_num)
+#else
+#set $fl = $feelsLike.format(add_label=False, localize=$localize_num)
+#end if
+#else
+#set $fl = $feelsLike.format(add_label=False, localize=$localize_num)
+#end if
+#raw $feelslike = #end raw '$fl';
 #raw $heati = #end raw '$current.heatindex.format(add_label=False, localize=$localize_num)';    // current heat index
 #raw $heatinodp = #end raw '$current.heatindex.format(format_string="%.0f", add_label=False, localize=$localize_num)';    // current heat index,no decimal place
 #raw $windch = #end raw '$current.windchill.format(add_label=False, localize=$localize_num)';   // current wind-chill
