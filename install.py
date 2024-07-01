@@ -13,9 +13,11 @@ ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
 FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
 details.
 
-Version: 0.1.9                                          Date: 29 February 2024
+Version: 0.1.10                                          Date: 1 July 2024
 
 Revision History
+    1 July 2024         v0.1.10
+        - version number change only
     29 February 2024    v0.1.9
         - fix bug in version_compare
     16 January 2024     v0.1.8
@@ -54,7 +56,7 @@ import weewx
 from setup import ExtensionInstaller
 
 REQUIRED_WEEWX_VERSION = "4.5.0"
-WS_VERSION = "0.1.9"
+WS_VERSION = "0.1.10"
 
 # Multi-line config string, makes it easier to include comments. Needs to be
 # explicitly set as unicode or python2 StringIO complains.

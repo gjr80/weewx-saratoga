@@ -1,3 +1,6 @@
+v0.1.10
+-   added support for the [Extras] feelslike option to allow the source for the
+    WEEWXtags.php feelslike tag to be selected
 v0.1.9
 -   fix class ForToday 29 February bug
 -   fix version_compare() bug
